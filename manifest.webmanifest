@@ -1,0 +1,16 @@
+{
+  "name": "Alif Ba Qur'ani",
+  "short_name": "Alif Ba",
+  "description": "Leren lezen met de Qaida – tik op een vierkant en hoor de uitspraak.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf8ee",
+  "theme_color": "#b8862b",
+  "lang": "nl",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

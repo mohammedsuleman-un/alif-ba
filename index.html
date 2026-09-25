@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Alif Ba Qur'ani</title>
+  <meta name="theme-color" content="#b8862b">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Startscherm: lessenoverzicht -->
+  <section id="home" class="screen">
+    <header class="home-head">
+      <img class="cover" src="pages/p-03.jpg" alt="">
+      <div class="home-title">
+        <h1 lang="ar" dir="rtl">قاعدة ألف با قرءاني</h1>
+        <p>Tik op een les om te beginnen</p>
+      </div>
+    </header>
+    <ol id="lessons" class="lessons" dir="rtl"></ol>
+  </section>
+
+  <!-- Lesscherm: pagina met klikbare vierkanten -->
+  <section id="lesson" class="screen" hidden>
+    <nav class="bar">
+      <button id="btnHome" class="icon-btn" aria-label="Terug naar overzicht">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
+      </button>
+      <div class="bar-title">
+        <span id="lessonNum" class="num"></span>
+        <span id="lessonTitle" lang="ar" dir="rtl"></span>
+      </div>
+      <button id="btnPlayAll" class="icon-btn play" aria-label="Alles afspelen">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+        <svg class="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+    </nav>
+
+    <div id="stageWrap" class="stage-wrap">
+      <div id="stage" class="stage">
+        <img id="pageImg" alt="">
+        <div id="hotspots" class="hotspots"></div>
+      </div>
+    </div>
+
+    <footer class="pager">
+      <!-- Arabisch boek: "volgende" staat links, "vorige" rechts -->
+      <button id="btnNext" class="pg-btn" aria-label="Volgende pagina">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span id="pageDots" class="dots"></span>
+      <button id="btnPrev" class="pg-btn" aria-label="Vorige pagina">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </footer>
+
+    <div id="editBar" class="edit-bar" hidden>
+      <strong>Bewerkmodus</strong>
+      <span>Sleep om een vierkant te tekenen · klik om te selecteren · Delete om te verwijderen</span>
+      <button id="btnExport">Exporteer book-data.js</button>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="book-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
