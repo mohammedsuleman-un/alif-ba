@@ -20,10 +20,14 @@
       <img class="cover" src="pages/p-03.jpg" alt="">
       <div class="home-title">
         <h1 lang="ar" dir="rtl">قاعدة ألف با قرءاني</h1>
-        <p>Tik op een les om te beginnen</p>
+        <p>Inhoudsopgave · tik op een les</p>
+        <button id="btnContinue" class="continue" hidden>
+          <svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+          <span>Verder met les <b id="continueNum"></b></span>
+        </button>
       </div>
     </header>
-    <ol id="lessons" class="lessons" dir="rtl"></ol>
+    <div id="toc" class="toc"></div>
   </section>
 
   <!-- Lesscherm: pagina met klikbare vierkanten -->

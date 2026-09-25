@@ -4,8 +4,21 @@
 window.BOOK = {
   title: "قاعدة ألف با قرءاني",
   cover: "pages/p-03.jpg",
+  // Hoofdstukken voor de inhoudsopgave; from/to zijn paginanummers (n) uit de PDF.
+  chapters: [
+    { ar: "الحروف الهجائية", nl: "De letters", from: 5, to: 9 },
+    { ar: "الحركات", nl: "De klinkertekens", from: 10, to: 13 },
+    { ar: "المدود", nl: "De lange klinkers", from: 14, to: 18 },
+    { ar: "الشدة والتنوين", nl: "Shadda en tanwien", from: 19, to: 25 },
+    { ar: "هاء الضمير ولفظ الجلالة", nl: "Haa van het voornaamwoord en de naam Allah", from: 26, to: 29 },
+    { ar: "أحكام النون الساكنة والتنوين", nl: "Regels van noen sakina en tanwien", from: 30, to: 32 },
+    { ar: "همزة الوصل والحروف المقطعة", nl: "Hamzat al-wasl en de losse letters", from: 33, to: 35 },
+    { ar: "اللام القمرية والشمسية", nl: "Maan-lam en zon-lam", from: 36, to: 37 },
+    { ar: "رموز القرآن", nl: "Tekens in de Koran", from: 38, to: 41 },
+    { ar: "تدريبات عامة", nl: "Algemene oefeningen", from: 42, to: 48 },
+  ],
   pages: [
-    { n: 5, title: "حروف الهجاء العربية", image: "pages/p-05.jpg", tiles: [
+    { n: 5, title: "حروف الهجاء العربية", nl: "Het Arabische alfabet", image: "pages/p-05.jpg", tiles: [
       { id: "p05_01", x: 0.7616, y: 0.2681, w: 0.1132, h: 0.0882 },
       { id: "p05_02", x: 0.6003, y: 0.2681, w: 0.1269, h: 0.0882 },
       { id: "p05_03", x: 0.4374, y: 0.2681, w: 0.1269, h: 0.0882 },
@@ -39,7 +52,7 @@ window.BOOK = {
       { id: "p05_31", x: 0.2041, y: 0.8563, w: 0.1081, h: 0.0809 },
       { id: "p05_32", x: 0.0806, y: 0.8563, w: 0.1081, h: 0.0809 },
     ] },
-    { n: 6, title: "شكل الحروف في أول الكلمة", image: "pages/p-06.jpg", tiles: [
+    { n: 6, title: "شكل الحروف في أول الكلمة", nl: "Letters aan het begin van een woord", image: "pages/p-06.jpg", tiles: [
       { id: "p06_01", x: 0.7307, y: 0.2621, w: 0.1338, h: 0.1002 },
       { id: "p06_02", x: 0.5815, y: 0.2621, w: 0.1304, h: 0.1002 },
       { id: "p06_03", x: 0.4322, y: 0.2621, w: 0.1286, h: 0.1002 },
@@ -70,7 +83,7 @@ window.BOOK = {
       { id: "p06_28", x: 0.4322, y: 0.8527, w: 0.1286, h: 0.0918 },
       { id: "p06_29", x: 0.2830, y: 0.8527, w: 0.1304, h: 0.0918 },
     ] },
-    { n: 7, title: "شكل الحروف في وسط الكلمة", image: "pages/p-07.jpg", tiles: [
+    { n: 7, title: "شكل الحروف في وسط الكلمة", nl: "Letters in het midden van een woord", image: "pages/p-07.jpg", tiles: [
       { id: "p07_01", x: 0.7307, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p07_02", x: 0.5815, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p07_03", x: 0.4305, y: 0.2729, w: 0.1321, h: 0.0906 },
@@ -101,7 +114,7 @@ window.BOOK = {
       { id: "p07_28", x: 0.4305, y: 0.8539, w: 0.1321, h: 0.0906 },
       { id: "p07_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
     ] },
-    { n: 8, title: "شكل الحروف في آخر الكلمة", image: "pages/p-08.jpg", tiles: [
+    { n: 8, title: "شكل الحروف في آخر الكلمة", nl: "Letters aan het eind van een woord", image: "pages/p-08.jpg", tiles: [
       { id: "p08_01", x: 0.7273, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p08_02", x: 0.5780, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p08_03", x: 0.4271, y: 0.2729, w: 0.1321, h: 0.0906 },
@@ -132,7 +145,7 @@ window.BOOK = {
       { id: "p08_28", x: 0.4271, y: 0.8539, w: 0.1321, h: 0.0906 },
       { id: "p08_29", x: 0.2779, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 9, title: "آخر الكلمة بعد الحروف التي لا تقبل الاتصال", image: "pages/p-09.jpg", tiles: [
+    { n: 9, title: "آخر الكلمة بعد الحروف التي لا تقبل الاتصال", nl: "Woordeinde na letters die niet verbinden", image: "pages/p-09.jpg", tiles: [
       { id: "p09_01", x: 0.7324, y: 0.2669, w: 0.1321, h: 0.0990 },
       { id: "p09_02", x: 0.5832, y: 0.2669, w: 0.1304, h: 0.0990 },
       { id: "p09_03", x: 0.4340, y: 0.2669, w: 0.1304, h: 0.0990 },
@@ -163,7 +176,7 @@ window.BOOK = {
       { id: "p09_28", x: 0.4340, y: 0.8539, w: 0.1304, h: 0.0906 },
       { id: "p09_29", x: 0.2847, y: 0.8539, w: 0.1286, h: 0.0906 },
     ] },
-    { n: 10, title: "حركة الفتحة", image: "pages/p-10.jpg", tiles: [
+    { n: 10, title: "حركة الفتحة", nl: "Fatha", image: "pages/p-10.jpg", tiles: [
       { id: "p10_01", x: 0.7307, y: 0.2633, w: 0.1321, h: 0.0990 },
       { id: "p10_02", x: 0.5798, y: 0.2633, w: 0.1321, h: 0.0990 },
       { id: "p10_03", x: 0.4408, y: 0.2633, w: 0.1201, h: 0.0990 },
@@ -195,7 +208,7 @@ window.BOOK = {
       { id: "p10_29", x: 0.2847, y: 0.8514, w: 0.1269, h: 0.0906 },
       { id: "p10_30", x: 0.1338, y: 0.8514, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 11, title: "حركة الكسرة", image: "pages/p-11.jpg", tiles: [
+    { n: 11, title: "حركة الكسرة", nl: "Kasra", image: "pages/p-11.jpg", tiles: [
       { id: "p11_01", x: 0.7307, y: 0.2585, w: 0.1286, h: 0.0966 },
       { id: "p11_02", x: 0.5832, y: 0.2585, w: 0.1269, h: 0.0966 },
       { id: "p11_03", x: 0.4391, y: 0.2585, w: 0.1252, h: 0.0966 },
@@ -227,7 +240,7 @@ window.BOOK = {
       { id: "p11_29", x: 0.2950, y: 0.8333, w: 0.1235, h: 0.0870 },
       { id: "p11_30", x: 0.1475, y: 0.8333, w: 0.1269, h: 0.0870 },
     ] },
-    { n: 12, title: "حركة الضمة", image: "pages/p-12.jpg", tiles: [
+    { n: 12, title: "حركة الضمة", nl: "Damma", image: "pages/p-12.jpg", tiles: [
       { id: "p12_01", x: 0.7324, y: 0.2669, w: 0.1321, h: 0.0990 },
       { id: "p12_02", x: 0.5832, y: 0.2669, w: 0.1286, h: 0.0990 },
       { id: "p12_03", x: 0.4340, y: 0.2669, w: 0.1286, h: 0.0990 },
@@ -259,7 +272,7 @@ window.BOOK = {
       { id: "p12_29", x: 0.2847, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p12_30", x: 0.1355, y: 0.8539, w: 0.1286, h: 0.0906 },
     ] },
-    { n: 13, title: "السكون", image: "pages/p-13.jpg", tiles: [
+    { n: 13, title: "السكون", nl: "Soekoen", image: "pages/p-13.jpg", tiles: [
       { id: "p13_01", x: 0.7358, y: 0.2609, w: 0.1321, h: 0.1014 },
       { id: "p13_02", x: 0.5866, y: 0.2609, w: 0.1304, h: 0.1014 },
       { id: "p13_03", x: 0.4357, y: 0.2609, w: 0.1321, h: 0.1014 },
@@ -291,7 +304,7 @@ window.BOOK = {
       { id: "p13_29", x: 0.2864, y: 0.8539, w: 0.1304, h: 0.0906 },
       { id: "p13_30", x: 0.1355, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 14, title: "الألف المدية", image: "pages/p-14.jpg", tiles: [
+    { n: 14, title: "الألف المدية", nl: "De lange alif (alif madd)", image: "pages/p-14.jpg", tiles: [
       { id: "p14_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p14_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p14_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -323,7 +336,7 @@ window.BOOK = {
       { id: "p14_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p14_30", x: 0.1304, y: 0.8539, w: 0.1321, h: 0.0906 },
     ] },
-    { n: 15, title: "الألف الخنجرية", image: "pages/p-15.jpg", tiles: [
+    { n: 15, title: "الألف الخنجرية", nl: "De kleine alif (alif khandjariyya)", image: "pages/p-15.jpg", tiles: [
       { id: "p15_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p15_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p15_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -355,7 +368,7 @@ window.BOOK = {
       { id: "p15_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p15_30", x: 0.1304, y: 0.8539, w: 0.1321, h: 0.0906 },
     ] },
-    { n: 16, title: "الياء المدية", image: "pages/p-16.jpg", tiles: [
+    { n: 16, title: "الياء المدية", nl: "De lange yaa (yaa madd)", image: "pages/p-16.jpg", tiles: [
       { id: "p16_01", x: 0.7376, y: 0.2669, w: 0.1321, h: 0.0990 },
       { id: "p16_02", x: 0.5883, y: 0.2669, w: 0.1286, h: 0.0990 },
       { id: "p16_03", x: 0.4391, y: 0.2669, w: 0.1286, h: 0.0990 },
@@ -387,7 +400,7 @@ window.BOOK = {
       { id: "p16_29", x: 0.2899, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p16_30", x: 0.1407, y: 0.8539, w: 0.1286, h: 0.0906 },
     ] },
-    { n: 17, title: "الواو المدية", image: "pages/p-17.jpg", tiles: [
+    { n: 17, title: "الواو المدية", nl: "De lange waw (waw madd)", image: "pages/p-17.jpg", tiles: [
       { id: "p17_01", x: 0.7376, y: 0.2657, w: 0.1321, h: 0.0990 },
       { id: "p17_02", x: 0.5883, y: 0.2657, w: 0.1304, h: 0.0990 },
       { id: "p17_03", x: 0.4391, y: 0.2657, w: 0.1304, h: 0.0990 },
@@ -419,9 +432,9 @@ window.BOOK = {
       { id: "p17_29", x: 0.2899, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p17_30", x: 0.1407, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 18, title: "تدريبات", image: "pages/p-18.jpg", tiles: [
+    { n: 18, title: "تدريبات", nl: "Oefeningen", image: "pages/p-18.jpg", tiles: [
     ] },
-    { n: 19, title: "الشدة", image: "pages/p-19.jpg", tiles: [
+    { n: 19, title: "الشدة", nl: "Shadda", image: "pages/p-19.jpg", tiles: [
       { id: "p19_01", x: 0.7358, y: 0.2609, w: 0.1321, h: 0.1014 },
       { id: "p19_02", x: 0.5866, y: 0.2609, w: 0.1304, h: 0.1014 },
       { id: "p19_03", x: 0.4357, y: 0.2609, w: 0.1304, h: 0.1014 },
@@ -453,7 +466,7 @@ window.BOOK = {
       { id: "p19_29", x: 0.2864, y: 0.8539, w: 0.1304, h: 0.0918 },
       { id: "p19_30", x: 0.1355, y: 0.8539, w: 0.1304, h: 0.0918 },
     ] },
-    { n: 20, title: "تنوين الضم", image: "pages/p-20.jpg", tiles: [
+    { n: 20, title: "تنوين الضم", nl: "Tanwien damma", image: "pages/p-20.jpg", tiles: [
       { id: "p20_01", x: 0.7358, y: 0.2609, w: 0.1321, h: 0.1014 },
       { id: "p20_02", x: 0.5866, y: 0.2609, w: 0.1304, h: 0.1014 },
       { id: "p20_03", x: 0.4357, y: 0.2609, w: 0.1304, h: 0.1014 },
@@ -485,7 +498,7 @@ window.BOOK = {
       { id: "p20_29", x: 0.2864, y: 0.8539, w: 0.1304, h: 0.0918 },
       { id: "p20_30", x: 0.1355, y: 0.8539, w: 0.1304, h: 0.0918 },
     ] },
-    { n: 21, title: "تنوين الفتح", image: "pages/p-21.jpg", tiles: [
+    { n: 21, title: "تنوين الفتح", nl: "Tanwien fatha", image: "pages/p-21.jpg", tiles: [
       { id: "p21_01", x: 0.7307, y: 0.2645, w: 0.1321, h: 0.0990 },
       { id: "p21_02", x: 0.5815, y: 0.2645, w: 0.1304, h: 0.0990 },
       { id: "p21_03", x: 0.4305, y: 0.2645, w: 0.1304, h: 0.0990 },
@@ -517,7 +530,7 @@ window.BOOK = {
       { id: "p21_29", x: 0.2813, y: 0.8539, w: 0.1304, h: 0.0906 },
       { id: "p21_30", x: 0.1321, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 22, title: "تنوين الكسر", image: "pages/p-22.jpg", tiles: [
+    { n: 22, title: "تنوين الكسر", nl: "Tanwien kasra", image: "pages/p-22.jpg", tiles: [
       { id: "p22_01", x: 0.7376, y: 0.2657, w: 0.1321, h: 0.0990 },
       { id: "p22_02", x: 0.5883, y: 0.2657, w: 0.1304, h: 0.0990 },
       { id: "p22_03", x: 0.4391, y: 0.2657, w: 0.1304, h: 0.0990 },
@@ -549,7 +562,7 @@ window.BOOK = {
       { id: "p22_29", x: 0.2899, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p22_30", x: 0.1407, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 23, title: "التاء المربوطة", image: "pages/p-23.jpg", tiles: [
+    { n: 23, title: "التاء المربوطة", nl: "Taa marboeta", image: "pages/p-23.jpg", tiles: [
       { id: "p23_01", x: 0.7376, y: 0.2657, w: 0.1321, h: 0.0990 },
       { id: "p23_02", x: 0.5883, y: 0.2657, w: 0.1286, h: 0.0990 },
       { id: "p23_03", x: 0.4391, y: 0.2657, w: 0.1304, h: 0.0990 },
@@ -581,7 +594,7 @@ window.BOOK = {
       { id: "p23_29", x: 0.2899, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p23_30", x: 0.1389, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 24, title: "الألف المقصورة", image: "pages/p-24.jpg", tiles: [
+    { n: 24, title: "الألف المقصورة", nl: "Alif maqsoera", image: "pages/p-24.jpg", tiles: [
       { id: "p24_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p24_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p24_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -613,9 +626,9 @@ window.BOOK = {
       { id: "p24_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p24_30", x: 0.1304, y: 0.8539, w: 0.1321, h: 0.0906 },
     ] },
-    { n: 25, title: "تدريبات", image: "pages/p-25.jpg", tiles: [
+    { n: 25, title: "تدريبات", nl: "Oefeningen", image: "pages/p-25.jpg", tiles: [
     ] },
-    { n: 26, title: "هاء الضمير", image: "pages/p-26.jpg", tiles: [
+    { n: 26, title: "هاء الضمير", nl: "De haa van het voornaamwoord", image: "pages/p-26.jpg", tiles: [
       { id: "p26_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p26_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p26_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -647,7 +660,7 @@ window.BOOK = {
       { id: "p26_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p26_30", x: 0.1304, y: 0.8539, w: 0.1321, h: 0.0906 },
     ] },
-    { n: 27, title: "هاء الضمير – مد الصلة الصغرى", image: "pages/p-27.jpg", tiles: [
+    { n: 27, title: "هاء الضمير – مد الصلة الصغرى", nl: "Haa van het voornaamwoord – korte verlenging", image: "pages/p-27.jpg", tiles: [
       { id: "p27_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p27_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p27_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -679,7 +692,7 @@ window.BOOK = {
       { id: "p27_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p27_30", x: 0.1304, y: 0.8539, w: 0.1321, h: 0.0906 },
     ] },
-    { n: 28, title: "لفظ الجلالة", image: "pages/p-28.jpg", tiles: [
+    { n: 28, title: "لفظ الجلالة", nl: "De naam Allah", image: "pages/p-28.jpg", tiles: [
       { id: "p28_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p28_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p28_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -711,7 +724,7 @@ window.BOOK = {
       { id: "p28_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p28_30", x: 0.1304, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 29, title: "إشارة المد في المصحف", image: "pages/p-29.jpg", tiles: [
+    { n: 29, title: "إشارة المد في المصحف", nl: "Het verlengingsteken in de mushaf", image: "pages/p-29.jpg", tiles: [
       { id: "p29_01", x: 0.7290, y: 0.2729, w: 0.1321, h: 0.0906 },
       { id: "p29_02", x: 0.5798, y: 0.2729, w: 0.1286, h: 0.0906 },
       { id: "p29_03", x: 0.4305, y: 0.2729, w: 0.1304, h: 0.0906 },
@@ -743,7 +756,7 @@ window.BOOK = {
       { id: "p29_29", x: 0.2813, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p29_30", x: 0.1304, y: 0.8539, w: 0.1321, h: 0.0906 },
     ] },
-    { n: 30, title: "النون الساكنة والتنوين – الإظهار", image: "pages/p-30.jpg", tiles: [
+    { n: 30, title: "النون الساكنة والتنوين – الإظهار", nl: "Noen sakina en tanwien – izhaar", image: "pages/p-30.jpg", tiles: [
       { id: "p30_01", x: 0.7461, y: 0.2198, w: 0.1475, h: 0.1099 },
       { id: "p30_02", x: 0.5832, y: 0.2198, w: 0.1407, h: 0.1099 },
       { id: "p30_03", x: 0.4185, y: 0.2198, w: 0.1424, h: 0.1099 },
@@ -775,9 +788,9 @@ window.BOOK = {
       { id: "p30_29", x: 0.2539, y: 0.8671, w: 0.1424, h: 0.0978 },
       { id: "p30_30", x: 0.0892, y: 0.8671, w: 0.1424, h: 0.0978 },
     ] },
-    { n: 31, title: "النون الساكنة والتنوين – الإدغام والإخفاء", image: "pages/p-31.jpg", tiles: [
+    { n: 31, title: "النون الساكنة والتنوين – الإدغام والإخفاء", nl: "Noen sakina en tanwien – idghaam en ikhfaa", image: "pages/p-31.jpg", tiles: [
     ] },
-    { n: 32, title: "النون الساكنة والتنوين – الإقلاب", image: "pages/p-32.jpg", tiles: [
+    { n: 32, title: "النون الساكنة والتنوين – الإقلاب", nl: "Noen sakina en tanwien – iqlaab", image: "pages/p-32.jpg", tiles: [
       { id: "p32_01", x: 0.7461, y: 0.2198, w: 0.1475, h: 0.1099 },
       { id: "p32_02", x: 0.5832, y: 0.2198, w: 0.1407, h: 0.1099 },
       { id: "p32_03", x: 0.4185, y: 0.2198, w: 0.1424, h: 0.1099 },
@@ -809,7 +822,7 @@ window.BOOK = {
       { id: "p32_29", x: 0.2539, y: 0.8671, w: 0.1424, h: 0.0978 },
       { id: "p32_30", x: 0.0892, y: 0.8671, w: 0.1424, h: 0.0978 },
     ] },
-    { n: 33, title: "همزة الوصل", image: "pages/p-33.jpg", tiles: [
+    { n: 33, title: "همزة الوصل", nl: "Hamzat al-wasl", image: "pages/p-33.jpg", tiles: [
       { id: "p33_01", x: 0.7324, y: 0.2657, w: 0.1321, h: 0.0990 },
       { id: "p33_02", x: 0.5832, y: 0.2657, w: 0.1286, h: 0.0990 },
       { id: "p33_03", x: 0.4322, y: 0.2657, w: 0.1321, h: 0.0990 },
@@ -841,7 +854,7 @@ window.BOOK = {
       { id: "p33_29", x: 0.2847, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p33_30", x: 0.1338, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 34, title: "السكون المدور وألف التفريق", image: "pages/p-34.jpg", tiles: [
+    { n: 34, title: "السكون المدور وألف التفريق", nl: "Ronde soekoen en scheidings-alif", image: "pages/p-34.jpg", tiles: [
       { id: "p34_01", x: 0.7324, y: 0.2742, w: 0.1321, h: 0.0906 },
       { id: "p34_02", x: 0.5832, y: 0.2742, w: 0.1286, h: 0.0906 },
       { id: "p34_03", x: 0.4322, y: 0.2742, w: 0.1304, h: 0.0906 },
@@ -873,7 +886,7 @@ window.BOOK = {
       { id: "p34_29", x: 0.2847, y: 0.8539, w: 0.1269, h: 0.0906 },
       { id: "p34_30", x: 0.1338, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 35, title: "الحروف المقطعة", image: "pages/p-35.jpg", tiles: [
+    { n: 35, title: "الحروف المقطعة", nl: "De losse letters aan het begin van soera's", image: "pages/p-35.jpg", tiles: [
       { id: "p35_01", x: 0.7324, y: 0.6244, w: 0.1321, h: 0.0906 },
       { id: "p35_02", x: 0.5832, y: 0.6244, w: 0.1286, h: 0.0906 },
       { id: "p35_03", x: 0.4322, y: 0.6244, w: 0.1321, h: 0.0906 },
@@ -889,7 +902,7 @@ window.BOOK = {
       { id: "p35_13", x: 0.3533, y: 0.8575, w: 0.1304, h: 0.0906 },
       { id: "p35_14", x: 0.2041, y: 0.8575, w: 0.1286, h: 0.0906 },
     ] },
-    { n: 36, title: "اللام القمرية", image: "pages/p-36.jpg", tiles: [
+    { n: 36, title: "اللام القمرية", nl: "De maan-lam (al-qamariyya)", image: "pages/p-36.jpg", tiles: [
       { id: "p36_01", x: 0.7324, y: 0.2657, w: 0.1321, h: 0.0990 },
       { id: "p36_02", x: 0.5832, y: 0.2657, w: 0.1286, h: 0.0990 },
       { id: "p36_03", x: 0.4322, y: 0.2657, w: 0.1321, h: 0.0990 },
@@ -921,7 +934,7 @@ window.BOOK = {
       { id: "p36_29", x: 0.2847, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p36_30", x: 0.1338, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 37, title: "اللام الشمسية", image: "pages/p-37.jpg", tiles: [
+    { n: 37, title: "اللام الشمسية", nl: "De zon-lam (ash-shamsiyya)", image: "pages/p-37.jpg", tiles: [
       { id: "p37_01", x: 0.7324, y: 0.2657, w: 0.1321, h: 0.0990 },
       { id: "p37_02", x: 0.5832, y: 0.2657, w: 0.1286, h: 0.0990 },
       { id: "p37_03", x: 0.4322, y: 0.2657, w: 0.1321, h: 0.0990 },
@@ -953,11 +966,11 @@ window.BOOK = {
       { id: "p37_29", x: 0.2847, y: 0.8539, w: 0.1286, h: 0.0906 },
       { id: "p37_30", x: 0.1338, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 38, title: "بعض رموز القرآن", image: "pages/p-38.jpg", tiles: [
+    { n: 38, title: "بعض رموز القرآن", nl: "Tekens in de Koran (1)", image: "pages/p-38.jpg", tiles: [
     ] },
-    { n: 39, title: "بعض رموز القرآن", image: "pages/p-39.jpg", tiles: [
+    { n: 39, title: "بعض رموز القرآن", nl: "Tekens in de Koran (2)", image: "pages/p-39.jpg", tiles: [
     ] },
-    { n: 40, title: "أمثلة على الشدتين في كلمة", image: "pages/p-40.jpg", tiles: [
+    { n: 40, title: "أمثلة على الشدتين في كلمة", nl: "Twee keer shadda in één woord", image: "pages/p-40.jpg", tiles: [
       { id: "p40_01", x: 0.7324, y: 0.2742, w: 0.1321, h: 0.0906 },
       { id: "p40_02", x: 0.5832, y: 0.2742, w: 0.1286, h: 0.0906 },
       { id: "p40_03", x: 0.4322, y: 0.2742, w: 0.1304, h: 0.0906 },
@@ -989,21 +1002,21 @@ window.BOOK = {
       { id: "p40_29", x: 0.2847, y: 0.8539, w: 0.1269, h: 0.0906 },
       { id: "p40_30", x: 0.1338, y: 0.8539, w: 0.1304, h: 0.0906 },
     ] },
-    { n: 41, title: "تدريبات – لام قبل ال التعريف", image: "pages/p-41.jpg", tiles: [
+    { n: 41, title: "تدريبات – لام قبل ال التعريف", nl: "Oefeningen – lam vóór al", image: "pages/p-41.jpg", tiles: [
     ] },
-    { n: 42, title: "تدريبات عامة", image: "pages/p-42.jpg", tiles: [
+    { n: 42, title: "تدريبات عامة", nl: "Algemene oefeningen 1", image: "pages/p-42.jpg", tiles: [
     ] },
-    { n: 43, title: "تدريبات عامة", image: "pages/p-43.jpg", tiles: [
+    { n: 43, title: "تدريبات عامة", nl: "Algemene oefeningen 2", image: "pages/p-43.jpg", tiles: [
     ] },
-    { n: 44, title: "تدريبات عامة", image: "pages/p-44.jpg", tiles: [
+    { n: 44, title: "تدريبات عامة", nl: "Algemene oefeningen 3", image: "pages/p-44.jpg", tiles: [
     ] },
-    { n: 45, title: "تدريبات عامة", image: "pages/p-45.jpg", tiles: [
+    { n: 45, title: "تدريبات عامة", nl: "Algemene oefeningen 4", image: "pages/p-45.jpg", tiles: [
     ] },
-    { n: 46, title: "تدريبات عامة", image: "pages/p-46.jpg", tiles: [
+    { n: 46, title: "تدريبات عامة", nl: "Algemene oefeningen 5", image: "pages/p-46.jpg", tiles: [
     ] },
-    { n: 47, title: "تدريبات عامة", image: "pages/p-47.jpg", tiles: [
+    { n: 47, title: "تدريبات عامة", nl: "Algemene oefeningen 6", image: "pages/p-47.jpg", tiles: [
     ] },
-    { n: 48, title: "تدريبات نطق الألف والهاء والعين والحاء", image: "pages/p-48.jpg", tiles: [
+    { n: 48, title: "تدريبات نطق الألف والهاء والعين والحاء", nl: "Uitspraak: alif, haa, 'ayn en Haa", image: "pages/p-48.jpg", tiles: [
     ] },
   ]
 };

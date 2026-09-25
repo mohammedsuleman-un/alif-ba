@@ -7,7 +7,8 @@
 
   const $ = (id) => document.getElementById(id);
   const els = {
-    home: $("home"), lesson: $("lesson"), lessons: $("lessons"),
+    home: $("home"), lesson: $("lesson"), toc: $("toc"),
+    continueBtn: $("btnContinue"), continueNum: $("continueNum"),
     num: $("lessonNum"), title: $("lessonTitle"), img: $("pageImg"),
     stage: $("stage"), hotspots: $("hotspots"), stageWrap: $("stageWrap"),
     prev: $("btnPrev"), next: $("btnNext"), dots: $("pageDots"),
@@ -91,17 +92,51 @@
   }
 
   // ---------- Startscherm ----------
+  // Inhoudsopgave: lessen gegroepeerd per hoofdstuk, met voortgang.
+  const CHEV = `<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
+  const heardCount = (p) => p.tiles.filter((t) => heard.has(t.id)).length;
+
   function renderHome() {
-    els.lessons.innerHTML = "";
-    BOOK.pages.forEach((p, i) => {
-      const li = document.createElement("li");
-      const b = document.createElement("button");
-      b.className = "lesson-card" + (lessonDone(p) ? " done" : "");
-      b.innerHTML = `<img loading="lazy" src="${p.image}" alt=""><span class="n">${i + 1}</span>
-        <span class="meta"><span class="t" lang="ar">${p.title}</span></span>`;
-      b.onclick = () => go(i);
-      li.appendChild(b);
-      els.lessons.appendChild(li);
+    const last = store.get("last", null);
+    els.continueBtn.hidden = last == null;
+    if (last != null) els.continueNum.textContent = last + 1;
+
+    const chapters = BOOK.chapters || [{ ar: BOOK.title, nl: "", from: -Infinity, to: Infinity }];
+    els.toc.innerHTML = "";
+    chapters.forEach((ch, ci) => {
+      const lessons = BOOK.pages.map((p, i) => ({ p, i })).filter(({ p }) => p.n >= ch.from && p.n <= ch.to);
+      if (!lessons.length) return;
+      const total = lessons.reduce((s, { p }) => s + p.tiles.length, 0);
+      const done = lessons.reduce((s, { p }) => s + heardCount(p), 0);
+      const pct = total ? Math.round((done / total) * 100) : 0;
+
+      const det = document.createElement("details");
+      det.className = "chapter";
+      det.open = last != null ? lessons.some(({ i }) => i === last) : ci === 0;
+      det.innerHTML = `
+        <summary>
+          <span class="ch-num">${ci + 1}</span>
+          <span class="ch-text"><span class="ch-ar" lang="ar">${ch.ar}</span><span class="ch-nl">${ch.nl}</span></span>
+          <span class="ch-meta">${lessons.length} lessen<span class="bar-mini"><i style="width:${pct}%"></i></span></span>
+          ${CHEV}
+        </summary>
+        <ol class="toc-list"></ol>`;
+      const ol = det.querySelector("ol");
+      lessons.forEach(({ p, i }) => {
+        const n = heardCount(p);
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.className = "toc-item" + (lessonDone(p) ? " done" : "") + (i === last ? " last" : "");
+        b.innerHTML = `
+          <span class="n">${i + 1}</span>
+          <img loading="lazy" src="${p.image}" alt="">
+          <span class="t"><span class="t-ar" lang="ar">${p.title}</span><span class="t-nl">${p.nl || ""}</span></span>
+          <span class="st">${lessonDone(p) ? "★" : n ? `${n}/${p.tiles.length}` : ""}</span>`;
+        b.onclick = () => go(i);
+        li.appendChild(b);
+        ol.appendChild(li);
+      });
+      els.toc.appendChild(det);
     });
   }
 
@@ -113,6 +148,7 @@
     const p = BOOK.pages[current];
     els.num.textContent = current + 1;
     els.title.textContent = p.title;
+    store.set("last", current);
     els.img.src = p.image;
     els.dots.textContent = `${current + 1} / ${BOOK.pages.length}`;
     els.prev.disabled = current === 0;
@@ -164,6 +200,7 @@
   }
 
   els.home_btn.onclick = () => go(null);
+  els.continueBtn.onclick = () => go(store.get("last", 0));
   els.prev.onclick = () => current > 0 && go(current - 1);
   els.next.onclick = () => current < BOOK.pages.length - 1 && go(current + 1);
   els.playAll.onclick = playAll;
@@ -272,9 +309,12 @@
         "window.BOOK = {",
         `  title: ${JSON.stringify(BOOK.title)},`,
         `  cover: ${JSON.stringify(BOOK.cover)},`,
+        "  chapters: [",
+        ...(BOOK.chapters || []).map((c) => `    ${JSON.stringify(c).replace(/"(\w+)":/g, "$1: ")},`),
+        "  ],",
         "  pages: [",
         ...BOOK.pages.flatMap((p) => [
-          `    { n: ${p.n}, title: ${JSON.stringify(p.title)}, image: ${JSON.stringify(p.image)}, tiles: [`,
+          `    { n: ${p.n}, title: ${JSON.stringify(p.title)}, nl: ${JSON.stringify(p.nl || "")}, image: ${JSON.stringify(p.image)}, tiles: [`,
           ...p.tiles.map((t) => `      { id: "${t.id}", x: ${f(t.x)}, y: ${f(t.y)}, w: ${f(t.w)}, h: ${f(t.h)}${t.audio ? `, audio: ${JSON.stringify(t.audio)}` : ""} },`),
           "    ] },",
         ]),

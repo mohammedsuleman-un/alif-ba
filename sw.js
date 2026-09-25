@@ -1,4 +1,4 @@
-const VERSION = "v1";
+const VERSION = "v2";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png",
