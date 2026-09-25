@@ -88,7 +88,15 @@
   player.preload = "auto";
   let playToken = 0;
 
-  function audioSrc(tile) { return AUDIO_DIR + (tile.audio || tile.id + ".mp3"); }
+  // Bestandsnaam: Page<les>-<vierkant>.m4a (of .mp3), bijv. les 1 vierkant 3 = Page1-03.m4a.
+  // Een tegel kan ook een eigen bestand hebben via het veld "audio".
+  function audioSources(tile) {
+    if (tile.audio) return [AUDIO_DIR + tile.audio];
+    const lesson = BOOK.pages.findIndex((p) => p.tiles.includes(tile)) + 1;
+    const nr = tile.id.split("_")[1];
+    const base = `${AUDIO_DIR}Page${lesson}-${nr}`;
+    return [base + ".m4a", base + ".mp3"];
+  }
 
   // Speelt één vierkant af. Resolvet true als het geluid helemaal is afgespeeld.
   function playTile(tile, el, quiet = false) {
@@ -103,13 +111,20 @@
         resolve(ok);
       };
       player.onended = () => { markHeard(tile.id); el.classList.add("heard"); done(true); };
-      player.onerror = () => {
-        el.classList.remove("missing"); void el.offsetWidth; el.classList.add("missing");
-        if (!quiet) toast(T().missing);
-        done(false);
+      const sources = audioSources(tile);
+      const tryNext = () => {
+        if (token !== playToken) return done(false);
+        const src = sources.shift();
+        if (!src) {
+          el.classList.remove("missing"); void el.offsetWidth; el.classList.add("missing");
+          if (!quiet) toast(T().missing);
+          return done(false);
+        }
+        player.src = src;
+        player.play().catch(() => { /* onerror probeert het volgende formaat */ });
       };
-      player.src = audioSrc(tile);
-      player.play().catch(() => { /* onerror handelt ontbrekende bestanden af */ });
+      player.onerror = tryNext;
+      tryNext();
     });
   }
 

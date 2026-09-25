@@ -11,13 +11,12 @@ Werkt in de browser en kan op telefoon/tablet worden geïnstalleerd ("Toevoegen 
 - `opnamelijst.csv` – lijst van alle 912 benodigde opnames met bestandsnaam (openen in Excel)
 
 ## Opnames toevoegen
-Zet elk mp3-bestand in `audio/` met de naam uit `opnamelijst.csv`, bijvoorbeeld `p10_01.mp3`.
-- `p10` = pagina 10 van de PDF
-- `01` = vierkant 1; nummering loopt **van rechts naar links, van boven naar beneden** (leesvolgorde)
+Zet elk bestand in `audio/` met de naam uit `opnamelijst.csv`: **`Page<les>-<vierkant>.m4a`** (of `.mp3`).
+- Voorbeeld: les 1, vierkant 3 → `Page1-03.m4a`
+- Het lesnummer is het nummer dat in de app staat; vierkanten tellen **van rechts naar links, van boven naar beneden**
+- De kolom *opgenomen* in de lijst laat zien welke er al zijn
 
 Ontbreekt een opname, dan wiebelt het vierkant en verschijnt "Opname volgt nog".
-Na het vervangen van opnames: verhoog `VERSION` in `sw.js` zodat telefoons de nieuwe versie ophalen.
-
 ## Pagina's zonder vierkanten (tekstregels, tabellen)
 Open de app met `?bewerk` achter het adres (bijv. `http://localhost:8080/?bewerk`), ga naar de pagina,
 sleep rechthoeken over de woorden/regels, en klik op **Exporteer book-data.js**. Vervang daarna het bestaande bestand.
