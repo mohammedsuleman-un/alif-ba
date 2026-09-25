@@ -1,4 +1,4 @@
-const VERSION = "v3";
+const VERSION = "v4";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png",
@@ -49,9 +49,15 @@ const CORE = [
   "pages/p-48.jpg",
 ];
 
-// App en pagina's direct offline beschikbaar; audio wordt bewaard zodra hij één keer is afgespeeld.
+// Strategie:
+// - App-bestanden (html/js/css/data): eerst het netwerk, zodat updates meteen zichtbaar zijn; offline uit de cache.
+// - Pagina-afbeeldingen en audio: eerst de cache (snel en offline); audio wordt bewaard na één keer afspelen.
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(VERSION).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches.open(VERSION)
+      .then((c) => c.addAll(CORE.map((u) => new Request(u, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (e) => {
@@ -62,18 +68,30 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+const isMedia = (url) => /\.(jpg|png|mp3|m4a)$/i.test(url.pathname);
+
+function saveCopy(req, res) {
+  if (res.ok && res.status === 200) {
+    const copy = res.clone();
+    caches.open(VERSION).then((c) => c.put(req, copy));
+  }
+  return res;
+}
+
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then((hit) =>
-      hit ||
-      fetch(e.request).then((res) => {
-        if (res.ok && res.status === 200 && new URL(e.request.url).origin === location.origin) {
-          const copy = res.clone();
-          caches.open(VERSION).then((c) => c.put(e.request, copy));
-        }
-        return res;
-      })
-    )
-  );
+  const url = new URL(e.request.url);
+  if (e.request.method !== "GET" || url.origin !== location.origin) return;
+
+  if (isMedia(url)) {
+    e.respondWith(
+      caches.match(e.request, { ignoreSearch: true })
+        .then((hit) => hit || fetch(e.request).then((res) => saveCopy(e.request, res)))
+    );
+  } else {
+    e.respondWith(
+      fetch(e.request, { cache: "no-cache" })
+        .then((res) => saveCopy(e.request, res))
+        .catch(() => caches.match(e.request, { ignoreSearch: true }))
+    );
+  }
 });
