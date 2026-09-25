@@ -14,6 +14,10 @@
     prev: $("btnPrev"), next: $("btnNext"), dots: $("pageDots"),
     playAll: $("btnPlayAll"), home_btn: $("btnHome"), toast: $("toast"),
     editBar: $("editBar"), exportBtn: $("btnExport"),
+    chapterLine: $("chapterLine"), chapterDots: $("chapterDots"),
+    splash: $("splash"), splashKicker: $("splashKicker"), splashNum: $("splashNum"),
+    splashAr: $("splashAr"), splashSub: $("splashSub"), splashCount: $("splashCount"),
+    splashGo: $("splashGo"), splashGoText: $("splashGoText"),
   };
 
   // ---------- Voortgang (per apparaat) ----------
@@ -39,6 +43,7 @@
       noTiles: "لا توجد مربعات في هذه الصفحة بعد",
       home: "العودة إلى الفهرس", playAll: "تشغيل الكل", next: "الصفحة التالية", prev: "الصفحة السابقة",
       tile: (n) => `مربع ${n}`,
+      chapter: (n) => `الفصل ${n}`, lessonOf: (i, n) => `الدرس ${i} من ${n}`, start: "ابدأ",
     },
     nl: {
       dir: "ltr",
@@ -51,6 +56,7 @@
       noTiles: "Deze pagina heeft nog geen vierkanten",
       home: "Terug naar inhoudsopgave", playAll: "Alles afspelen", next: "Volgende pagina", prev: "Vorige pagina",
       tile: (n) => `Vierkant ${n}`,
+      chapter: (n) => `Hoofdstuk ${n}`, lessonOf: (i, n) => `Les ${i} van ${n}`, start: "Beginnen",
     },
     en: {
       dir: "ltr",
@@ -63,6 +69,7 @@
       noTiles: "This page has no squares yet",
       home: "Back to contents", playAll: "Play all", next: "Next page", prev: "Previous page",
       tile: (n) => `Square ${n}`,
+      chapter: (n) => `Chapter ${n}`, lessonOf: (i, n) => `Lesson ${i} of ${n}`, start: "Start",
     },
   };
   const guessLang = () => {
@@ -216,6 +223,46 @@
   // ---------- Lesscherm ----------
   let current = 0;
 
+  // Hoofdstuk van een les (index in BOOK.pages): nummer, gegevens en de lessen erin.
+  function chapterOf(i) {
+    const n = BOOK.pages[i].n;
+    const ci = (BOOK.chapters || []).findIndex((c) => n >= c.from && n <= c.to);
+    if (ci < 0) return null;
+    const ch = BOOK.chapters[ci];
+    const list = BOOK.pages.map((p, j) => j).filter((j) => BOOK.pages[j].n >= ch.from && BOOK.pages[j].n <= ch.to);
+    return { ci, ch, list };
+  }
+  const chapterName = (ch) => (lang === "ar" ? ch.ar : ch[lang] || ch.ar);
+
+  function renderChapter() {
+    const c = chapterOf(current);
+    els.chapterLine.textContent = c ? `${T().chapter(c.ci + 1)} · ${chapterName(c.ch)}` : "";
+    els.chapterDots.innerHTML = "";
+    if (!c) return;
+    c.list.forEach((j, k) => {
+      const d = document.createElement("i");
+      if (j === current) d.className = "here";
+      else if (lessonDone(BOOK.pages[j])) d.className = "done";
+      d.title = T().lessonOf(k + 1, c.list.length);
+      els.chapterDots.appendChild(d);
+    });
+  }
+
+  // Kaart die verschijnt als je naar een ander hoofdstuk bladert.
+  function showSplash(c) {
+    els.splashKicker.textContent = T().chapter(c.ci + 1);
+    els.splashNum.textContent = c.ci + 1;
+    els.splashAr.textContent = c.ch.ar;
+    els.splashSub.textContent = sub(c.ch);
+    els.splashSub.hidden = !els.splashSub.textContent;
+    els.splashCount.textContent = T().lessons(c.list.length);
+    els.splashGoText.textContent = T().start;
+    els.splash.hidden = false;
+    els.splashGo.focus();
+  }
+  const hideSplash = () => { els.splash.hidden = true; };
+  els.splash.onclick = hideSplash;
+
   function renderPage() {
     stopAll();
     const p = BOOK.pages[current];
@@ -224,6 +271,7 @@
     store.set("last", current);
     els.img.src = p.image;
     els.dots.textContent = `${current + 1} / ${BOOK.pages.length}`;
+    renderChapter();
     els.prev.disabled = current === 0;
     els.next.disabled = current === BOOK.pages.length - 1;
     renderTiles();
@@ -257,14 +305,23 @@
   // ---------- Navigatie (hash: #/les/3) ----------
   function go(i) { location.hash = i == null ? "" : `#/les/${i + 1}`; }
 
+  // Onthoudt of we via bladeren (knoppen, vegen, pijltjes) binnenkomen, niet via de inhoudsopgave.
+  let paged = false;
+  const page = (i) => { paged = true; go(i); };
+
   function route() {
     const m = location.hash.match(/^#\/les\/(\d+)/);
     if (m) {
+      const prev = els.lesson.hidden ? null : current;
       current = Math.min(Math.max(parseInt(m[1], 10) - 1, 0), BOOK.pages.length - 1);
       els.home.hidden = true;
       els.lesson.hidden = false;
       renderPage();
+      const was = prev == null ? null : chapterOf(prev), now = chapterOf(current);
+      if (paged && was && now && was.ci !== now.ci && !EDIT) showSplash(now);
+      paged = false;
     } else {
+      hideSplash();
       stopAll();
       els.lesson.hidden = true;
       els.home.hidden = false;
@@ -274,8 +331,8 @@
 
   els.home_btn.onclick = () => go(null);
   els.continueBtn.onclick = () => go(store.get("last", 0));
-  els.prev.onclick = () => current > 0 && go(current - 1);
-  els.next.onclick = () => current < BOOK.pages.length - 1 && go(current + 1);
+  els.prev.onclick = () => current > 0 && page(current - 1);
+  els.next.onclick = () => current < BOOK.pages.length - 1 && page(current + 1);
   els.playAll.onclick = playAll;
   document.querySelectorAll("[data-lang]").forEach((b) => (b.onclick = () => {
     lang = b.dataset.lang;
@@ -300,6 +357,10 @@
 
   document.addEventListener("keydown", (e) => {
     if (els.lesson.hidden || EDIT) return;
+    if (!els.splash.hidden) {
+      if (["Escape", "Enter", " "].includes(e.key)) { e.preventDefault(); hideSplash(); }
+      return;
+    }
     if (e.key === "ArrowLeft") els.next.click();
     if (e.key === "ArrowRight") els.prev.click();
     if (e.key === " ") { e.preventDefault(); playAll(); }

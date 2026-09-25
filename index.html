@@ -42,8 +42,11 @@
         <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
       </button>
       <div class="bar-title">
-        <span id="lessonNum" class="num"></span>
-        <span id="lessonTitle" lang="ar" dir="rtl"></span>
+        <span class="bar-row">
+          <span id="lessonNum" class="num"></span>
+          <span id="lessonTitle" lang="ar" dir="rtl"></span>
+        </span>
+        <span id="chapterLine" class="chapter-line"></span>
       </div>
       <button id="btnPlayAll" class="icon-btn play" data-i18n-aria="playAll" aria-label="Alles afspelen">
         <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
@@ -63,7 +66,10 @@
       <button id="btnNext" class="pg-btn" data-i18n-aria="next" aria-label="Volgende pagina">
         <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
       </button>
-      <span id="pageDots" class="dots"></span>
+      <div class="pager-mid">
+        <span id="chapterDots" class="ch-dots" dir="rtl"></span>
+        <span id="pageDots" class="dots"></span>
+      </div>
       <button id="btnPrev" class="pg-btn" data-i18n-aria="prev" aria-label="Vorige pagina">
         <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
       </button>
@@ -75,6 +81,18 @@
       <button id="btnExport">Exporteer book-data.js</button>
     </div>
   </section>
+
+  <!-- Hoofdstukkaart: verschijnt bij het bladeren naar een nieuw hoofdstuk -->
+  <div id="splash" class="splash" hidden>
+    <div class="splash-card" role="dialog" aria-modal="true" aria-labelledby="splashAr">
+      <span id="splashKicker" class="splash-kicker"></span>
+      <span id="splashNum" class="splash-num"></span>
+      <h2 id="splashAr" lang="ar" dir="rtl"></h2>
+      <p id="splashSub" class="splash-sub"></p>
+      <p id="splashCount" class="splash-count"></p>
+      <button id="splashGo" class="continue"><svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg><span id="splashGoText"></span></button>
+    </div>
+  </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
