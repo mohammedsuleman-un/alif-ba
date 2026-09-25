@@ -20,11 +20,16 @@
       <img class="cover" src="pages/p-03.jpg" alt="">
       <div class="home-title">
         <h1 lang="ar" dir="rtl">قاعدة ألف با قرءاني</h1>
-        <p>Inhoudsopgave · tik op een les</p>
+        <p data-i18n="subtitle">Inhoudsopgave · tik op een les</p>
         <button id="btnContinue" class="continue" hidden>
           <svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-          <span>Verder met les <b id="continueNum"></b></span>
+          <span id="continueText"></span>
         </button>
+      </div>
+      <div class="lang" role="group" aria-label="Taal · Language · اللغة">
+        <button data-lang="ar" lang="ar">ع</button>
+        <button data-lang="nl">NL</button>
+        <button data-lang="en">EN</button>
       </div>
     </header>
     <div id="toc" class="toc"></div>
@@ -33,14 +38,14 @@
   <!-- Lesscherm: pagina met klikbare vierkanten -->
   <section id="lesson" class="screen" hidden>
     <nav class="bar">
-      <button id="btnHome" class="icon-btn" aria-label="Terug naar overzicht">
+      <button id="btnHome" class="icon-btn" data-i18n-aria="home" aria-label="Terug naar overzicht">
         <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>
       </button>
       <div class="bar-title">
         <span id="lessonNum" class="num"></span>
         <span id="lessonTitle" lang="ar" dir="rtl"></span>
       </div>
-      <button id="btnPlayAll" class="icon-btn play" aria-label="Alles afspelen">
+      <button id="btnPlayAll" class="icon-btn play" data-i18n-aria="playAll" aria-label="Alles afspelen">
         <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
         <svg class="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
       </button>
@@ -55,11 +60,11 @@
 
     <footer class="pager">
       <!-- Arabisch boek: "volgende" staat links, "vorige" rechts -->
-      <button id="btnNext" class="pg-btn" aria-label="Volgende pagina">
+      <button id="btnNext" class="pg-btn" data-i18n-aria="next" aria-label="Volgende pagina">
         <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
       </button>
       <span id="pageDots" class="dots"></span>
-      <button id="btnPrev" class="pg-btn" aria-label="Vorige pagina">
+      <button id="btnPrev" class="pg-btn" data-i18n-aria="prev" aria-label="Vorige pagina">
         <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
       </button>
     </footer>

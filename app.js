@@ -8,7 +8,7 @@
   const $ = (id) => document.getElementById(id);
   const els = {
     home: $("home"), lesson: $("lesson"), toc: $("toc"),
-    continueBtn: $("btnContinue"), continueNum: $("continueNum"),
+    continueBtn: $("btnContinue"), continueText: $("continueText"),
     num: $("lessonNum"), title: $("lessonTitle"), img: $("pageImg"),
     stage: $("stage"), hotspots: $("hotspots"), stageWrap: $("stageWrap"),
     prev: $("btnPrev"), next: $("btnNext"), dots: $("pageDots"),
@@ -24,6 +24,64 @@
   const heard = new Set(store.get("heard", []));
   const markHeard = (id) => { heard.add(id); store.set("heard", [...heard]); };
   const lessonDone = (p) => p.tiles.length > 0 && p.tiles.every((t) => heard.has(t.id));
+
+  // ---------- Talen voor de bediening (het boek zelf blijft Arabisch) ----------
+  const arLessons = (n) => (n === 1 ? "درس واحد" : n === 2 ? "درسان" : n <= 10 ? `${n} دروس` : `${n} درسًا`);
+  const I18N = {
+    ar: {
+      dir: "rtl",
+      subtitle: "الفهرس · اضغط على درس",
+      continue: (n) => `تابع الدرس ${n}`,
+      lessons: arLessons,
+      missing: "التسجيل قريبًا 🎙️",
+      missingAll: "التسجيلات قريبًا 🎙️",
+      missingSome: (n) => `بعض التسجيلات قريبًا (${n}) 🎙️`,
+      noTiles: "لا توجد مربعات في هذه الصفحة بعد",
+      home: "العودة إلى الفهرس", playAll: "تشغيل الكل", next: "الصفحة التالية", prev: "الصفحة السابقة",
+      tile: (n) => `مربع ${n}`,
+    },
+    nl: {
+      dir: "ltr",
+      subtitle: "Inhoudsopgave · tik op een les",
+      continue: (n) => `Verder met les ${n}`,
+      lessons: (n) => `${n} ${n === 1 ? "les" : "lessen"}`,
+      missing: "Opname volgt nog 🎙️",
+      missingAll: "Opnames volgen nog 🎙️",
+      missingSome: (n) => `${n} opname(s) volgen nog 🎙️`,
+      noTiles: "Deze pagina heeft nog geen vierkanten",
+      home: "Terug naar inhoudsopgave", playAll: "Alles afspelen", next: "Volgende pagina", prev: "Vorige pagina",
+      tile: (n) => `Vierkant ${n}`,
+    },
+    en: {
+      dir: "ltr",
+      subtitle: "Contents · tap a lesson",
+      continue: (n) => `Continue lesson ${n}`,
+      lessons: (n) => `${n} ${n === 1 ? "lesson" : "lessons"}`,
+      missing: "Recording coming soon 🎙️",
+      missingAll: "Recordings coming soon 🎙️",
+      missingSome: (n) => `${n} recording(s) coming soon 🎙️`,
+      noTiles: "This page has no squares yet",
+      home: "Back to contents", playAll: "Play all", next: "Next page", prev: "Previous page",
+      tile: (n) => `Square ${n}`,
+    },
+  };
+  const guessLang = () => {
+    const l = (navigator.language || "nl").slice(0, 2);
+    return I18N[l] ? l : "nl";
+  };
+  let lang = I18N[store.get("lang", null)] ? store.get("lang") : guessLang();
+  const T = () => I18N[lang];
+  // Ondertitel van les/hoofdstuk in de gekozen taal (in het Arabisch alleen de Arabische titel)
+  const sub = (o) => (lang === "ar" ? "" : o[lang] || "");
+
+  function applyLang() {
+    const t = T();
+    document.documentElement.lang = lang;
+    document.documentElement.dir = t.dir;
+    document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = t[el.dataset.i18n]));
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t[el.dataset.i18nAria]));
+    document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
+  }
 
   // ---------- Audio ----------
   const player = new Audio();
@@ -47,7 +105,7 @@
       player.onended = () => { markHeard(tile.id); el.classList.add("heard"); done(true); };
       player.onerror = () => {
         el.classList.remove("missing"); void el.offsetWidth; el.classList.add("missing");
-        if (!quiet) toast("Opname volgt nog 🎙️");
+        if (!quiet) toast(T().missing);
         done(false);
       };
       player.src = audioSrc(tile);
@@ -67,7 +125,7 @@
   async function playAll() {
     if (playingAll) return stopAll();
     const page = BOOK.pages[current];
-    if (!page.tiles.length) return toast("Deze pagina heeft nog geen vierkanten");
+    if (!page.tiles.length) return toast(T().noTiles);
     playingAll = true;
     els.playAll.classList.add("playing");
     const buttons = [...els.hotspots.querySelectorAll(".tile")];
@@ -77,7 +135,7 @@
       if (!ok && ++missing === 3 && i === 2) { none = true; break; } // nog geen opnames voor deze pagina
       if (playingAll) await wait(ok ? 450 : 150);
     }
-    if (missing) toast(none ? "Opnames volgen nog 🎙️" : `${missing} opname(s) volgen nog 🎙️`);
+    if (missing) toast(none ? T().missingAll : T().missingSome(missing));
     stopAll();
   }
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -99,7 +157,7 @@
   function renderHome() {
     const last = store.get("last", null);
     els.continueBtn.hidden = last == null;
-    if (last != null) els.continueNum.textContent = last + 1;
+    if (last != null) els.continueText.textContent = T().continue(last + 1);
 
     const chapters = BOOK.chapters || [{ ar: BOOK.title, nl: "", from: -Infinity, to: Infinity }];
     els.toc.innerHTML = "";
@@ -116,8 +174,8 @@
       det.innerHTML = `
         <summary>
           <span class="ch-num">${ci + 1}</span>
-          <span class="ch-text"><span class="ch-ar" lang="ar">${ch.ar}</span><span class="ch-nl">${ch.nl}</span></span>
-          <span class="ch-meta">${lessons.length} lessen<span class="bar-mini"><i style="width:${pct}%"></i></span></span>
+          <span class="ch-text"><span class="ch-ar" lang="ar">${ch.ar}</span><span class="ch-nl">${sub(ch)}</span></span>
+          <span class="ch-meta">${T().lessons(lessons.length)}<span class="bar-mini"><i style="width:${pct}%"></i></span></span>
           ${CHEV}
         </summary>
         <ol class="toc-list"></ol>`;
@@ -130,7 +188,7 @@
         b.innerHTML = `
           <span class="n">${i + 1}</span>
           <img loading="lazy" src="${p.image}" alt="">
-          <span class="t"><span class="t-ar" lang="ar">${p.title}</span><span class="t-nl">${p.nl || ""}</span></span>
+          <span class="t"><span class="t-ar" lang="ar">${p.title}</span><span class="t-nl">${sub(p)}</span></span>
           <span class="st">${lessonDone(p) ? "★" : n ? `${n}/${p.tiles.length}` : ""}</span>`;
         b.onclick = () => go(i);
         li.appendChild(b);
@@ -167,7 +225,7 @@
       const b = document.createElement("button");
       b.className = "tile" + (heard.has(t.id) ? " heard" : "");
       b.dataset.n = i + 1;
-      b.setAttribute("aria-label", `Vierkant ${i + 1}`);
+      b.setAttribute("aria-label", T().tile(i + 1));
       place(b, t);
       if (!EDIT) b.onclick = () => { stopAll(); playTile(t, b); };
       els.hotspots.appendChild(b);
@@ -204,6 +262,12 @@
   els.prev.onclick = () => current > 0 && go(current - 1);
   els.next.onclick = () => current < BOOK.pages.length - 1 && go(current + 1);
   els.playAll.onclick = playAll;
+  document.querySelectorAll("[data-lang]").forEach((b) => (b.onclick = () => {
+    lang = b.dataset.lang;
+    store.set("lang", lang);
+    applyLang();
+    route();
+  }));
   window.addEventListener("hashchange", route);
 
   // Vegen: Arabisch boek, dus naar rechts vegen = volgende pagina
@@ -314,7 +378,7 @@
         "  ],",
         "  pages: [",
         ...BOOK.pages.flatMap((p) => [
-          `    { n: ${p.n}, title: ${JSON.stringify(p.title)}, nl: ${JSON.stringify(p.nl || "")}, image: ${JSON.stringify(p.image)}, tiles: [`,
+          `    { n: ${p.n}, title: ${JSON.stringify(p.title)}, nl: ${JSON.stringify(p.nl || "")}, en: ${JSON.stringify(p.en || "")}, image: ${JSON.stringify(p.image)}, tiles: [`,
           ...p.tiles.map((t) => `      { id: "${t.id}", x: ${f(t.x)}, y: ${f(t.y)}, w: ${f(t.w)}, h: ${f(t.h)}${t.audio ? `, audio: ${JSON.stringify(t.audio)}` : ""} },`),
           "    ] },",
         ]),
@@ -329,9 +393,10 @@
   }
 
   // ---------- Offline (PWA) ----------
-  if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
     navigator.serviceWorker.register("sw.js").catch(() => {});
   }
 
+  applyLang();
   route();
 })();
