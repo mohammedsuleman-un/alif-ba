@@ -174,7 +174,7 @@
   // ---------- Werelkaart ----------
   // ---------- Werelkaart: geïllustreerd, kronkelend avonturenpad ----------
   // Layout-geometrie (in dezelfde eenheden als de SVG-viewBox, dus 0-100 breed).
-  const MAP_ROWH = 172, MAP_TOP = 110, MAP_BOT = 150, MAP_AMP = 25;
+  const MAP_ROWH = 236, MAP_TOP = 140, MAP_BOT = 190, MAP_AMP = 27;
   const nodeX = (i) => 50 + Math.sin(i * 1.05 + 0.4) * MAP_AMP;
   const nodeY = (i) => MAP_TOP + i * MAP_ROWH;
 
@@ -220,25 +220,41 @@
   function zoneDecorations(i, x, y) {
     const items = [];
     const far = x < 50 ? "right" : "left"; // decoratie aan de andere kant van het pad
-    if (i === 0) items.push(deco("dune", "g-deco-dune", `top:${y - 40}px;left:0;width:100%;color:#e7c98a`));
-    if (i === 1) items.push(deco("bush", "g-deco-sm", `top:${y - 55}px;${far}:6%`));
-    if (i === 2) items.push(deco("palm", "g-deco-md", `top:${y - 95}px;${far}:8%`));
-    if (i === 3) items.push(deco("rock", "g-deco-sm", `top:${y - 40}px;${far}:10%`), deco("lantern", "g-deco-sm sway", `top:${y - 80}px;${x < 50 ? "left" : "right"}:14%`));
-    if (i === 4) items.push(deco("water", "g-deco-lg", `top:${y + 30}px;left:50%;transform:translateX(-50%);width:70%;color:#3f8f8a`), deco("palm", "g-deco-md", `top:${y - 10}px;left:8%`), deco("palm", "g-deco-md", `top:${y - 10}px;right:8%`));
-    if (i === 5) items.push(deco("dune", "g-deco-dune", `top:${y - 30}px;left:0;width:100%;color:#d9c48f`), deco("arch", "g-deco-md", `top:${y - 110}px;${far}:6%`));
-    if (i === 6) items.push(deco("lantern", "g-deco-sm sway", `top:${y - 70}px;${far}:12%`), deco("star", "g-deco-xs twinkle", `top:${y - 120}px;${x < 50 ? "right" : "left"}:20%`));
-    if (i === 7) items.push(deco("bush", "g-deco-sm", `top:${y - 45}px;${far}:8%`), deco("palm", "g-deco-md", `top:${y - 100}px;${x < 50 ? "right" : "left"}:16%`));
-    if (i === 8) items.push(deco("star", "g-deco-xs twinkle", `top:${y - 100}px;left:20%`), deco("star", "g-deco-xs twinkle", `top:${y - 140}px;right:24%`), deco("lantern", "g-deco-sm sway", `top:${y - 60}px;${far}:10%`));
+    const near = x < 50 ? "left" : "right";
+    // Scène A (1-3): begin van de reis — duinen, enkele planten, eerste palmboom.
+    if (i === 0) items.push(deco("dune", "g-deco-dune", `top:${y - 60}px;left:0;width:100%;color:#e7c98a`));
+    if (i === 1) items.push(deco("bush", "g-deco-sm", `top:${y - 60}px;${far}:8%`), deco("rock", "g-deco-sm", `top:${y + 70}px;${near}:4%`));
+    if (i === 2) items.push(deco("palm", "g-deco-lg", `top:${y - 150}px;${far}:6%`), deco("bush", "g-deco-xs", `top:${y + 40}px;${far}:22%`));
+    // Scène B (4-7): de oase — groter water, meerdere palmbomen, rustpaviljoen bij het checkpoint.
+    if (i === 3) items.push(deco("rock", "g-deco-md", `top:${y - 50}px;${far}:10%`), deco("lantern", "g-deco-md sway", `top:${y - 110}px;${near}:16%`));
+    if (i === 4) items.push(
+      deco("water", "g-deco-oasis", `top:${y + 60}px;left:50%;transform:translateX(-50%);color:#3f8f8a`),
+      deco("palm", "g-deco-xl", `top:${y - 30}px;left:2%`),
+      deco("palm", "g-deco-lg", `top:${y + 10}px;right:4%`)
+    );
+    if (i === 5) items.push(deco("dune", "g-deco-dune", `top:${y - 40}px;left:0;width:100%;color:#d9c48f`), deco("arch", "g-deco-lg", `top:${y - 190}px;${far}:4%`));
+    if (i === 6) items.push(deco("lantern", "g-deco-md sway", `top:${y - 120}px;${far}:14%`), deco("star", "g-deco-sm twinkle", `top:${y - 190}px;${near}:22%`), deco("bush", "g-deco-sm", `top:${y + 60}px;${near}:8%`));
+    // Scène C (8-10): de bestemming — rijker groen, sterren, de poort komt in zicht.
+    if (i === 7) items.push(deco("palm", "g-deco-lg", `top:${y - 150}px;${near}:14%`), deco("lantern", "g-deco-sm sway", `top:${y - 60}px;${far}:10%`));
+    if (i === 8) items.push(
+      deco("star", "g-deco-sm twinkle", `top:${y - 160}px;left:16%`),
+      deco("star", "g-deco-xs twinkle", `top:${y - 210}px;right:20%`),
+      deco("lantern", "g-deco-md sway", `top:${y - 90}px;${far}:8%`),
+      deco("palm", "g-deco-md", `top:${y - 40}px;${near}:10%`)
+    );
     return items.join("");
   }
 
   function nodeInner(t, lv, unlocked, current, stars) {
-    if (!unlocked) return `<span class="g-node-lock">🔒</span>`;
     const bigLetter = lv.letters.length === 1 ? lv.letters[0] : null;
+    const content = bigLetter
+      ? `<span class="g-node-letter" lang="ar">${bigLetter}</span>`
+      : `<span class="g-node-n-big">${lv.n}</span>`;
+    if (!unlocked) return `${content}<span class="g-node-lock">🔒</span>`;
     return `
-      ${bigLetter ? `<span class="g-node-letter" lang="ar">${bigLetter}</span>` : `<span class="g-node-n-big">${lv.n}</span>`}
+      ${content}
       ${lv.challenge ? `<span class="g-node-trophy">🏆</span>` : ""}
-      ${current ? `<span class="g-node-pulse" aria-hidden="true"></span>` : ""}`;
+      ${current ? `<span class="g-node-pulse" aria-hidden="true"></span><span class="g-node-sparkle">✨</span>` : ""}`;
   }
 
   function renderMap(worldId) {
@@ -258,6 +274,15 @@
     const cpPoint = { x: nodeX(4.5), y: (nodeY(4) + nodeY(5)) / 2 };
     const sceneH = MAP_TOP + (levels.length - 1) * MAP_ROWH + MAP_BOT;
     const pathPts = [...pts.slice(0, 5).map((p) => ({ x: p.x, y: p.y })), cpPoint, ...pts.slice(5).map((p) => ({ x: p.x, y: p.y }))];
+    // Kleine "stapstenen" tussen de knopen, verdeeld over elk padsegment (rechte interpolatie volstaat visueel).
+    const stones = [];
+    for (let i = 0; i < pathPts.length - 1; i++) {
+      const a = pathPts[i], b = pathPts[i + 1];
+      for (let s = 1; s <= 3; s++) {
+        const f = s / 4;
+        stones.push({ x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f });
+      }
+    }
 
     scr.map.innerHTML = `
       <div class="g-map-head g-theme-${world.theme}">
@@ -275,7 +300,9 @@
         <div class="g-scene" id="gScene" style="height:${sceneH}px">
           <svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">
             <path d="${smoothPath(pathPts)}" class="g-route-line" />
+            <path d="${smoothPath(pathPts)}" class="g-route-line-inner" />
           </svg>
+          ${stones.map((s) => `<div class="g-stone" style="left:${s.x}%; top:${s.y}px"></div>`).join("")}
           <div class="g-cloud g-cloud-a">${ICON.cloud}</div>
           <div class="g-cloud g-cloud-b">${ICON.cloud}</div>
           ${pts.map((p) => zoneDecorations(p.i, p.x, p.y)).join("")}
