@@ -25,6 +25,9 @@
       levelDone: "أتممت المستوى!", newLetter: "حرف جديد", next: "المستوى التالي", toMap: "الخريطة",
       xp: "نقطة خبرة", coins: "قطع", badgeEarned: "وسام جديد!", switchProfile: "تبديل الملف",
       bookMode: "الكتاب", gameMode: "اللعبة", challenge: "تحدٍّ",
+      levelsProgress: (d, n) => `${d} من ${n} مستوى`, discover: (l) => `اكتشف ${l}`,
+      checkpointTitle: "محطة استراحة", checkpointReward: (n) => `+${n} 🪙`, claim: "افتح",
+      worldDone: "أتممتِ الواحة!", nextWorldSoon: "عالم جديد قريبًا…",
     },
     nl: { dir: "ltr", who: "Wie speelt er?", newProfile: "Nieuw profiel", namePlaceholder: "Jouw naam",
       create: "Beginnen", world: (n) => `Wereld ${n}`, level: "Level", locked: "Op slot", start: "Start",
@@ -34,6 +37,9 @@
       levelDone: "Level voltooid!", newLetter: "Nieuwe letter", next: "Volgend level", toMap: "Kaart",
       xp: "XP", coins: "munten", badgeEarned: "Nieuwe badge!", switchProfile: "Profiel wisselen",
       bookMode: "Boek", gameMode: "Spel", challenge: "Uitdaging",
+      levelsProgress: (d, n) => `${d} van ${n} levels`, discover: (l) => `Ontdek de ${l}`,
+      checkpointTitle: "Rustplek", checkpointReward: (n) => `+${n} 🪙`, claim: "Open",
+      worldDone: "Wereld voltooid!", nextWorldSoon: "Volgende wereld komt eraan…",
     },
     en: { dir: "ltr", who: "Who's playing?", newProfile: "New profile", namePlaceholder: "Your name",
       create: "Start", world: (n) => `World ${n}`, level: "Level", locked: "Locked", start: "Start",
@@ -43,6 +49,9 @@
       levelDone: "Level complete!", newLetter: "New letter", next: "Next level", toMap: "Map",
       xp: "XP", coins: "coins", badgeEarned: "New badge!", switchProfile: "Switch profile",
       bookMode: "Book", gameMode: "Game", challenge: "Challenge",
+      levelsProgress: (d, n) => `${d} of ${n} levels`, discover: (l) => `Discover ${l}`,
+      checkpointTitle: "Rest stop", checkpointReward: (n) => `+${n} 🪙`, claim: "Open",
+      worldDone: "World complete!", nextWorldSoon: "Next world coming soon…",
     },
   };
   const glang = () => (I18N_LANG_OK() ? store.get("lang", "nl") : "nl");
@@ -163,11 +172,93 @@
   }
 
   // ---------- Werelkaart ----------
+  // ---------- Werelkaart: geïllustreerd, kronkelend avonturenpad ----------
+  // Layout-geometrie (in dezelfde eenheden als de SVG-viewBox, dus 0-100 breed).
+  const MAP_ROWH = 172, MAP_TOP = 110, MAP_BOT = 150, MAP_AMP = 25;
+  const nodeX = (i) => 50 + Math.sin(i * 1.05 + 0.4) * MAP_AMP;
+  const nodeY = (i) => MAP_TOP + i * MAP_ROWH;
+
+  function smoothPath(pts) {
+    if (pts.length < 2) return "";
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i], p1 = pts[i + 1];
+      const mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+      d += ` Q ${p0.x} ${p0.y} ${mx} ${my}`;
+    }
+    const last = pts[pts.length - 1];
+    d += ` T ${last.x} ${last.y}`;
+    return d;
+  }
+
+  // Kleine, herbruikbare SVG-decoraties (geen foto's, geen emoji als hoofdstijl).
+  const ICON = {
+    palm: `<svg viewBox="0 0 60 80"><path d="M30 80V40" stroke="#6b4a26" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <g fill="#3f6b3a"><path d="M30 40C18 30 6 32 2 24 14 20 24 26 30 40Z"/><path d="M30 40C42 30 54 32 58 24 46 20 36 26 30 40Z"/>
+      <path d="M30 40C22 26 22 14 14 8 24 6 32 18 30 40Z"/><path d="M30 40C38 26 38 14 46 8 36 6 28 18 30 40Z"/>
+      <path d="M30 40C30 24 30 12 30 4 22 10 24 26 30 40Z"/></g></svg>`,
+    dune: `<svg viewBox="0 0 200 60" preserveAspectRatio="none"><path d="M0 60V30C40 5 80 45 130 22 160 10 180 25 200 18V60Z" fill="currentColor"/></svg>`,
+    cloud: `<svg viewBox="0 0 80 40"><path d="M14 32C4 32 0 25 6 19 4 10 16 4 24 10 30 2 46 4 48 14 58 12 64 22 56 29 58 34 52 38 46 36H14Z" fill="#fff" opacity=".8"/></svg>`,
+    star: `<svg viewBox="0 0 20 20"><path d="M10 0l2.4 7.2H20l-6 4.4 2.3 7.4L10 14.6 3.7 19l2.3-7.4-6-4.4h7.6z" fill="#ffe08a"/></svg>`,
+    lantern: `<svg viewBox="0 0 30 46"><path d="M9 6h12l-3-6H12z" fill="#8a6218"/><rect x="6" y="6" width="18" height="26" rx="6" fill="#f2b23c"/>
+      <rect x="10" y="12" width="10" height="14" rx="3" fill="#fff4d6" opacity=".85"/><path d="M12 32h6v4h-6z" fill="#8a6218"/>
+      <path d="M9 40h12" stroke="#8a6218" stroke-width="3" stroke-linecap="round"/></svg>`,
+    arch: `<svg viewBox="0 0 60 70"><path d="M4 70V34C4 14 14 4 30 4S56 14 56 34V70" fill="none" stroke="#c99a3c" stroke-width="4"/>
+      <path d="M4 70V34C4 14 14 4 30 4S56 14 56 34V70" fill="#fff8e3" opacity=".18"/></svg>`,
+    water: `<svg viewBox="0 0 160 50"><ellipse cx="80" cy="25" rx="78" ry="22" fill="#3f8f8a"/><ellipse cx="80" cy="20" rx="60" ry="14" fill="#5bb9b3" opacity=".7"/></svg>`,
+    bush: `<svg viewBox="0 0 40 26"><g fill="#4c7a3f"><circle cx="10" cy="16" r="10"/><circle cx="24" cy="12" r="12"/><circle cx="34" cy="18" r="8"/></g></svg>`,
+    rock: `<svg viewBox="0 0 50 26"><path d="M2 26 8 10 20 4 34 8 48 26Z" fill="#a89380"/></svg>`,
+    chest: `<svg viewBox="0 0 48 40"><rect x="4" y="16" width="40" height="22" rx="4" fill="#c99a3c"/><rect x="4" y="16" width="40" height="8" fill="#8a6218"/>
+      <path d="M4 18C4 8 44 8 44 18" fill="none" stroke="#8a6218" stroke-width="4"/><circle cx="24" cy="27" r="3" fill="#5c3c17"/></svg>`,
+    gate: `<svg viewBox="0 0 160 140"><path d="M10 140V60C10 20 40 4 80 4S150 20 150 60V140" fill="#fff8e3" stroke="#c99a3c" stroke-width="5"/>
+      <path d="M35 140V70C35 40 55 26 80 26S125 40 125 70V140" fill="none" stroke="#c99a3c" stroke-width="4"/>
+      <circle cx="80" cy="20" r="7" fill="#ffe08a"/></svg>`,
+  };
+  const deco = (icon, cls, style) => `<div class="g-deco ${cls || ""}" style="${style}">${ICON[icon]}</div>`;
+
+  // Decoratie per 'zone': begin van de woestijn → oase → verte → finale.
+  function zoneDecorations(i, x, y) {
+    const items = [];
+    const far = x < 50 ? "right" : "left"; // decoratie aan de andere kant van het pad
+    if (i === 0) items.push(deco("dune", "g-deco-dune", `top:${y - 40}px;left:0;width:100%;color:#e7c98a`));
+    if (i === 1) items.push(deco("bush", "g-deco-sm", `top:${y - 55}px;${far}:6%`));
+    if (i === 2) items.push(deco("palm", "g-deco-md", `top:${y - 95}px;${far}:8%`));
+    if (i === 3) items.push(deco("rock", "g-deco-sm", `top:${y - 40}px;${far}:10%`), deco("lantern", "g-deco-sm sway", `top:${y - 80}px;${x < 50 ? "left" : "right"}:14%`));
+    if (i === 4) items.push(deco("water", "g-deco-lg", `top:${y + 30}px;left:50%;transform:translateX(-50%);width:70%;color:#3f8f8a`), deco("palm", "g-deco-md", `top:${y - 10}px;left:8%`), deco("palm", "g-deco-md", `top:${y - 10}px;right:8%`));
+    if (i === 5) items.push(deco("dune", "g-deco-dune", `top:${y - 30}px;left:0;width:100%;color:#d9c48f`), deco("arch", "g-deco-md", `top:${y - 110}px;${far}:6%`));
+    if (i === 6) items.push(deco("lantern", "g-deco-sm sway", `top:${y - 70}px;${far}:12%`), deco("star", "g-deco-xs twinkle", `top:${y - 120}px;${x < 50 ? "right" : "left"}:20%`));
+    if (i === 7) items.push(deco("bush", "g-deco-sm", `top:${y - 45}px;${far}:8%`), deco("palm", "g-deco-md", `top:${y - 100}px;${x < 50 ? "right" : "left"}:16%`));
+    if (i === 8) items.push(deco("star", "g-deco-xs twinkle", `top:${y - 100}px;left:20%`), deco("star", "g-deco-xs twinkle", `top:${y - 140}px;right:24%`), deco("lantern", "g-deco-sm sway", `top:${y - 60}px;${far}:10%`));
+    return items.join("");
+  }
+
+  function nodeInner(t, lv, unlocked, current, stars) {
+    if (!unlocked) return `<span class="g-node-lock">🔒</span>`;
+    const bigLetter = lv.letters.length === 1 ? lv.letters[0] : null;
+    return `
+      ${bigLetter ? `<span class="g-node-letter" lang="ar">${bigLetter}</span>` : `<span class="g-node-n-big">${lv.n}</span>`}
+      ${lv.challenge ? `<span class="g-node-trophy">🏆</span>` : ""}
+      ${current ? `<span class="g-node-pulse" aria-hidden="true"></span>` : ""}`;
+  }
+
   function renderMap(worldId) {
     const t = GT();
     document.documentElement.dir = t.dir;
     const world = G.worlds.find((w) => w.id === worldId) || G.worlds[0];
-    const doneCount = world.levels.filter((lv) => state.levels[levelId(world, lv)]).length;
+    const levels = world.levels;
+    const doneCount = levels.filter((lv) => state.levels[levelId(world, lv)]).length;
+    const currentIdx = Math.min(doneCount, levels.length - 1);
+    const totalStars = Object.values(state.levels).reduce((s, l) => s + (l.stars || 0), 0);
+    const cpId = `${world.id}_cp5`;
+    const cpClaimed = (state.checkpoints || []).includes(cpId);
+    const cpUnlocked = !!state.levels[levelId(world, levels[4])];
+
+    // Coördinaten van elk level + eventueel het checkpoint (tussen level 5 en 6).
+    const pts = levels.map((lv, i) => ({ x: nodeX(i), y: nodeY(i), lv, i }));
+    const cpPoint = { x: nodeX(4.5), y: (nodeY(4) + nodeY(5)) / 2 };
+    const sceneH = MAP_TOP + (levels.length - 1) * MAP_ROWH + MAP_BOT;
+    const pathPts = [...pts.slice(0, 5).map((p) => ({ x: p.x, y: p.y })), cpPoint, ...pts.slice(5).map((p) => ({ x: p.x, y: p.y }))];
+
     scr.map.innerHTML = `
       <div class="g-map-head g-theme-${world.theme}">
         <button id="gSwitchProfile" class="g-icon-btn" aria-label="${t.switchProfile}">${activeProfile.avatar}</button>
@@ -176,36 +267,64 @@
           <span class="g-map-sub">${gsub(world.subtitle)}</span>
         </div>
         <div class="g-stats">
-          <span>⭐ ${Object.values(state.levels).reduce((s, l) => s + (l.stars || 0), 0)}</span>
-          <span>🪙 ${state.coins}</span>
+          <span>${t.levelsProgress(doneCount, levels.length)}</span>
+          <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
       </div>
-      <div class="g-path" id="gPath"></div>`;
-    const path = $("gPath");
-    world.levels.forEach((lv, i) => {
-      const unlocked = isLevelUnlocked(world, i);
-      const stars = levelStars(world, lv);
-      const node = el("div", `g-node ${i % 2 ? "r" : "l"}`);
-      const b = el("button", "g-node-btn" + (unlocked ? "" : " locked") + (lv.challenge ? " challenge" : ""));
-      b.innerHTML = unlocked
-        ? `<span class="g-node-n">${lv.n}</span>${lv.challenge ? "🏆" : ""}`
-        : `🔒`;
-      b.disabled = !unlocked;
-      b.setAttribute("aria-label", `${t.level} ${lv.n}`);
-      b.onclick = () => gohash(`#/spel/level/${world.id}/${lv.n}`);
-      node.appendChild(b);
-      const starsEl = el("div", "g-node-stars", unlocked ? "★".repeat(stars) + "☆".repeat(3 - stars) : "");
-      node.appendChild(starsEl);
-      const label = el("div", "g-node-label", gsub(lv.title));
-      node.appendChild(label);
-      path.appendChild(node);
-    });
+      <div class="g-scene-wrap">
+        <div class="g-scene" id="gScene" style="height:${sceneH}px">
+          <svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">
+            <path d="${smoothPath(pathPts)}" class="g-route-line" />
+          </svg>
+          <div class="g-cloud g-cloud-a">${ICON.cloud}</div>
+          <div class="g-cloud g-cloud-b">${ICON.cloud}</div>
+          ${pts.map((p) => zoneDecorations(p.i, p.x, p.y)).join("")}
+          <div class="g-gate" style="top:${sceneH - 40}px">${ICON.gate}</div>
+
+          <button class="g-cp ${cpUnlocked ? "" : "locked"} ${cpClaimed ? "done" : ""}" id="gCheckpoint"
+            style="left:${cpPoint.x}%; top:${cpPoint.y}px" ${cpUnlocked && !cpClaimed ? "" : "disabled"}
+            aria-label="${t.checkpointTitle}">
+            ${cpClaimed ? "✅" : cpUnlocked ? ICON.chest : "🔒"}
+          </button>
+
+          ${pts.map((p) => {
+            const unlocked = isLevelUnlocked(world, p.i);
+            const stars = levelStars(world, p.lv);
+            const isCurrent = unlocked && p.i === currentIdx && stars === 0;
+            const label = gsub(p.lv.title);
+            return `
+            <div class="g-node2 ${p.i % 2 ? "side-r" : "side-l"} ${p.lv.challenge ? "is-challenge" : ""}" style="left:${p.x}%; top:${p.y}px">
+              <button class="g-node-btn2 ${unlocked ? "on" : "locked"} ${isCurrent ? "current" : ""} ${stars ? "completed" : ""}"
+                data-n="${p.lv.n}" aria-label="${t.level} ${p.lv.n}${unlocked ? ": " + label : ": " + t.locked}">
+                ${nodeInner(t, p.lv, unlocked, isCurrent, stars)}
+              </button>
+              <span class="g-node-num">${p.lv.n}</span>
+              ${unlocked ? `<div class="g-node-stars2">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</div>` : ""}
+              ${isCurrent ? `<div class="g-node-flag">${t.play} →</div>` : ""}
+            </div>`;
+          }).join("")}
+        </div>
+      </div>`;
+
     $("gSwitchProfile").onclick = () => gohash("#/spel");
-    // Scroll naar het eerstvolgende (nog niet voltooide) level.
+    scr.map.querySelectorAll(".g-node-btn2.on").forEach((b) => {
+      b.onclick = () => gohash(`#/spel/level/${world.id}/${b.dataset.n}`);
+    });
+    const cpBtn = $("gCheckpoint");
+    if (cpBtn) cpBtn.onclick = () => {
+      if (!cpUnlocked || cpClaimed) return;
+      state.checkpoints = [...(state.checkpoints || []), cpId];
+      state.coins += 20;
+      gstate.save(activeProfile.id, state);
+      toast(t.checkpointReward(20));
+      renderMap(worldId);
+    };
+
+    // Scroll naar het huidige level — direct bij een schermlezer/reduced-motion, anders zacht.
+    const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     requestAnimationFrame(() => {
-      const nodes = [...path.children];
-      const target = nodes[Math.min(doneCount, nodes.length - 1)];
-      target?.scrollIntoView({ block: "center", behavior: "instant" in document.documentElement.style ? "instant" : "auto" });
+      const target = scr.map.querySelector(`.g-node-btn2[data-n="${levels[currentIdx].n}"]`);
+      target?.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
     });
   }
 

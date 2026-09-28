@@ -1,4 +1,4 @@
-const VERSION = "v7";
+const VERSION = "v8";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png",
