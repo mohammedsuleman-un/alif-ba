@@ -48,6 +48,7 @@
       chapter: (n) => `الفصل ${n}`, lessonOf: (i, n) => `الدرس ${i} من ${n}`, start: "ابدأ",
       search: "ابحث عن درس…", noResults: "لا توجد نتائج",
       progress: (done, total) => `${done} من ${total} درسًا`,
+      playGame: "العب اللعبة",
     },
     nl: {
       dir: "ltr",
@@ -63,6 +64,7 @@
       chapter: (n) => `Hoofdstuk ${n}`, lessonOf: (i, n) => `Les ${i} van ${n}`, start: "Beginnen",
       search: "Zoek een les…", noResults: "Geen lessen gevonden",
       progress: (done, total) => `${done} van ${total} lessen`,
+      playGame: "Speel het spel",
     },
     en: {
       dir: "ltr",
@@ -78,6 +80,7 @@
       chapter: (n) => `Chapter ${n}`, lessonOf: (i, n) => `Lesson ${i} of ${n}`, start: "Start",
       search: "Search a lesson…", noResults: "No lessons found",
       progress: (done, total) => `${done} of ${total} lessons`,
+      playGame: "Play the game",
     },
   };
   const guessLang = () => {
@@ -352,6 +355,14 @@
   const page = (i) => { paged = true; go(i); };
 
   function route() {
+    if (location.hash.startsWith("#/spel")) {
+      // Spelmodus (game.js) heeft het overgenomen — boekschermen aan de kant.
+      hideSplash();
+      stopAll();
+      els.home.hidden = true;
+      els.lesson.hidden = true;
+      return;
+    }
     const m = location.hash.match(/^#\/les\/(\d+)/);
     if (m) {
       const prev = els.lesson.hidden ? null : current;

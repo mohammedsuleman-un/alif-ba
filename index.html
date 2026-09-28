@@ -51,6 +51,11 @@
           <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
+
+      <a href="#/spel" class="g-entry" id="gameEntry">
+        <span class="g-entry-icon">🎮</span>
+        <span class="g-entry-text" data-i18n="playGame">Speel het spel</span>
+      </a>
     </header>
     <div id="toc" class="toc"></div>
   </section>
@@ -116,7 +121,17 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <!-- Spelmodus: kinderprofielen, levelkaart, oefeningen. Los van de boekmodus hierboven. -->
+  <section id="game" class="screen" hidden>
+    <div id="gProfile" class="g-screen"></div>
+    <div id="gMap" class="g-screen" hidden></div>
+    <div id="gLevel" class="g-screen" hidden></div>
+    <div id="gComplete" class="g-overlay" hidden></div>
+  </section>
+
   <script src="book-data.js"></script>
   <script src="app.js"></script>
+  <script src="game-data.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
