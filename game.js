@@ -147,6 +147,45 @@
     osc.start(t0);
     osc.stop(t0 + dur + 0.02);
   }
+
+  // Witte ruis (eenmalig gemaakt, hergebruikt) — bouwsteen voor het vuurwerkgeluid.
+  let noiseBuffer = null;
+  function getNoiseBuffer(ctx) {
+    if (noiseBuffer && noiseBuffer.sampleRate === ctx.sampleRate) return noiseBuffer;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    noiseBuffer = buf;
+    return buf;
+  }
+  // Een korte "knal" — gefilterde ruis met een scherpe aanzet en snelle uitklank.
+  function burst(ctx, t0, { freq = 1200, gain = 0.2, dur = 0.4 } = {}) {
+    const src = ctx.createBufferSource();
+    src.buffer = getNoiseBuffer(ctx);
+    const bp = ctx.createBiquadFilter();
+    bp.type = "bandpass"; bp.frequency.value = freq; bp.Q.value = 0.7;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    src.connect(bp).connect(g).connect(ctx.destination);
+    src.start(t0);
+    src.stop(t0 + dur + 0.02);
+  }
+  // Een oplopend "fluitje" — het omhoogschieten vóór de knal.
+  function whistleUp(ctx, t0, dur) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(500, t0);
+    osc.frequency.exponentialRampToValueAtTime(1900, t0 + dur);
+    g.gain.setValueAtTime(0.001, t0);
+    g.gain.linearRampToValueAtTime(0.08, t0 + dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
   const sfx = {
     correct() {
       if (!AudioManager.settings.sfxOn) return;
@@ -173,6 +212,17 @@
       if (!AudioManager.settings.sfxOn) return;
       const ctx = audioCtx(); if (!ctx) return;
       tone(ctx, ctx.currentTime, 700, 0.05, { type: "sine", gain: 0.08 });
+    },
+    // Vuurwerk bij het voltooien van een level: 3 keer omhoogschieten + knallen.
+    fireworks() {
+      if (!AudioManager.settings.sfxOn) return;
+      const ctx = audioCtx(); if (!ctx) return;
+      const t0 = ctx.currentTime;
+      [0, 0.38, 0.74].forEach((offset, i) => {
+        const lt = t0 + offset;
+        whistleUp(ctx, lt, 0.22);
+        burst(ctx, lt + 0.2, { freq: 900 + i * 500, gain: 0.22, dur: 0.4 });
+      });
     },
   };
 
@@ -249,6 +299,11 @@
     scr.profile.innerHTML = `
       <div class="g-profile-head">
         <a href="#/" class="g-back-book">🏠</a>
+        <div class="g-lang-pick" role="group" aria-label="Taal · Language · اللغة">
+          <button type="button" data-l="ar" class="${glang() === "ar" ? "sel" : ""}">ع</button>
+          <button type="button" data-l="nl" class="${glang() === "nl" ? "sel" : ""}">NL</button>
+          <button type="button" data-l="en" class="${glang() === "en" ? "sel" : ""}">EN</button>
+        </div>
       </div>
       <h2 class="g-who">${t.who}</h2>
       <div class="g-profiles" id="gProfileList"></div>
@@ -264,6 +319,10 @@
       b.onclick = () => { profiles.setActive(p.id); loadActive(); gohash("#/spel/wereld/letter_oasis"); };
       listEl.appendChild(b);
     });
+    scr.profile.querySelectorAll(".g-lang-pick button").forEach((b) => (b.onclick = () => {
+      store.set("lang", b.dataset.l);
+      renderProfile();
+    }));
     let chosenAvatar = AVATARS[0];
     $("gAddProfile").onclick = () => { $("gNewProfileForm").hidden = false; $("gAddProfile").hidden = true; };
     scr.profile.querySelectorAll(".g-avatar-pick").forEach((b) => (b.onclick = () => {
@@ -686,7 +745,7 @@
     let newBadge = null;
     if (level.badge && !state.badges.includes(level.badge)) { state.badges.push(level.badge); newBadge = G.badges[level.badge]; }
     gstate.save(activeProfile.id, state);
-    sfx.levelComplete();
+    sfx.fireworks();
     const worldIdx0 = G.worlds.findIndex((w) => w.id === world.id);
     const isLastLevelOfWorld = world.levels[world.levels.length - 1].n === level.n;
     const worldNowComplete = isLastLevelOfWorld && !G.worlds[worldIdx0 + 1];

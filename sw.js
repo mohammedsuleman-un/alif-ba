@@ -1,4 +1,4 @@
-const VERSION = "v14";
+const VERSION = "v15";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "shell.js", "manifest.webmanifest",
