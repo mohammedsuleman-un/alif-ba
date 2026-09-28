@@ -24,7 +24,7 @@ svg { width: 24px; height: 24px; fill: currentColor; }
 
 /* ---------- Startscherm ---------- */
 .home-head {
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; text-align: center;
   padding: calc(16px + env(safe-area-inset-top)) 16px 22px;
   background:
     radial-gradient(120% 140% at 15% -10%, #4a3319, transparent 60%),
