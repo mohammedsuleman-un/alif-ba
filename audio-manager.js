@@ -5,9 +5,16 @@
 //   - leeraudio: de Arabische uitspraak zelf (letters/harakat/woorden), blijft
 //     ALTIJD Arabisch, ongeacht de gekozen interface-taal.
 //
-// Voorkomt overlappende audio door alles via één wachtrij (queue) af te spelen:
+// Voorkomt overlappende audio: een nieuwe aanroep onderbreekt altijd meteen
+// wat er nog speelt of nog in een keten stond te wachten (barge-in), in
+// plaats van alles keurig na elkaar op te stapelen. Als een kind snel
+// doortikt, wordt het vorige fragment dus afgebroken — niet alsnog
+// afgespeeld. Ketens als
 //   await AudioManager.playInstruction("listen");
 //   await AudioManager.playLearningAudio(base);
+// werken nog gewoon na elkaar zolang niets ertussen komt; de aanroepende
+// code moet wel de teruggegeven boolean checken en stoppen als die false is
+// (onderbroken), zodat een oud restje niet alsnog start.
 // Ontbrekende bestanden laten de app niet crashen: de speler valt stil, logt
 // in development welk bestand ontbreekt, en het kind kan gewoon doorspelen.
 (function () {
@@ -35,38 +42,41 @@
     return LANGS.includes(l) ? l : "nl";
   }
 
-  // Eén gedeeld <audio>-element: alles speelt na elkaar, nooit tegelijk.
+  // Eén gedeeld <audio>-element: nooit twee dingen tegelijk, en een nieuwe
+  // aanroep breekt de vorige meteen af (zie uitleg hierboven).
   const player = new Audio();
-  let queue = Promise.resolve();
   let playing = false;
   let loading = false;
   let lastError = null;
+  let activeResolve = null; // resolve() van het fragment dat nu speelt/laadt, zodat stop() het kan afbreken
 
   function playSources(sources) {
     return new Promise((resolve) => {
       if (!sources || !sources.length) { resolve(false); return; }
       loading = true;
+      activeResolve = resolve;
       const remaining = [...sources];
+      const finish = (ok) => {
+        loading = false; playing = false;
+        if (activeResolve === resolve) activeResolve = null;
+        resolve(ok);
+      };
       const tryNext = () => {
         const src = remaining.shift();
-        if (!src) {
-          loading = false; playing = false; lastError = "not-found";
-          resolve(false);
-          return;
-        }
+        if (!src) { lastError = "not-found"; finish(false); return; }
         player.onerror = () => {
           if (DEV) console.warn("[audio] ontbreekt (nog geen opname?):", src);
           tryNext();
         };
-        player.onended = () => { loading = false; playing = false; resolve(true); };
+        player.onended = () => finish(true);
         player.src = src;
         playing = true;
         const p = player.play();
         if (p && p.catch) {
           p.then(() => { loading = false; }).catch(() => {
             // Browser blokkeert autoplay (nog geen gebruikersinteractie), of bestand ontbreekt.
-            loading = false; playing = false; lastError = "blocked-or-missing";
-            resolve(false);
+            lastError = "blocked-or-missing";
+            finish(false);
           });
         } else {
           loading = false;
@@ -76,9 +86,20 @@
     });
   }
 
-  function enqueue(fn) {
-    queue = queue.then(fn, fn);
-    return queue;
+  // Breekt wat nu speelt/laadt meteen af (indien iets) en speelt daarna het nieuwe fragment.
+  function playNow(sources) {
+    stopInternal();
+    return playSources(sources);
+  }
+
+  function stopInternal() {
+    try { player.pause(); } catch {}
+    playing = false; loading = false;
+    if (activeResolve) {
+      const resolve = activeResolve;
+      activeResolve = null;
+      resolve(false);
+    }
   }
 
   let lastCorrectId = null;
@@ -101,14 +122,14 @@
         if (DEV) console.warn("[audio] onbekend instructie-ID in voice-manifest.js:", id);
         return Promise.resolve(false);
       }
-      return enqueue(() => playSources([`${INSTR_DIR}${currentLang()}/${id}.mp3`]));
+      return playNow([`${INSTR_DIR}${currentLang()}/${id}.mp3`]);
     },
 
     // Speelt de Arabische leeruitspraak. `base` is een pad zonder extensie
     // (bv. "audio/Page1-02"), net als elders in de app — probeert .m4a dan .mp3.
     playLearningAudio(base) {
       if (!base) return Promise.resolve(false);
-      return enqueue(() => playSources([`${base}.m4a`, `${base}.mp3`]));
+      return playNow([`${base}.m4a`, `${base}.mp3`]);
     },
 
     // Willekeurige positieve feedback; vermijdt hetzelfde fragment twee keer op rij.
@@ -127,22 +148,21 @@
       return this.playInstruction(id);
     },
 
-    stop() {
-      try { player.pause(); } catch {}
-      playing = false; loading = false;
-      queue = Promise.resolve();
-    },
+    // Breekt het huidige fragment meteen af (bv. omdat het kind al verder is).
+    stop() { stopInternal(); },
 
     // Herhaalt het laatst afgespeelde fragment (instructie of leeraudio).
     replay() {
       if (!player.src) return Promise.resolve(false);
-      return enqueue(() => new Promise((resolve) => {
+      stopInternal();
+      return new Promise((resolve) => {
+        activeResolve = resolve;
         try { player.currentTime = 0; } catch {}
-        player.onended = () => resolve(true);
-        player.onerror = () => resolve(false);
+        player.onended = () => { if (activeResolve === resolve) activeResolve = null; resolve(true); };
+        player.onerror = () => { if (activeResolve === resolve) activeResolve = null; resolve(false); };
         const p = player.play();
-        if (p && p.catch) p.catch(() => resolve(false));
-      }));
+        if (p && p.catch) p.catch(() => { if (activeResolve === resolve) activeResolve = null; resolve(false); });
+      });
     },
 
     // Warmt alvast een paar instructiefragmenten voor die zo nodig zijn

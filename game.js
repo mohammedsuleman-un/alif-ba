@@ -542,7 +542,7 @@
     $("gIntroGo").onclick = renderQuestion;
     // Bij binnenkomst: eerst de instructie ("Luister goed"), dan pas de letter — nooit tegelijk.
     $("gIntroLetter").classList.add("playing");
-    AudioManager.playInstruction("listen").then(() => playLetter(letter, () => $("gIntroLetter").classList.remove("playing")));
+    AudioManager.playInstruction("listen").then((ok) => { if (ok) playLetter(letter, () => $("gIntroLetter").classList.remove("playing")); });
   }
 
   function renderQuestion() {
@@ -577,7 +577,7 @@
     if (isAudio) {
       const replay = () => playLetter(q.letter);
       $("gQPlay").onclick = replay;
-      AudioManager.playInstruction("which-letter").then(() => playLetter(q.letter));
+      AudioManager.playInstruction("which-letter").then((ok) => { if (ok) playLetter(q.letter); });
     } else {
       AudioManager.playInstruction("find-letter");
     }
@@ -666,7 +666,7 @@
         toast(GT().tryAgain);
         // Vriendelijke retry-feedback, daarna de Arabische leeruitspraak nog eens.
         const base = letter && G.letterAudio[letter];
-        AudioManager.playRandomRetryFeedback().then(() => { if (base) return AudioManager.playLearningAudio(base); });
+        AudioManager.playRandomRetryFeedback().then((ok) => { if (ok && base) AudioManager.playLearningAudio(base); });
       }
     }
   }
@@ -691,13 +691,12 @@
     const isLastLevelOfWorld = world.levels[world.levels.length - 1].n === level.n;
     const worldNowComplete = isLastLevelOfWorld && !G.worlds[worldIdx0 + 1];
     const worldUnlocksNext = isLastLevelOfWorld && !!G.worlds[worldIdx0 + 1];
-    AudioManager.playInstruction("level-complete").then(() => {
-      if (stars === 3) return AudioManager.playInstruction("three-stars");
-    }).then(() => {
-      if (newBadge) return AudioManager.playInstruction("new-badge");
-    }).then(() => {
-      if (worldNowComplete || worldUnlocksNext) return AudioManager.playInstruction("world-complete");
-    });
+    (async () => {
+      if (!(await AudioManager.playInstruction("level-complete"))) return;
+      if (stars === 3 && !(await AudioManager.playInstruction("three-stars"))) return;
+      if (newBadge && !(await AudioManager.playInstruction("new-badge"))) return;
+      if (worldNowComplete || worldUnlocksNext) await AudioManager.playInstruction("world-complete");
+    })();
 
     scr.complete.hidden = false;
     scr.complete.innerHTML = `
