@@ -17,7 +17,14 @@
   <!-- Startscherm: lessenoverzicht -->
   <section id="home" class="screen">
     <header class="home-head">
-      <img class="cover" src="pages/p-03.jpg" alt="">
+      <div class="home-banner">
+        <img class="cover" src="pages/cover-banner.jpg" alt="">
+        <div class="lang" role="group" aria-label="Taal · Language · اللغة">
+          <button data-lang="ar" lang="ar">ع</button>
+          <button data-lang="nl">NL</button>
+          <button data-lang="en">EN</button>
+        </div>
+      </div>
       <div class="home-title">
         <h1 lang="ar" dir="rtl">قاعدة ألف با قرءاني</h1>
         <p data-i18n="subtitle">Inhoudsopgave · tik op een les</p>
@@ -25,11 +32,6 @@
           <svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
           <span id="continueText"></span>
         </button>
-      </div>
-      <div class="lang" role="group" aria-label="Taal · Language · اللغة">
-        <button data-lang="ar" lang="ar">ع</button>
-        <button data-lang="nl">NL</button>
-        <button data-lang="en">EN</button>
       </div>
     </header>
     <div id="toc" class="toc"></div>
