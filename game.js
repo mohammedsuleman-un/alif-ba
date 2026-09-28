@@ -30,6 +30,14 @@
       worldDone: "أتممتِ الواحة!", nextWorldSoon: "عالم جديد قريبًا…",
       voiceOn: "إيقاف الإرشاد الصوتي", voiceOff: "تشغيل الإرشاد الصوتي",
       sfxOn: "إيقاف المؤثرات الصوتية", sfxOff: "تشغيل المؤثرات الصوتية",
+      newOutfitEarned: "لباس جديد!", openWardrobe: "خزانة الملابس", makeCharacter: "اصنع رفيقك",
+      chooseGender: "هل هو ولد أم بنت؟", boy: "ولد", girl: "بنت", chooseSkin: "اختر لون البشرة",
+      chooseOutfit: "اختر ملابسك", chooseHijab: "اختر لون الحجاب", meetCharacter: "هذا رفيقك!",
+      charContinue: "التالي", charStart: "بسم الله! هيا بنا",
+      wardrobeTitle: "خزانتي", categoryOutfit: "الملابس", categoryHijab: "الحجاب",
+      categoryShoes: "الحذاء", categoryAccessory: "الإكسسوارات",
+      unlockAtLevel: (n) => `عند إتمام ${n} مستوى`, unlockAtStars: (n) => `عند ${n} نجمة`,
+      unlockAtWorld: "عند إتمام هذا العالم",
     },
     nl: { dir: "ltr", who: "Wie speelt er?", newProfile: "Nieuw profiel", namePlaceholder: "Jouw naam",
       create: "Beginnen", world: (n) => `Wereld ${n}`, level: "Level", locked: "Op slot", start: "Start",
@@ -44,6 +52,14 @@
       worldDone: "Wereld voltooid!", nextWorldSoon: "Volgende wereld komt eraan…",
       voiceOn: "Gesproken instructies uitzetten", voiceOff: "Gesproken instructies aanzetten",
       sfxOn: "Geluidseffecten uitzetten", sfxOff: "Geluidseffecten aanzetten",
+      newOutfitEarned: "Nieuwe kleding!", openWardrobe: "Kledingkast", makeCharacter: "Maak jouw leermaatje",
+      chooseGender: "Is het een jongen of een meisje?", boy: "Jongen", girl: "Meisje", chooseSkin: "Kies een huidskleur",
+      chooseOutfit: "Kies je outfit", chooseHijab: "Kies een hijabkleur", meetCharacter: "Dit is jouw leermaatje!",
+      charContinue: "Verder", charStart: "Bismillah, beginnen!",
+      wardrobeTitle: "Mijn kledingkast", categoryOutfit: "Kleding", categoryHijab: "Hoofddoek",
+      categoryShoes: "Schoenen", categoryAccessory: "Accessoires", locked: "Op slot",
+      unlockAtLevel: (n) => `Bij ${n} levels voltooid`, unlockAtStars: (n) => `Bij ${n} sterren`,
+      unlockAtWorld: "Bij het voltooien van deze wereld",
     },
     en: { dir: "ltr", who: "Who's playing?", newProfile: "New profile", namePlaceholder: "Your name",
       create: "Start", world: (n) => `World ${n}`, level: "Level", locked: "Locked", start: "Start",
@@ -58,6 +74,14 @@
       worldDone: "World complete!", nextWorldSoon: "Next world coming soon…",
       voiceOn: "Turn off spoken instructions", voiceOff: "Turn on spoken instructions",
       sfxOn: "Turn off sound effects", sfxOff: "Turn on sound effects",
+      newOutfitEarned: "New outfit!", openWardrobe: "Wardrobe", makeCharacter: "Make your learning buddy",
+      chooseGender: "Is it a boy or a girl?", boy: "Boy", girl: "Girl", chooseSkin: "Choose a skin tone",
+      chooseOutfit: "Choose your outfit", chooseHijab: "Choose a hijab colour", meetCharacter: "This is your learning buddy!",
+      charContinue: "Next", charStart: "Bismillah, let's begin!",
+      wardrobeTitle: "My wardrobe", categoryOutfit: "Outfit", categoryHijab: "Hijab",
+      categoryShoes: "Shoes", categoryAccessory: "Accessories", locked: "Locked",
+      unlockAtLevel: (n) => `At ${n} levels completed`, unlockAtStars: (n) => `At ${n} stars`,
+      unlockAtWorld: "When you complete this world",
     },
   };
   const glang = () => (I18N_LANG_OK() ? store.get("lang", "nl") : "nl");
@@ -226,67 +250,32 @@
     },
   };
 
-  // ---------- Begeleidend diertje (eigen ontwerp: woestijnvosje) ----------
-  // Reageert blij/verdrietig mee met het antwoord van het kind. Zuiver decoratief,
-  // raakt de spellogica niet aan.
-  const FOX = {
-    idle: `<svg viewBox="0 0 100 90"><g>
-        <path d="M20 55C10 40 14 18 28 10 30 22 34 30 40 34Z" fill="#e8a463"/>
-        <path d="M80 55C90 40 86 18 72 10 70 22 66 30 60 34Z" fill="#e8a463"/>
-        <path d="M22 56C12 42 16 22 28 14 30 24 34 31 40 35Z" fill="#fbeadb"/>
-        <path d="M78 56C88 42 84 22 72 14 70 24 66 31 60 35Z" fill="#fbeadb"/>
-        <ellipse cx="50" cy="55" rx="34" ry="30" fill="#f0b57e"/>
-        <ellipse cx="50" cy="62" rx="18" ry="15" fill="#fbeadb"/>
-        <circle cx="38" cy="50" r="4.2" fill="#3a2a1e"/>
-        <circle cx="62" cy="50" r="4.2" fill="#3a2a1e"/>
-        <path d="M46 63q4 4 8 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <ellipse cx="50" cy="58" rx="3" ry="2.2" fill="#3a2a1e"/>
-      </g></svg>`,
-    happy: `<svg viewBox="0 0 100 90"><g>
-        <path d="M18 50C6 33 12 12 28 6 29 20 34 28 41 32Z" fill="#e8a463"/>
-        <path d="M82 50C94 33 88 12 72 6 71 20 66 28 59 32Z" fill="#e8a463"/>
-        <path d="M20 51C9 35 14 16 28 10 29 22 33 29 41 33Z" fill="#fbeadb"/>
-        <path d="M80 51C91 35 86 16 72 10 71 22 67 29 59 33Z" fill="#fbeadb"/>
-        <ellipse cx="50" cy="53" rx="35" ry="31" fill="#f0b57e"/>
-        <ellipse cx="50" cy="61" rx="19" ry="16" fill="#fbeadb"/>
-        <path d="M32 47q6 -7 12 0" stroke="#3a2a1e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-        <path d="M56 47q6 -7 12 0" stroke="#3a2a1e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-        <path d="M40 61q10 10 20 0" stroke="#3a2a1e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-        <ellipse cx="50" cy="56" rx="3" ry="2.2" fill="#3a2a1e"/>
-        <circle cx="30" cy="60" r="4" fill="#f4a2a2" opacity=".6"/><circle cx="70" cy="60" r="4" fill="#f4a2a2" opacity=".6"/>
-      </g></svg>`,
-    sad: `<svg viewBox="0 0 100 90"><g>
-        <path d="M22 58C13 46 15 26 28 18 29 28 33 35 39 39Z" fill="#e8a463"/>
-        <path d="M78 58C87 46 85 26 72 18 71 28 67 35 61 39Z" fill="#e8a463"/>
-        <ellipse cx="50" cy="58" rx="33" ry="28" fill="#f0b57e"/>
-        <ellipse cx="50" cy="64" rx="17" ry="14" fill="#fbeadb"/>
-        <path d="M34 55q4 -3 8 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <path d="M58 55q4 -3 8 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <path d="M44 68q6 -4 12 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-        <ellipse cx="50" cy="60" rx="3" ry="2.2" fill="#3a2a1e"/>
-        <path d="M36 58q-1 8 -3 11" stroke="#7cc7e8" stroke-width="3" fill="none" stroke-linecap="round"/>
-      </g></svg>`,
-  };
+  // ---------- Persoonlijk leermaatje ----------
+  // Het personage dat het kind zelf heeft samengesteld (character.js/character-data.js).
+  // Reageert mee met wat er gebeurt. Bij fouten NOOIT verdrietig/teleurgesteld —
+  // alleen "thinking" (nadenkend) → "encouraging" (bemoedigend), zoals gevraagd.
+  const charCfg = () => activeProfile && Character.getConfig(activeProfile.id);
   let companionTimer;
   function companionMood(mood, holdMs) {
-    const el = document.getElementById("gCompanion");
-    if (!el) return;
-    el.innerHTML = FOX[mood] || FOX.idle;
-    el.className = "g-companion mood-" + mood;
+    const elc = document.getElementById("gCompanion");
+    if (!elc) return;
+    elc.innerHTML = Character.svg(charCfg(), mood);
+    elc.className = "g-companion mood-" + mood;
     clearTimeout(companionTimer);
     if (holdMs) companionTimer = setTimeout(() => companionMood("idle"), holdMs);
   }
   function companionHtml(extraClass) {
-    return `<div id="gCompanion" class="g-companion ${extraClass || ""}">${FOX.idle}</div>`;
+    return `<div id="gCompanion" class="g-companion ${extraClass || ""}">${Character.svg(charCfg(), "idle")}</div>`;
   }
 
   // ---------- Scherm-elementen ----------
   const scr = {
-    root: $("game"), profile: $("gProfile"), map: $("gMap"), level: $("gLevel"), complete: $("gComplete"),
+    root: $("game"), profile: $("gProfile"), charCreate: $("gCharCreate"), map: $("gMap"),
+    level: $("gLevel"), wardrobe: $("gWardrobe"), complete: $("gComplete"),
   };
 
   function showScreen(name) {
-    ["profile", "map", "level", "complete"].forEach((k) => { scr[k].hidden = k !== name; });
+    ["profile", "charCreate", "map", "level", "wardrobe"].forEach((k) => { scr[k].hidden = k !== name; });
   }
 
   // ---------- Profielscherm ----------
@@ -336,6 +325,148 @@
       loadActive();
       gohash("#/spel/wereld/letter_oasis");
     };
+  }
+
+  // ---------- Personage maken (onboarding-wizard) ----------
+  // Draait volledig lokaal binnen dit scherm (geen sub-routes nodig): een klein
+  // stappenplan met live preview. Wordt getoond zodra een profiel nog geen
+  // avatarConfigured heeft (nieuw profiel, of een bestaand profiel van vóór
+  // deze functie — zie gameRoute()).
+  function renderCharacterCreator() {
+    const t = GT();
+    document.documentElement.dir = t.dir;
+    let step = 0;
+    const choice = { type: null, skinTone: window.CHARACTER.skinTones[1], outfit: null, hijab: null };
+    // Jongens slaan de hijab-stap over: hun laatste stap (voor de bevestiging) is outfit (2), meisjes hijab (3).
+    const confirmStep = () => (choice.type === "girl" ? 4 : 3);
+    const isLastStep = () => step === confirmStep();
+
+    const previewCfg = () => ({
+      type: choice.type || "boy",
+      skinTone: choice.skinTone,
+      outfit: choice.outfit || (choice.type === "girl" ? "outfit_girl_starter" : "outfit_boy_starter"),
+      hijab: choice.hijab || "hijab_rose",
+      shoes: "shoes_brown",
+      accessory: "acc_none",
+    });
+
+    function renderStep() {
+      const preview = `<div class="cc-preview">${Character.svg(previewCfg(), "wave")}</div>`;
+      let body = "";
+      if (step === 0) {
+        body = `
+          <h2>${t.chooseGender}</h2>
+          <div class="cc-choices cc-choices-2">
+            <button type="button" class="cc-pick" data-v="boy">🧑</button>
+            <button type="button" class="cc-pick" data-v="girl">👧</button>
+          </div>
+          <div class="cc-labels"><span>${t.boy}</span><span>${t.girl}</span></div>`;
+      } else if (step === 1) {
+        body = `
+          <h2>${t.chooseSkin}</h2>
+          <div class="cc-choices cc-swatches">
+            ${window.CHARACTER.skinTones.map((c) => `<button type="button" class="cc-swatch ${c === choice.skinTone ? "sel" : ""}" data-v="${c}" style="background:${c}"></button>`).join("")}
+          </div>`;
+      } else if (step === 2) {
+        const outfits = Character.itemsByCategory(choice.type, "outfit").filter((i) => i.unlockType === "starter");
+        body = `
+          <h2>${t.chooseOutfit}</h2>
+          <div class="cc-choices cc-outfits">
+            ${outfits.map((i) => `<button type="button" class="cc-pick cc-outfit-pick ${i.id === choice.outfit ? "sel" : ""}" data-v="${i.id}" style="background:${i.color}"></button>`).join("")}
+          </div>`;
+      } else if (step === 3 && choice.type === "girl") {
+        const hijabs = Character.itemsByCategory("girl", "hijab").filter((i) => i.unlockType === "starter");
+        body = `
+          <h2>${t.chooseHijab}</h2>
+          <div class="cc-choices cc-outfits">
+            ${hijabs.map((i) => `<button type="button" class="cc-pick cc-outfit-pick ${i.id === choice.hijab ? "sel" : ""}" data-v="${i.id}" style="background:${i.color}"></button>`).join("")}
+          </div>`;
+      } else {
+        body = `<h2>${t.meetCharacter}</h2>`;
+      }
+      scr.charCreate.innerHTML = `
+        <div class="cc-wrap">
+          ${preview}
+          ${body}
+          <button type="button" id="ccNext" class="g-cta" ${canAdvance() ? "" : "disabled"}>${isLastStep() ? t.charStart : t.charContinue} →</button>
+        </div>`;
+      scr.charCreate.querySelectorAll(".cc-pick, .cc-swatch").forEach((b) => (b.onclick = () => {
+        const v = b.dataset.v;
+        if (step === 0) choice.type = v;
+        else if (step === 1) choice.skinTone = v;
+        else if (step === 2) choice.outfit = v;
+        else if (step === 3) choice.hijab = v;
+        renderStep();
+      }));
+      $("ccNext").onclick = () => {
+        if (!canAdvance()) return;
+        sfx.tap();
+        if (isLastStep()) return finish();
+        step++;
+        renderStep();
+      };
+    }
+    function canAdvance() {
+      if (step === 0) return !!choice.type;
+      if (step === 1) return !!choice.skinTone;
+      if (step === 2) return !!choice.outfit;
+      if (step === 3) return choice.type !== "girl" || !!choice.hijab;
+      return true;
+    }
+    function finish() {
+      Character.createConfig(activeProfile.id, choice.type, choice);
+      gohash("#/spel/wereld/letter_oasis");
+    }
+    renderStep();
+  }
+
+  // ---------- Kledingkast ----------
+  function renderWardrobe() {
+    const t = GT();
+    document.documentElement.dir = t.dir;
+    let cfg = Character.getConfig(activeProfile.id);
+    const CATS = ["outfit", "hijab", "shoes", "accessory"];
+    const catLabel = { outfit: t.categoryOutfit, hijab: t.categoryHijab, shoes: t.categoryShoes, accessory: t.categoryAccessory };
+    let activeCat = "outfit";
+
+    function unlockHint(item) {
+      if (item.unlockType === "level") return t.unlockAtLevel(item.unlockValue);
+      if (item.unlockType === "stars") return t.unlockAtStars(item.unlockValue);
+      if (item.unlockType === "world") return t.unlockAtWorld;
+      return "";
+    }
+
+    function render() {
+      const cats = CATS.filter((c) => c !== "hijab" || cfg.type === "girl");
+      const items = Character.itemsByCategory(cfg.type, activeCat);
+      const unlocked = Character.getUnlocked(activeProfile.id);
+      scr.wardrobe.innerHTML = `
+        <div class="g-profile-head">
+          <a href="#/spel/wereld/letter_oasis" class="g-back-book">←</a>
+          <h2 class="g-who" style="margin:0;font-size:18px;">${t.wardrobeTitle}</h2>
+          <span></span>
+        </div>
+        <div class="cc-preview cc-preview-wardrobe">${Character.svg(cfg, "happy")}</div>
+        <div class="wardrobe-tabs">${cats.map((c) => `<button type="button" class="wardrobe-tab ${c === activeCat ? "sel" : ""}" data-c="${c}">${catLabel[c]}</button>`).join("")}</div>
+        <div class="wardrobe-grid">
+          ${items.map((i) => {
+            const isUnlocked = unlocked.includes(i.id);
+            const isEquipped = cfg[i.category] === i.id;
+            return `<button type="button" class="wardrobe-item ${isEquipped ? "equipped" : ""} ${isUnlocked ? "" : "locked"}" data-id="${i.id}" ${isUnlocked ? "" : "disabled"}>
+              <span class="wardrobe-swatch" style="background:${i.color || "#ddd"}">${isUnlocked ? "" : "🔒"}</span>
+              <span class="wardrobe-label">${gsub(i.label)}</span>
+              ${!isUnlocked ? `<span class="wardrobe-hint">${unlockHint(i)}</span>` : ""}
+            </button>`;
+          }).join("")}
+        </div>`;
+      scr.wardrobe.querySelectorAll(".wardrobe-tab").forEach((b) => (b.onclick = () => { activeCat = b.dataset.c; render(); }));
+      scr.wardrobe.querySelectorAll(".wardrobe-item:not(.locked)").forEach((b) => (b.onclick = () => {
+        cfg = Character.saveConfig(activeProfile.id, { [activeCat]: b.dataset.id });
+        sfx.tap();
+        render();
+      }));
+    }
+    render();
   }
 
   // ---------- Werelkaart ----------
@@ -470,6 +601,7 @@
           <span>${t.levelsProgress(doneCount, levels.length)}</span>
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
+        <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">
         <div class="g-scene" id="gScene" style="height:${sceneH}px">
@@ -482,6 +614,10 @@
           <div class="g-cloud g-cloud-b">${ICON.cloud}</div>
           ${pts.map((p) => zoneDecorations(p.i, p.x, p.y, world.theme)).join("")}
           <div class="g-gate" style="top:${sceneH - 40}px">${ICON.gate}</div>
+
+          <div class="g-map-character" style="left:${pts[currentIdx].x}%; top:${pts[currentIdx].y - 6}px">
+            ${Character.svg(Character.getConfig(activeProfile.id), "wave")}
+          </div>
 
           <button class="g-cp ${cpUnlocked ? "" : "locked"} ${cpClaimed ? "done" : ""}" id="gCheckpoint"
             style="left:${cpPoint.x}%; top:${cpPoint.y}px" ${cpUnlocked && !cpClaimed ? "" : "disabled"}
@@ -659,7 +795,7 @@
     function onTimeout() {
       if (locked) return;
       timeoutStrikes++;
-      sfx.wrong(); companionMood("sad", 1100);
+      sfx.wrong(); companionMood("encouraging", 1100);
       if (first) { updateMastery(q.letter, false); first = false; }
       if (timeoutStrikes >= 2) {
         // Tweede keer geen antwoord: laat het juiste antwoord zien en ga door.
@@ -734,7 +870,7 @@
                 setTimeout(() => { runState.i++; renderQuestion(); }, 500);
               }
             } else {
-              sfx.wrong(); companionMood("sad", 1100);
+              sfx.wrong(); companionMood("encouraging", 1100);
               if (first) { updateMastery(q.letter, false); AudioManager.playRandomRetryFeedback(); first = false; }
               open.forEach((c) => { c.classList.remove("flipped"); c.querySelector("span").textContent = "?"; });
             }
@@ -764,7 +900,7 @@
     } else {
       btn.classList.add("wrong");
       setTimeout(() => btn.classList.remove("wrong"), 420);
-      sfx.wrong(); companionMood("sad", 1100);
+      sfx.wrong(); companionMood("encouraging", 1100);
       if (first) {
         toast(GT().tryAgain);
         // Vriendelijke retry-feedback, daarna de Arabische leeruitspraak nog eens.
@@ -789,6 +925,7 @@
     let newBadge = null;
     if (level.badge && !state.badges.includes(level.badge)) { state.badges.push(level.badge); newBadge = G.badges[level.badge]; }
     gstate.save(activeProfile.id, state);
+    const newItems = Character.checkNewUnlocks(activeProfile.id, state, G.worlds);
     sfx.fireworks();
     const worldIdx0 = G.worlds.findIndex((w) => w.id === world.id);
     const isLastLevelOfWorld = world.levels[world.levels.length - 1].n === level.n;
@@ -804,11 +941,12 @@
     scr.complete.hidden = false;
     scr.complete.innerHTML = `
       <div class="g-complete-card">
-        <div class="g-companion-celebrate">${FOX.happy}</div>
+        <div class="g-companion-celebrate">${Character.svg(charCfg(), "celebrate")}</div>
         <div class="g-stars-big">${[1, 2, 3].map((n) => `<span class="${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
         <h2>${t.levelDone}</h2>
         <div class="g-rewards"><span>+${xp} ${t.xp}</span><span>+${coins} 🪙</span></div>
         ${newBadge ? `<div class="g-badge-earned"><span class="g-badge-icon">${newBadge.icon}</span><span>${t.badgeEarned}<br>${gsub(newBadge)}</span></div>` : ""}
+        ${newItems.length ? `<a href="#/spel/kledingkast" class="g-badge-earned g-wardrobe-earned"><span class="g-badge-icon">👕</span><span>${t.newOutfitEarned}<br>${newItems.map((it) => gsub(it.label)).join(", ")}</span></a>` : ""}
         <div class="g-complete-actions">
           <button id="gToMap" class="g-cta ghost">${t.toMap}</button>
           <button id="gNextLevel" class="g-cta"><span>${t.next}</span> →</button>
@@ -854,7 +992,14 @@
     loadActive();
     const mWorld = h.match(/^#\/spel\/wereld\/([\w-]+)/);
     const mLevel = h.match(/^#\/spel\/level\/([\w-]+)\/(\d+)/);
-    if (!activeProfile && (mWorld || mLevel)) return gohash("#/spel");
+    const mPersonage = h.startsWith("#/spel/personage");
+    const mWardrobe = h.startsWith("#/spel/kledingkast");
+    if (!activeProfile && (mWorld || mLevel || mWardrobe)) return gohash("#/spel");
+    // Elk kindprofiel heeft een eigen leermaatje nodig vóórdat het verder mag —
+    // ook bestaande profielen van vóór dit systeem (zie spec §27).
+    if (activeProfile && !Character.isConfigured(activeProfile.id) && !mPersonage) return gohash("#/spel/personage");
+    if (mPersonage) { showScreen("charCreate"); renderCharacterCreator(); return; }
+    if (mWardrobe) { showScreen("wardrobe"); renderWardrobe(); return; }
     if (mLevel) {
       const w = G.worlds.find((x) => x.id === mLevel[1]);
       if (w && !worldUnlocked(w)) return gohash("#/spel");

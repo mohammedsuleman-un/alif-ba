@@ -23,7 +23,7 @@
       greeting: (n) => `السَّلَامُ عَلَيْكُمْ، ${n}`,
       startAdventure: "هل أنت مستعدّ لبدء رحلتك في تعلّم العربية؟",
       chooseProfile: "اختر ملفك",
-      continueLearning: "تابع التعلّم",
+      continueLearning: "تابع التعلّم", wardrobe: "خزانة الملابس",
       allDone: "أتممت كل شيء! ما شاء الله",
       level: "المستوى",
       bookCardTitle: "كتابي ألف با",
@@ -43,7 +43,7 @@
       greeting: (n) => `Assalamu alaikum, ${n}`,
       startAdventure: "Klaar om je Arabische avontuur te beginnen?",
       chooseProfile: "Kies je profiel",
-      continueLearning: "Verder leren",
+      continueLearning: "Verder leren", wardrobe: "Kledingkast",
       allDone: "Alles voltooid! MashaAllah",
       level: "Level",
       bookCardTitle: "Mijn Alif Ba Boek",
@@ -63,7 +63,7 @@
       greeting: (n) => `Assalamu alaikum, ${n}`,
       startAdventure: "Ready to start your Arabic adventure?",
       chooseProfile: "Choose your profile",
-      continueLearning: "Continue learning",
+      continueLearning: "Continue learning", wardrobe: "Wardrobe",
       allDone: "All done! MashaAllah",
       level: "Level",
       bookCardTitle: "My Alif Ba Book",
@@ -145,10 +145,14 @@
     const stop = nextStop(state);
     const worldLabel = gsub(stop.world.title);
     const href = stop.level ? `#/spel/level/${stop.world.id}/${stop.level.n}` : `#/spel/wereld/${stop.world.id}`;
+    const charCfg = window.Character && window.Character.getConfig(p.id);
+    const charHtml = charCfg
+      ? `<div class="app-home-character">${window.Character.svg(charCfg, "idle")}</div>`
+      : `<span class="app-home-avatar">${p.avatar}</span>`;
     root.innerHTML = `
       <div class="app-home">
         <div class="app-home-hero">
-          <span class="app-home-avatar">${p.avatar}</span>
+          ${charHtml}
           <p class="app-home-greet">${t.greeting(p.name)}</p>
           <div class="app-home-stats">
             <span>⭐ ${totalStars}</span>
@@ -159,6 +163,7 @@
             <span class="ahc-level">${stop.level ? `${t.level} ${stop.level.n}` : t.allDone}</span>
           </div>
           <a href="${href}" class="app-cta">${t.continueLearning} <span class="cta-arrow">→</span></a>
+          ${charCfg ? `<a href="#/spel/kledingkast" class="app-home-wardrobe-link">👕 ${t.wardrobe}</a>` : ""}
         </div>
         ${bookCardHtml(t)}
       </div>`;
@@ -205,11 +210,16 @@
     root.innerHTML = `
       <header class="hub-head"><h1>${t.profileTitle}</h1></header>
       ${p
-        ? `<div class="profile-card-big">
-            <span class="pcb-avatar">${p.avatar}</span>
-            <span class="pcb-name">${p.name}</span>
-            <a href="#/spel" class="pcb-switch">${t.switchProfile}</a>
-          </div>`
+        ? (() => {
+            const cfg = window.Character && window.Character.getConfig(p.id);
+            const mini = cfg ? `<span class="pcb-avatar pcb-character">${window.Character.svg(cfg, "happy")}</span>` : `<span class="pcb-avatar">${p.avatar}</span>`;
+            return `<div class="profile-card-big">
+              ${mini}
+              <span class="pcb-name">${p.name}</span>
+              <a href="#/spel/kledingkast" class="pcb-switch">👕</a>
+              <a href="#/spel" class="pcb-switch">${t.switchProfile}</a>
+            </div>`;
+          })()
         : `<p class="hub-empty">${t.noProfileYet}</p><a href="#/spel" class="app-cta">${t.chooseProfile} <span class="cta-arrow">→</span></a>`}
       <section class="hub-panel">
         <h2>${t.language}</h2>
