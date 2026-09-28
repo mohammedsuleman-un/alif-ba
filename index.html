@@ -14,8 +14,20 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Startscherm: lessenoverzicht -->
-  <section id="home" class="screen">
+  <!-- App-startscherm: begroeting, voortgang, "verder leren"-CTA. Geen inhoudsopgave. -->
+  <section id="appHome" class="screen"></section>
+
+  <!-- Beloningen: XP, sterren, badges. -->
+  <section id="rewards" class="screen" hidden></section>
+
+  <!-- Profiel: kindprofiel + taal + oudergedeelte (instellingen, voortgang per kind). -->
+  <section id="profileHub" class="screen" hidden></section>
+
+  <!-- Onderste navigatie: Leren · Boek · Beloningen · Profiel -->
+  <nav id="bottomNav" class="bottom-nav"></nav>
+
+  <!-- Boekmodus: bestaande inhoudsopgave + lessen (los van de nieuwe leerervaring). -->
+  <section id="home" class="screen" hidden>
     <header class="home-head">
       <div class="lang" role="group" aria-label="Taal · Language · اللغة">
         <button data-lang="ar" lang="ar">ع</button>
@@ -51,11 +63,6 @@
           <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
-
-      <a href="#/spel" class="g-entry" id="gameEntry">
-        <span class="g-entry-icon">🎮</span>
-        <span class="g-entry-text" data-i18n="playGame">Speel het spel</span>
-      </a>
     </header>
     <div id="toc" class="toc"></div>
   </section>
@@ -135,5 +142,6 @@
   <script src="app.js"></script>
   <script src="game-data.js"></script>
   <script src="game.js"></script>
+  <script src="shell.js"></script>
 </body>
 </html>

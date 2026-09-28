@@ -248,11 +248,7 @@
     const list = profiles.all();
     scr.profile.innerHTML = `
       <div class="g-profile-head">
-        <a href="#/" class="g-back-book">📖 ${t.bookMode}</a>
-        <div class="g-voice-toggles">
-          <button id="gVoiceToggle" class="g-icon-btn" aria-label="${AudioManager.settings.voiceOn ? t.voiceOn : t.voiceOff}">${AudioManager.settings.voiceOn ? "🗣️" : "🔇"}</button>
-          <button id="gSfxToggle" class="g-icon-btn" aria-label="${AudioManager.settings.sfxOn ? t.sfxOn : t.sfxOff}">${AudioManager.settings.sfxOn ? "🔔" : "🔕"}</button>
-        </div>
+        <a href="#/" class="g-back-book">🏠</a>
       </div>
       <h2 class="g-who">${t.who}</h2>
       <div class="g-profiles" id="gProfileList"></div>
@@ -268,8 +264,6 @@
       b.onclick = () => { profiles.setActive(p.id); loadActive(); gohash("#/spel/wereld/letter_oasis"); };
       listEl.appendChild(b);
     });
-    $("gVoiceToggle").onclick = () => { AudioManager.settings.voiceOn = !AudioManager.settings.voiceOn; renderProfile(); };
-    $("gSfxToggle").onclick = () => { AudioManager.settings.sfxOn = !AudioManager.settings.sfxOn; renderProfile(); };
     let chosenAvatar = AVATARS[0];
     $("gAddProfile").onclick = () => { $("gNewProfileForm").hidden = false; $("gAddProfile").hidden = true; };
     scr.profile.querySelectorAll(".g-avatar-pick").forEach((b) => (b.onclick = () => {

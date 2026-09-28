@@ -347,8 +347,8 @@
     });
   }
 
-  // ---------- Navigatie (hash: #/les/3) ----------
-  function go(i) { location.hash = i == null ? "" : `#/les/${i + 1}`; }
+  // ---------- Navigatie (hash: #/les/3, inhoudsopgave: #/boek) ----------
+  function go(i) { location.hash = i == null ? "#/boek" : `#/les/${i + 1}`; }
 
   // Onthoudt of we via bladeren (knoppen, vegen, pijltjes) binnenkomen, niet via de inhoudsopgave.
   let paged = false;
@@ -373,12 +373,18 @@
       const was = prev == null ? null : chapterOf(prev), now = chapterOf(current);
       if (paged && was && now && was.ci !== now.ci && !EDIT) showSplash(now);
       paged = false;
-    } else {
+    } else if (location.hash.startsWith("#/boek")) {
       hideSplash();
       stopAll();
       els.lesson.hidden = true;
       els.home.hidden = false;
       renderHome();
+    } else {
+      // App-home, beloningen, profiel, ...: dit is geen boekscherm — aan de kant.
+      hideSplash();
+      stopAll();
+      els.home.hidden = true;
+      els.lesson.hidden = true;
     }
   }
 
