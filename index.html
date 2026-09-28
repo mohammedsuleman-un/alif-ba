@@ -17,13 +17,10 @@
   <!-- Startscherm: lessenoverzicht -->
   <section id="home" class="screen">
     <header class="home-head">
-      <div class="home-banner">
-        <img class="cover" src="pages/cover-banner.jpg" alt="">
-        <div class="lang" role="group" aria-label="Taal · Language · اللغة">
-          <button data-lang="ar" lang="ar">ع</button>
-          <button data-lang="nl">NL</button>
-          <button data-lang="en">EN</button>
-        </div>
+      <div class="lang" role="group" aria-label="Taal · Language · اللغة">
+        <button data-lang="ar" lang="ar">ع</button>
+        <button data-lang="nl">NL</button>
+        <button data-lang="en">EN</button>
       </div>
       <div class="home-title">
         <h1 lang="ar" dir="rtl">
@@ -32,9 +29,26 @@
           <span class="title-main">قرءاني</span>
         </h1>
         <p data-i18n="subtitle">Inhoudsopgave · tik op een les</p>
-        <button id="btnContinue" class="continue" hidden>
-          <svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
-          <span id="continueText"></span>
+      </div>
+
+      <div class="home-progress">
+        <svg class="op-ring" viewBox="0 0 40 40" aria-hidden="true">
+          <circle class="op-ring-bg" cx="20" cy="20" r="17"/>
+          <circle id="opRingFg" class="op-ring-fg" cx="20" cy="20" r="17"/>
+        </svg>
+        <span id="progressText" class="op-text"></span>
+      </div>
+
+      <button id="btnContinue" class="continue" hidden>
+        <svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+        <span id="continueText"></span>
+      </button>
+
+      <div class="home-search">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.3-4.3"/></svg>
+        <input id="searchInput" type="search" data-i18n-placeholder="search" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="searchClear" class="search-clear" hidden type="button" aria-label="×">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
     </header>

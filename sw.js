@@ -1,8 +1,7 @@
-const VERSION = "v5";
+const VERSION = "v6";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png",
-  "pages/cover-banner.jpg",
   "pages/p-05.jpg",
   "pages/p-06.jpg",
   "pages/p-07.jpg",

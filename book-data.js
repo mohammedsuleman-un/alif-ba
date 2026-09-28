@@ -3,7 +3,7 @@
 // Audio: audio/pXX_YY.mp3  (XX = paginanummer, YY = nummer van het vierkant).
 window.BOOK = {
   title: "قاعدة ألف با قرءاني",
-  cover: "pages/cover-banner.jpg",
+  cover: "pages/p-05.jpg",
   // Hoofdstukken voor de inhoudsopgave; from/to zijn paginanummers (n) uit de PDF.
   chapters: [
     { ar: "الحروف الهجائية", nl: "De letters", en: "The letters", from: 5, to: 9 },

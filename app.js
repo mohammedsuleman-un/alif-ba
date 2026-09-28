@@ -18,6 +18,8 @@
     splash: $("splash"), splashKicker: $("splashKicker"), splashNum: $("splashNum"),
     splashAr: $("splashAr"), splashSub: $("splashSub"), splashCount: $("splashCount"),
     splashGo: $("splashGo"), splashGoText: $("splashGoText"),
+    progressText: $("progressText"), opRingFg: $("opRingFg"),
+    searchInput: $("searchInput"), searchClear: $("searchClear"),
   };
 
   // ---------- Voortgang (per apparaat) ----------
@@ -44,6 +46,8 @@
       home: "العودة إلى الفهرس", playAll: "تشغيل الكل", next: "الصفحة التالية", prev: "الصفحة السابقة",
       tile: (n) => `مربع ${n}`,
       chapter: (n) => `الفصل ${n}`, lessonOf: (i, n) => `الدرس ${i} من ${n}`, start: "ابدأ",
+      search: "ابحث عن درس…", noResults: "لا توجد نتائج",
+      progress: (done, total) => `${done} من ${total} درسًا`,
     },
     nl: {
       dir: "ltr",
@@ -57,6 +61,8 @@
       home: "Terug naar inhoudsopgave", playAll: "Alles afspelen", next: "Volgende pagina", prev: "Vorige pagina",
       tile: (n) => `Vierkant ${n}`,
       chapter: (n) => `Hoofdstuk ${n}`, lessonOf: (i, n) => `Les ${i} van ${n}`, start: "Beginnen",
+      search: "Zoek een les…", noResults: "Geen lessen gevonden",
+      progress: (done, total) => `${done} van ${total} lessen`,
     },
     en: {
       dir: "ltr",
@@ -70,6 +76,8 @@
       home: "Back to contents", playAll: "Play all", next: "Next page", prev: "Previous page",
       tile: (n) => `Square ${n}`,
       chapter: (n) => `Chapter ${n}`, lessonOf: (i, n) => `Lesson ${i} of ${n}`, start: "Start",
+      search: "Search a lesson…", noResults: "No lessons found",
+      progress: (done, total) => `${done} of ${total} lessons`,
     },
   };
   const guessLang = () => {
@@ -87,6 +95,7 @@
     document.documentElement.dir = t.dir;
     document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = t[el.dataset.i18n]));
     document.querySelectorAll("[data-i18n-aria]").forEach((el) => el.setAttribute("aria-label", t[el.dataset.i18nAria]));
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => (el.placeholder = t[el.dataset.i18nPlaceholder]));
     document.querySelectorAll("[data-lang]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === lang)));
   }
 
@@ -176,23 +185,50 @@
   const CHEV = `<svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>`;
   const heardCount = (p) => p.tiles.filter((t) => heard.has(t.id)).length;
 
+  // Voortgang over alle lessen samen, voor de ring in de kop.
+  const OP_CIRC = 106.8;
+  function overallProgress() {
+    let lessonsDone = 0;
+    BOOK.pages.forEach((p) => { if (lessonDone(p)) lessonsDone++; });
+    return { done: lessonsDone, total: BOOK.pages.length };
+  }
+
+  const normalize = (s) => (s || "").toLowerCase();
+  const lessonMatches = (p, q) => normalize(p.title).includes(q) || normalize(p.nl).includes(q) || normalize(p.en).includes(q);
+  const chapterMatches = (ch, q) => normalize(ch.ar).includes(q) || normalize(ch.nl).includes(q) || normalize(ch.en).includes(q);
+
+  let searchQuery = "";
+
   function renderHome() {
     const last = store.get("last", null);
     els.continueBtn.hidden = last == null;
     if (last != null) els.continueText.textContent = T().continue(last + 1);
 
+    const prog = overallProgress();
+    els.opRingFg.style.strokeDashoffset = String(OP_CIRC * (1 - (prog.total ? prog.done / prog.total : 0)));
+    els.progressText.textContent = T().progress(prog.done, prog.total);
+
+    const q = normalize(searchQuery.trim());
+    els.searchClear.hidden = !searchQuery;
+
     const chapters = BOOK.chapters || [{ ar: BOOK.title, nl: "", from: -Infinity, to: Infinity }];
     els.toc.innerHTML = "";
+    let shown = 0;
     chapters.forEach((ch, ci) => {
-      const lessons = BOOK.pages.map((p, i) => ({ p, i })).filter(({ p }) => p.n >= ch.from && p.n <= ch.to);
+      let lessons = BOOK.pages.map((p, i) => ({ p, i })).filter(({ p }) => p.n >= ch.from && p.n <= ch.to);
       if (!lessons.length) return;
+      if (q) {
+        if (!chapterMatches(ch, q)) lessons = lessons.filter(({ p }) => lessonMatches(p, q));
+        if (!lessons.length) return;
+      }
+      shown++;
       const total = lessons.reduce((s, { p }) => s + p.tiles.length, 0);
       const done = lessons.reduce((s, { p }) => s + heardCount(p), 0);
       const pct = total ? Math.round((done / total) * 100) : 0;
 
       const det = document.createElement("details");
       det.className = "chapter";
-      det.open = last != null ? lessons.some(({ i }) => i === last) : ci === 0;
+      det.open = q ? true : (last != null ? lessons.some(({ i }) => i === last) : ci === 0);
       det.innerHTML = `
         <summary>
           <span class="ch-num">${ci + 1}</span>
@@ -218,6 +254,12 @@
       });
       els.toc.appendChild(det);
     });
+    if (!shown) {
+      const p = document.createElement("p");
+      p.className = "no-results";
+      p.textContent = T().noResults;
+      els.toc.appendChild(p);
+    }
   }
 
   // ---------- Lesscherm ----------
@@ -340,6 +382,16 @@
     applyLang();
     route();
   }));
+  els.searchInput.oninput = () => {
+    searchQuery = els.searchInput.value;
+    renderHome();
+  };
+  els.searchClear.onclick = () => {
+    searchQuery = "";
+    els.searchInput.value = "";
+    els.searchInput.focus();
+    renderHome();
+  };
   window.addEventListener("hashchange", route);
 
   // Vegen: Arabisch boek, dus naar rechts vegen = volgende pagina
