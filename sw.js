@@ -1,6 +1,7 @@
-const VERSION = "v11";
+const VERSION = "v12";
 const CORE = [
-  "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js", "manifest.webmanifest",
+  "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
+  "voice-manifest.js", "audio-manager.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png",
   "pages/p-05.jpg",
   "pages/p-06.jpg",

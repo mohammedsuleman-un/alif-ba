@@ -28,6 +28,8 @@
       levelsProgress: (d, n) => `${d} من ${n} مستوى`, discover: (l) => `اكتشف ${l}`,
       checkpointTitle: "محطة استراحة", checkpointReward: (n) => `+${n} 🪙`, claim: "افتح",
       worldDone: "أتممتِ الواحة!", nextWorldSoon: "عالم جديد قريبًا…",
+      voiceOn: "إيقاف الإرشاد الصوتي", voiceOff: "تشغيل الإرشاد الصوتي",
+      sfxOn: "إيقاف المؤثرات الصوتية", sfxOff: "تشغيل المؤثرات الصوتية",
     },
     nl: { dir: "ltr", who: "Wie speelt er?", newProfile: "Nieuw profiel", namePlaceholder: "Jouw naam",
       create: "Beginnen", world: (n) => `Wereld ${n}`, level: "Level", locked: "Op slot", start: "Start",
@@ -40,6 +42,8 @@
       levelsProgress: (d, n) => `${d} van ${n} levels`, discover: (l) => `Ontdek de ${l}`,
       checkpointTitle: "Rustplek", checkpointReward: (n) => `+${n} 🪙`, claim: "Open",
       worldDone: "Wereld voltooid!", nextWorldSoon: "Volgende wereld komt eraan…",
+      voiceOn: "Gesproken instructies uitzetten", voiceOff: "Gesproken instructies aanzetten",
+      sfxOn: "Geluidseffecten uitzetten", sfxOff: "Geluidseffecten aanzetten",
     },
     en: { dir: "ltr", who: "Who's playing?", newProfile: "New profile", namePlaceholder: "Your name",
       create: "Start", world: (n) => `World ${n}`, level: "Level", locked: "Locked", start: "Start",
@@ -52,6 +56,8 @@
       levelsProgress: (d, n) => `${d} of ${n} levels`, discover: (l) => `Discover ${l}`,
       checkpointTitle: "Rest stop", checkpointReward: (n) => `+${n} 🪙`, claim: "Open",
       worldDone: "World complete!", nextWorldSoon: "Next world coming soon…",
+      voiceOn: "Turn off spoken instructions", voiceOff: "Turn on spoken instructions",
+      sfxOn: "Turn off sound effects", sfxOff: "Turn on sound effects",
     },
   };
   const glang = () => (I18N_LANG_OK() ? store.get("lang", "nl") : "nl");
@@ -109,21 +115,13 @@
     return [...pool].sort((a, b) => (state.mastery[a] ?? 50) - (state.mastery[b] ?? 50)).slice(0, n);
   }
 
-  // ---------- Audio (eigen, kleine speler — onafhankelijk van de boekmodus) ----------
-  const player = new Audio();
+  // ---------- Audio ----------
+  // Leeraudio (Arabische letteruitspraak) en gesproken instructies lopen allebei
+  // via de gedeelde AudioManager (audio-manager.js), zodat ze nooit tegelijk
+  // spelen. `playLetter` blijft bestaan als klein gemaksfunctie voor de rest
+  // van dit bestand.
   function playLetter(letter, onEnd) {
-    const base = G.letterAudio[letter];
-    if (!base) return onEnd && onEnd(false);
-    const sources = [base + ".m4a", base + ".mp3"];
-    const tryNext = () => {
-      const src = sources.shift();
-      if (!src) return onEnd && onEnd(false);
-      player.onerror = tryNext;
-      player.onended = () => onEnd && onEnd(true);
-      player.src = src;
-      player.play().catch(() => {});
-    };
-    tryNext();
+    AudioManager.playLearningAudio(G.letterAudio[letter]).then((ok) => onEnd && onEnd(ok));
   }
 
   // ---------- Geluidseffecten (zelf gegenereerd, geen gedownloade bestanden) ----------
@@ -151,6 +149,7 @@
   }
   const sfx = {
     correct() {
+      if (!AudioManager.settings.sfxOn) return;
       const ctx = audioCtx(); if (!ctx) return;
       const t0 = ctx.currentTime;
       // Twee korte, oplopende "vogel-tjilpjes".
@@ -158,17 +157,20 @@
       tone(ctx, t0 + 0.1, 1800, 0.11, { type: "sine", glideTo: 2500, gain: 0.15 });
     },
     wrong() {
+      if (!AudioManager.settings.sfxOn) return;
       const ctx = audioCtx(); if (!ctx) return;
       const t0 = ctx.currentTime;
       // Zachte, dalende "boe" — geen hard/eng geluid.
       tone(ctx, t0, 330, 0.24, { type: "sine", glideTo: 220, gain: 0.12 });
     },
     levelComplete() {
+      if (!AudioManager.settings.sfxOn) return;
       const ctx = audioCtx(); if (!ctx) return;
       const t0 = ctx.currentTime;
       [660, 880, 1100, 1320].forEach((f, i) => tone(ctx, t0 + i * 0.11, f, 0.22, { type: "triangle", gain: 0.14 }));
     },
     tap() {
+      if (!AudioManager.settings.sfxOn) return;
       const ctx = audioCtx(); if (!ctx) return;
       tone(ctx, ctx.currentTime, 700, 0.05, { type: "sine", gain: 0.08 });
     },
@@ -238,12 +240,20 @@
   }
 
   // ---------- Profielscherm ----------
+  let welcomedThisSession = false;
   function renderProfile() {
     const t = GT();
     document.documentElement.dir = t.dir;
+    if (!welcomedThisSession) { welcomedThisSession = true; AudioManager.playInstruction("welcome"); }
     const list = profiles.all();
     scr.profile.innerHTML = `
-      <a href="#/" class="g-back-book">📖 ${t.bookMode}</a>
+      <div class="g-profile-head">
+        <a href="#/" class="g-back-book">📖 ${t.bookMode}</a>
+        <div class="g-voice-toggles">
+          <button id="gVoiceToggle" class="g-icon-btn" aria-label="${AudioManager.settings.voiceOn ? t.voiceOn : t.voiceOff}">${AudioManager.settings.voiceOn ? "🗣️" : "🔇"}</button>
+          <button id="gSfxToggle" class="g-icon-btn" aria-label="${AudioManager.settings.sfxOn ? t.sfxOn : t.sfxOff}">${AudioManager.settings.sfxOn ? "🔔" : "🔕"}</button>
+        </div>
+      </div>
       <h2 class="g-who">${t.who}</h2>
       <div class="g-profiles" id="gProfileList"></div>
       <button id="gAddProfile" class="g-add">+ ${t.newProfile}</button>
@@ -258,6 +268,8 @@
       b.onclick = () => { profiles.setActive(p.id); loadActive(); gohash("#/spel/wereld/letter_oasis"); };
       listEl.appendChild(b);
     });
+    $("gVoiceToggle").onclick = () => { AudioManager.settings.voiceOn = !AudioManager.settings.voiceOn; renderProfile(); };
+    $("gSfxToggle").onclick = () => { AudioManager.settings.sfxOn = !AudioManager.settings.sfxOn; renderProfile(); };
     let chosenAvatar = AVATARS[0];
     $("gAddProfile").onclick = () => { $("gNewProfileForm").hidden = false; $("gAddProfile").hidden = true; };
     scr.profile.querySelectorAll(".g-avatar-pick").forEach((b) => (b.onclick = () => {
@@ -497,11 +509,11 @@
     const level = world.levels.find((lv) => lv.n === Number(levelN));
     if (!level) return gohash(`#/spel/wereld/${world.id}`);
     runState = { world, level, questions: buildQuestions(world, level), i: 0, correctFirstTry: 0, attemptedFirst: true };
-    if (level.letters.length) {
-      renderIntro();
-    } else {
-      renderQuestion();
-    }
+    // Alleen preloaden wat dit level ook echt gebruikt — niet de hele bibliotheek.
+    const typeInstr = { AUDIO_TO_LETTER: "which-letter", VISUAL_MATCH: "find-letter", LETTER_MATCH: "match" };
+    AudioManager.preload([...new Set(["level-start", "listen", "correct-01", "retry-01", ...level.types.map((ty) => typeInstr[ty])])].filter(Boolean));
+    AudioManager.playInstruction("level-start");
+    if (level.letters.length) renderIntro(); else renderQuestion();
   }
 
   function levelHeader() {
@@ -531,15 +543,21 @@
       </div>
       ${companionHtml("enter")}`;
     $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
-    const playIt = () => playLetter(letter, () => $("gIntroLetter").classList.remove("playing"));
-    $("gIntroLetter").onclick = () => { $("gIntroLetter").classList.add("playing"); playIt(); };
+    const replayIt = () => playLetter(letter, () => $("gIntroLetter").classList.remove("playing"));
+    $("gIntroLetter").onclick = () => { $("gIntroLetter").classList.add("playing"); replayIt(); };
     $("gIntroGo").onclick = renderQuestion;
-    playIt();
+    // Bij binnenkomst: eerst de instructie ("Luister goed"), dan pas de letter — nooit tegelijk.
+    $("gIntroLetter").classList.add("playing");
+    AudioManager.playInstruction("listen").then(() => playLetter(letter, () => $("gIntroLetter").classList.remove("playing")));
   }
 
   function renderQuestion() {
     const { questions, i } = runState;
     if (i >= questions.length) return renderComplete();
+    if (questions.length >= 4) {
+      if (i === Math.floor(questions.length / 2)) AudioManager.playInstruction("halfway");
+      else if (i === questions.length - 1) AudioManager.playInstruction("last-question");
+    }
     const q = questions[i];
     if (q.type === "LETTER_MATCH") return renderPairsQuestion(q);
     renderChoiceQuestion(q);
@@ -562,13 +580,19 @@
       ${companionHtml()}`;
     $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
     let first = true, locked = false;
-    if (isAudio) { const p = () => playLetter(q.letter); $("gQPlay").onclick = p; p(); }
+    if (isAudio) {
+      const replay = () => playLetter(q.letter);
+      $("gQPlay").onclick = replay;
+      AudioManager.playInstruction("which-letter").then(() => playLetter(q.letter));
+    } else {
+      AudioManager.playInstruction("find-letter");
+    }
     scr.level.querySelectorAll(".g-opt").forEach((btn) => {
       btn.onclick = () => {
         if (locked) return;
         const ok = q.options[Number(btn.dataset.i)] === q.letter;
         if (ok) locked = true;
-        answerFeedback(btn, ok, first, () => { runState.i++; renderQuestion(); });
+        answerFeedback(btn, ok, first, () => { runState.i++; renderQuestion(); }, q.letter);
         if (ok && first) { runState.correctFirstTry++; updateMastery(q.letter, true); }
         else if (!ok) { if (first) updateMastery(q.letter, false); first = false; }
       };
@@ -590,6 +614,7 @@
       </div>
       ${companionHtml()}`;
     $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
+    AudioManager.playInstruction("match");
     let open = [], lock = false, first = true, solvedPairs = 0, needed = 2;
     scr.level.querySelectorAll(".g-pair-card").forEach((card) => {
       card.onclick = () => {
@@ -608,11 +633,12 @@
               if (solvedPairs >= needed) {
                 if (first) { runState.correctFirstTry++; updateMastery(q.letter, true); }
                 toast(pickCorrectMsg());
+                AudioManager.playRandomCorrectFeedback();
                 setTimeout(() => { runState.i++; renderQuestion(); }, 500);
               }
             } else {
               sfx.wrong(); companionMood("sad", 1100);
-              if (first) { updateMastery(q.letter, false); first = false; }
+              if (first) { updateMastery(q.letter, false); AudioManager.playRandomRetryFeedback(); first = false; }
               open.forEach((c) => { c.classList.remove("flipped"); c.querySelector("span").textContent = "?"; });
             }
             open = []; lock = false;
@@ -631,17 +657,23 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => tEl.classList.remove("show"), 1400);
   }
 
-  function answerFeedback(btn, ok, first, next) {
+  function answerFeedback(btn, ok, first, next, letter) {
     if (ok) {
       btn.classList.add("correct");
       toast(pickCorrectMsg());
       sfx.correct(); companionMood("happy", 1200);
+      AudioManager.playRandomCorrectFeedback();
       setTimeout(next, 550);
     } else {
       btn.classList.add("wrong");
       setTimeout(() => btn.classList.remove("wrong"), 420);
       sfx.wrong(); companionMood("sad", 1100);
-      if (first) toast(GT().tryAgain);
+      if (first) {
+        toast(GT().tryAgain);
+        // Vriendelijke retry-feedback, daarna de Arabische leeruitspraak nog eens.
+        const base = letter && G.letterAudio[letter];
+        AudioManager.playRandomRetryFeedback().then(() => { if (base) return AudioManager.playLearningAudio(base); });
+      }
     }
   }
 
@@ -661,6 +693,17 @@
     if (level.badge && !state.badges.includes(level.badge)) { state.badges.push(level.badge); newBadge = G.badges[level.badge]; }
     gstate.save(activeProfile.id, state);
     sfx.levelComplete();
+    const worldIdx0 = G.worlds.findIndex((w) => w.id === world.id);
+    const isLastLevelOfWorld = world.levels[world.levels.length - 1].n === level.n;
+    const worldNowComplete = isLastLevelOfWorld && !G.worlds[worldIdx0 + 1];
+    const worldUnlocksNext = isLastLevelOfWorld && !!G.worlds[worldIdx0 + 1];
+    AudioManager.playInstruction("level-complete").then(() => {
+      if (stars === 3) return AudioManager.playInstruction("three-stars");
+    }).then(() => {
+      if (newBadge) return AudioManager.playInstruction("new-badge");
+    }).then(() => {
+      if (worldNowComplete || worldUnlocksNext) return AudioManager.playInstruction("world-complete");
+    });
 
     scr.complete.hidden = false;
     scr.complete.innerHTML = `
