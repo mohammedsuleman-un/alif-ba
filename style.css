@@ -30,7 +30,7 @@ svg { width: 24px; height: 24px; fill: currentColor; }
 /* Brede omslagfoto boven de inhoudsopgave */
 .home-banner { position: relative; line-height: 0; background: var(--ink); }
 .cover {
-  width: 100%; height: clamp(120px, 26vw, 220px); object-fit: cover; object-position: center 35%;
+  width: 100%; height: clamp(150px, 32vw, 260px); object-fit: cover; object-position: center 62%;
   display: block;
 }
 .home-title {
