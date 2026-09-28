@@ -126,6 +126,108 @@
     tryNext();
   }
 
+  // ---------- Geluidseffecten (zelf gegenereerd, geen gedownloade bestanden) ----------
+  // Kleine natuurlijk klinkende toontjes via de Web Audio API: vogelachtig getjilp
+  // bij een goed antwoord, een zachte "oeps" bij fout, en een klein vreugdedeuntje
+  // bij het voltooien van een level. Nooit hard/schrikkerig.
+  let actx = null;
+  function audioCtx() {
+    if (!actx) { try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch { return null; } }
+    if (actx.state === "suspended") actx.resume().catch(() => {});
+    return actx;
+  }
+  function tone(ctx, t0, freq, dur, { type = "sine", gain = 0.18, glideTo = null } = {}) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t0);
+    if (glideTo) osc.frequency.exponentialRampToValueAtTime(glideTo, t0 + dur);
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(gain, t0 + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    osc.connect(g).connect(ctx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.02);
+  }
+  const sfx = {
+    correct() {
+      const ctx = audioCtx(); if (!ctx) return;
+      const t0 = ctx.currentTime;
+      // Twee korte, oplopende "vogel-tjilpjes".
+      tone(ctx, t0, 1500, 0.09, { type: "sine", glideTo: 2100, gain: 0.15 });
+      tone(ctx, t0 + 0.1, 1800, 0.11, { type: "sine", glideTo: 2500, gain: 0.15 });
+    },
+    wrong() {
+      const ctx = audioCtx(); if (!ctx) return;
+      const t0 = ctx.currentTime;
+      // Zachte, dalende "boe" — geen hard/eng geluid.
+      tone(ctx, t0, 330, 0.24, { type: "sine", glideTo: 220, gain: 0.12 });
+    },
+    levelComplete() {
+      const ctx = audioCtx(); if (!ctx) return;
+      const t0 = ctx.currentTime;
+      [660, 880, 1100, 1320].forEach((f, i) => tone(ctx, t0 + i * 0.11, f, 0.22, { type: "triangle", gain: 0.14 }));
+    },
+    tap() {
+      const ctx = audioCtx(); if (!ctx) return;
+      tone(ctx, ctx.currentTime, 700, 0.05, { type: "sine", gain: 0.08 });
+    },
+  };
+
+  // ---------- Begeleidend diertje (eigen ontwerp: woestijnvosje) ----------
+  // Reageert blij/verdrietig mee met het antwoord van het kind. Zuiver decoratief,
+  // raakt de spellogica niet aan.
+  const FOX = {
+    idle: `<svg viewBox="0 0 100 90"><g>
+        <path d="M20 55C10 40 14 18 28 10 30 22 34 30 40 34Z" fill="#e8a463"/>
+        <path d="M80 55C90 40 86 18 72 10 70 22 66 30 60 34Z" fill="#e8a463"/>
+        <path d="M22 56C12 42 16 22 28 14 30 24 34 31 40 35Z" fill="#fbeadb"/>
+        <path d="M78 56C88 42 84 22 72 14 70 24 66 31 60 35Z" fill="#fbeadb"/>
+        <ellipse cx="50" cy="55" rx="34" ry="30" fill="#f0b57e"/>
+        <ellipse cx="50" cy="62" rx="18" ry="15" fill="#fbeadb"/>
+        <circle cx="38" cy="50" r="4.2" fill="#3a2a1e"/>
+        <circle cx="62" cy="50" r="4.2" fill="#3a2a1e"/>
+        <path d="M46 63q4 4 8 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="50" cy="58" rx="3" ry="2.2" fill="#3a2a1e"/>
+      </g></svg>`,
+    happy: `<svg viewBox="0 0 100 90"><g>
+        <path d="M18 50C6 33 12 12 28 6 29 20 34 28 41 32Z" fill="#e8a463"/>
+        <path d="M82 50C94 33 88 12 72 6 71 20 66 28 59 32Z" fill="#e8a463"/>
+        <path d="M20 51C9 35 14 16 28 10 29 22 33 29 41 33Z" fill="#fbeadb"/>
+        <path d="M80 51C91 35 86 16 72 10 71 22 67 29 59 33Z" fill="#fbeadb"/>
+        <ellipse cx="50" cy="53" rx="35" ry="31" fill="#f0b57e"/>
+        <ellipse cx="50" cy="61" rx="19" ry="16" fill="#fbeadb"/>
+        <path d="M32 47q6 -7 12 0" stroke="#3a2a1e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M56 47q6 -7 12 0" stroke="#3a2a1e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M40 61q10 10 20 0" stroke="#3a2a1e" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <ellipse cx="50" cy="56" rx="3" ry="2.2" fill="#3a2a1e"/>
+        <circle cx="30" cy="60" r="4" fill="#f4a2a2" opacity=".6"/><circle cx="70" cy="60" r="4" fill="#f4a2a2" opacity=".6"/>
+      </g></svg>`,
+    sad: `<svg viewBox="0 0 100 90"><g>
+        <path d="M22 58C13 46 15 26 28 18 29 28 33 35 39 39Z" fill="#e8a463"/>
+        <path d="M78 58C87 46 85 26 72 18 71 28 67 35 61 39Z" fill="#e8a463"/>
+        <ellipse cx="50" cy="58" rx="33" ry="28" fill="#f0b57e"/>
+        <ellipse cx="50" cy="64" rx="17" ry="14" fill="#fbeadb"/>
+        <path d="M34 55q4 -3 8 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M58 55q4 -3 8 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M44 68q6 -4 12 0" stroke="#3a2a1e" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="50" cy="60" rx="3" ry="2.2" fill="#3a2a1e"/>
+        <path d="M36 58q-1 8 -3 11" stroke="#7cc7e8" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </g></svg>`,
+  };
+  let companionTimer;
+  function companionMood(mood, holdMs) {
+    const el = document.getElementById("gCompanion");
+    if (!el) return;
+    el.innerHTML = FOX[mood] || FOX.idle;
+    el.className = "g-companion mood-" + mood;
+    clearTimeout(companionTimer);
+    if (holdMs) companionTimer = setTimeout(() => companionMood("idle"), holdMs);
+  }
+  function companionHtml(extraClass) {
+    return `<div id="gCompanion" class="g-companion ${extraClass || ""}">${FOX.idle}</div>`;
+  }
+
   // ---------- Scherm-elementen ----------
   const scr = {
     root: $("game"), profile: $("gProfile"), map: $("gMap"), level: $("gLevel"), complete: $("gComplete"),
@@ -426,7 +528,8 @@
         <button id="gIntroLetter" class="g-big-letter" lang="ar">${letter}</button>
         <p class="g-intro-hint">👆 ${t.listen}</p>
         <button id="gIntroGo" class="g-cta">${t.play} →</button>
-      </div>`;
+      </div>
+      ${companionHtml("enter")}`;
     $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
     const playIt = () => playLetter(letter, () => $("gIntroLetter").classList.remove("playing"));
     $("gIntroLetter").onclick = () => { $("gIntroLetter").classList.add("playing"); playIt(); };
@@ -455,7 +558,8 @@
         <div class="g-q-options">
           ${q.options.map((o, idx) => `<button class="g-opt" data-i="${idx}" lang="ar">${o}</button>`).join("")}
         </div>
-      </div>`;
+      </div>
+      ${companionHtml()}`;
     $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
     let first = true, locked = false;
     if (isAudio) { const p = () => playLetter(q.letter); $("gQPlay").onclick = p; p(); }
@@ -483,7 +587,8 @@
       <div class="g-q">
         <p class="g-q-prompt">${t.pairs}</p>
         <div class="g-pairs">${deck.map((c, idx) => `<button class="g-pair-card" data-idx="${idx}" data-l="${c.l}"><span lang="ar">?</span></button>`).join("")}</div>
-      </div>`;
+      </div>
+      ${companionHtml()}`;
     $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
     let open = [], lock = false, first = true, solvedPairs = 0, needed = 2;
     scr.level.querySelectorAll(".g-pair-card").forEach((card) => {
@@ -499,12 +604,14 @@
             if (match) {
               open.forEach((c) => c.classList.add("matched"));
               solvedPairs++;
+              sfx.correct(); companionMood("happy", 1200);
               if (solvedPairs >= needed) {
                 if (first) { runState.correctFirstTry++; updateMastery(q.letter, true); }
                 toast(pickCorrectMsg());
                 setTimeout(() => { runState.i++; renderQuestion(); }, 500);
               }
             } else {
+              sfx.wrong(); companionMood("sad", 1100);
               if (first) { updateMastery(q.letter, false); first = false; }
               open.forEach((c) => { c.classList.remove("flipped"); c.querySelector("span").textContent = "?"; });
             }
@@ -528,10 +635,12 @@
     if (ok) {
       btn.classList.add("correct");
       toast(pickCorrectMsg());
+      sfx.correct(); companionMood("happy", 1200);
       setTimeout(next, 550);
     } else {
       btn.classList.add("wrong");
       setTimeout(() => btn.classList.remove("wrong"), 420);
+      sfx.wrong(); companionMood("sad", 1100);
       if (first) toast(GT().tryAgain);
     }
   }
@@ -551,10 +660,12 @@
     let newBadge = null;
     if (level.badge && !state.badges.includes(level.badge)) { state.badges.push(level.badge); newBadge = G.badges[level.badge]; }
     gstate.save(activeProfile.id, state);
+    sfx.levelComplete();
 
     scr.complete.hidden = false;
     scr.complete.innerHTML = `
       <div class="g-complete-card">
+        <div class="g-companion-celebrate">${FOX.happy}</div>
         <div class="g-stars-big">${[1, 2, 3].map((n) => `<span class="${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
         <h2>${t.levelDone}</h2>
         <div class="g-rewards"><span>+${xp} ${t.xp}</span><span>+${coins} 🪙</span></div>
