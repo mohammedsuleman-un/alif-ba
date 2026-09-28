@@ -616,7 +616,7 @@
     renderChoiceQuestion(q);
   }
 
-  const QUESTION_TIME_MS = 5000;
+  const QUESTION_TIME_MS = 10000;
 
   function renderChoiceQuestion(q) {
     const t = GT();
