@@ -213,29 +213,37 @@
     gate: `<svg viewBox="0 0 160 140"><path d="M10 140V60C10 20 40 4 80 4S150 20 150 60V140" fill="#fff8e3" stroke="#c99a3c" stroke-width="5"/>
       <path d="M35 140V70C35 40 55 26 80 26S125 40 125 70V140" fill="none" stroke="#c99a3c" stroke-width="4"/>
       <circle cx="80" cy="20" r="7" fill="#ffe08a"/></svg>`,
+    flower: `<svg viewBox="0 0 40 60"><path d="M20 60V30" stroke="#4c7a3f" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <g fill="#e98fb0"><circle cx="20" cy="12" r="7"/><circle cx="10" cy="18" r="7"/><circle cx="30" cy="18" r="7"/>
+      <circle cx="13" cy="27" r="7"/><circle cx="27" cy="27" r="7"/></g><circle cx="20" cy="20" r="6" fill="#f2c94c"/></svg>`,
   };
   const deco = (icon, cls, style) => `<div class="g-deco ${cls || ""}" style="${style}">${ICON[icon]}</div>`;
 
   // Decoratie per 'zone': begin van de woestijn → oase → verte → finale.
-  function zoneDecorations(i, x, y) {
+  function zoneDecorations(i, x, y, theme) {
     const items = [];
     const far = x < 50 ? "right" : "left"; // decoratie aan de andere kant van het pad
     const near = x < 50 ? "left" : "right";
+    const garden = theme === "garden";
+    const duneColor = garden ? "#c9d98a" : "#e7c98a";
+    const duneColor2 = garden ? "#b9cf78" : "#d9c48f";
+    const waterColor = garden ? "#5bb9b3" : "#3f8f8a";
+    const filler = () => (garden ? deco("flower", "g-deco-sm", `top:${y - 45}px;${near}:20%`) : "");
     // Scène A (1-3): begin van de reis — duinen, enkele planten, eerste palmboom.
-    if (i === 0) items.push(deco("dune", "g-deco-dune", `top:${y - 60}px;left:0;width:100%;color:#e7c98a`));
-    if (i === 1) items.push(deco("bush", "g-deco-sm", `top:${y - 60}px;${far}:8%`), deco("rock", "g-deco-sm", `top:${y + 70}px;${near}:4%`));
+    if (i === 0) items.push(deco("dune", "g-deco-dune", `top:${y - 60}px;left:0;width:100%;color:${duneColor}`));
+    if (i === 1) items.push(deco("bush", "g-deco-sm", `top:${y - 60}px;${far}:8%`), deco("rock", "g-deco-sm", `top:${y + 70}px;${near}:4%`), filler());
     if (i === 2) items.push(deco("palm", "g-deco-lg", `top:${y - 150}px;${far}:6%`), deco("bush", "g-deco-xs", `top:${y + 40}px;${far}:22%`));
-    // Scène B (4-7): de oase — groter water, meerdere palmbomen, rustpaviljoen bij het checkpoint.
-    if (i === 3) items.push(deco("rock", "g-deco-md", `top:${y - 50}px;${far}:10%`), deco("lantern", "g-deco-md sway", `top:${y - 110}px;${near}:16%`));
+    // Scène B (4-7): de oase/vijver — groter water, meerdere planten, rustpaviljoen bij het checkpoint.
+    if (i === 3) items.push(deco("rock", "g-deco-md", `top:${y - 50}px;${far}:10%`), deco("lantern", "g-deco-md sway", `top:${y - 110}px;${near}:16%`), filler());
     if (i === 4) items.push(
-      deco("water", "g-deco-oasis", `top:${y + 60}px;left:50%;transform:translateX(-50%);color:#3f8f8a`),
-      deco("palm", "g-deco-xl", `top:${y - 30}px;left:2%`),
-      deco("palm", "g-deco-lg", `top:${y + 10}px;right:4%`)
+      deco("water", "g-deco-oasis", `top:${y + 60}px;left:50%;transform:translateX(-50%);color:${waterColor}`),
+      deco(garden ? "flower" : "palm", "g-deco-xl", `top:${y - 30}px;left:2%`),
+      deco(garden ? "flower" : "palm", "g-deco-lg", `top:${y + 10}px;right:4%`)
     );
-    if (i === 5) items.push(deco("dune", "g-deco-dune", `top:${y - 40}px;left:0;width:100%;color:#d9c48f`), deco("arch", "g-deco-lg", `top:${y - 190}px;${far}:4%`));
+    if (i === 5) items.push(deco("dune", "g-deco-dune", `top:${y - 40}px;left:0;width:100%;color:${duneColor2}`), deco("arch", "g-deco-lg", `top:${y - 190}px;${far}:4%`));
     if (i === 6) items.push(deco("lantern", "g-deco-md sway", `top:${y - 120}px;${far}:14%`), deco("star", "g-deco-sm twinkle", `top:${y - 190}px;${near}:22%`), deco("bush", "g-deco-sm", `top:${y + 60}px;${near}:8%`));
     // Scène C (8-10): de bestemming — rijker groen, sterren, de poort komt in zicht.
-    if (i === 7) items.push(deco("palm", "g-deco-lg", `top:${y - 150}px;${near}:14%`), deco("lantern", "g-deco-sm sway", `top:${y - 60}px;${far}:10%`));
+    if (i === 7) items.push(deco("palm", "g-deco-lg", `top:${y - 150}px;${near}:14%`), deco("lantern", "g-deco-sm sway", `top:${y - 60}px;${far}:10%`), filler());
     if (i === 8) items.push(
       deco("star", "g-deco-sm twinkle", `top:${y - 160}px;left:16%`),
       deco("star", "g-deco-xs twinkle", `top:${y - 210}px;right:20%`),
@@ -296,7 +304,7 @@
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
       </div>
-      <div class="g-scene-wrap">
+      <div class="g-scene-wrap" data-theme="${world.theme}">
         <div class="g-scene" id="gScene" style="height:${sceneH}px">
           <svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">
             <path d="${smoothPath(pathPts)}" class="g-route-line" />
@@ -305,7 +313,7 @@
           ${stones.map((s) => `<div class="g-stone" style="left:${s.x}%; top:${s.y}px"></div>`).join("")}
           <div class="g-cloud g-cloud-a">${ICON.cloud}</div>
           <div class="g-cloud g-cloud-b">${ICON.cloud}</div>
-          ${pts.map((p) => zoneDecorations(p.i, p.x, p.y)).join("")}
+          ${pts.map((p) => zoneDecorations(p.i, p.x, p.y, world.theme)).join("")}
           <div class="g-gate" style="top:${sceneH - 40}px">${ICON.gate}</div>
 
           <button class="g-cp ${cpUnlocked ? "" : "locked"} ${cpClaimed ? "done" : ""}" id="gCheckpoint"
@@ -553,18 +561,40 @@
         ${newBadge ? `<div class="g-badge-earned"><span class="g-badge-icon">${newBadge.icon}</span><span>${t.badgeEarned}<br>${gsub(newBadge)}</span></div>` : ""}
         <div class="g-complete-actions">
           <button id="gToMap" class="g-cta ghost">${t.toMap}</button>
-          <button id="gNextLevel" class="g-cta">${t.next} →</button>
+          <button id="gNextLevel" class="g-cta"><span>${t.next}</span> →</button>
         </div>
       </div>`;
     $("gToMap").onclick = () => gohash(`#/spel/wereld/${world.id}`);
     const idx = world.levels.findIndex((lv) => lv.n === level.n);
     const nextLevel = world.levels[idx + 1];
-    $("gNextLevel").hidden = !nextLevel;
-    if (nextLevel) $("gNextLevel").onclick = () => gohash(`#/spel/level/${world.id}/${nextLevel.n}`);
+    const worldIdx = G.worlds.findIndex((w) => w.id === world.id);
+    const nextWorld = !nextLevel ? G.worlds[worldIdx + 1] : null;
+    const nextBtn = $("gNextLevel");
+    if (nextLevel) {
+      nextBtn.hidden = false;
+      nextBtn.querySelector("span").textContent = t.next;
+      nextBtn.onclick = () => gohash(`#/spel/level/${world.id}/${nextLevel.n}`);
+    } else if (nextWorld) {
+      nextBtn.hidden = false;
+      nextBtn.querySelector("span").textContent = gsub(nextWorld.title);
+      nextBtn.onclick = () => gohash(`#/spel/wereld/${nextWorld.id}`);
+    } else {
+      nextBtn.hidden = true;
+    }
   }
 
   // ---------- Routing ----------
   function gohash(h) { location.hash = h; }
+
+  // Een wereld is ontgrendeld als hij geen vereiste heeft, of als de laatste (uitdagings)level
+  // van de vereiste wereld al minstens 1 ster heeft voor dit profiel.
+  function worldUnlocked(world) {
+    if (!world.requires) return true;
+    const req = G.worlds.find((w) => w.id === world.requires);
+    if (!req) return true;
+    const last = req.levels[req.levels.length - 1];
+    return !!(state.levels && state.levels[levelId(req, last)]);
+  }
 
   function gameRoute() {
     const h = location.hash;
@@ -575,9 +605,15 @@
     const mWorld = h.match(/^#\/spel\/wereld\/([\w-]+)/);
     const mLevel = h.match(/^#\/spel\/level\/([\w-]+)\/(\d+)/);
     if (!activeProfile && (mWorld || mLevel)) return gohash("#/spel");
-    if (mLevel) { showScreen("level"); renderLevel(mLevel[1], mLevel[2]); }
-    else if (mWorld) { showScreen("map"); renderMap(mWorld[1]); }
-    else { showScreen("profile"); renderProfile(); }
+    if (mLevel) {
+      const w = G.worlds.find((x) => x.id === mLevel[1]);
+      if (w && !worldUnlocked(w)) return gohash("#/spel");
+      showScreen("level"); renderLevel(mLevel[1], mLevel[2]);
+    } else if (mWorld) {
+      const w = G.worlds.find((x) => x.id === mWorld[1]) || G.worlds[0];
+      if (!worldUnlocked(w)) return gohash(`#/spel/wereld/${w.requires}`);
+      showScreen("map"); renderMap(w.id);
+    } else { showScreen("profile"); renderProfile(); }
   }
 
   window.addEventListener("hashchange", gameRoute);
