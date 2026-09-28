@@ -21,7 +21,7 @@
       create: "ابدأ", world: (n) => `دروس ${n}`, level: "المستوى", locked: "مقفل", start: "ابدأ",
       play: "العب", back: "رجوع", listen: "استمع", chooseSound: "اضغط على الحرف الذي سمعته",
       chooseMatch: "اضغط على نفس الحرف", pairs: "اضغط على الزوج المتطابق",
-      correct: ["أحسنت!", "ما شاء الله!", "ممتاز!", "رائع!"], tryAgain: "بالقرب! حاول مرة أخرى",
+      correct: ["أحسنت!", "ما شاء الله!", "ممتاز!", "رائع!"], tryAgain: "بالقرب! حاول مرة أخرى", timeUp: "الوقت انتهى! هذه هي الإجابة الصحيحة",
       levelDone: "أتممت المستوى!", newLetter: "حرف جديد", next: "المستوى التالي", toMap: "الخريطة",
       xp: "نقطة خبرة", coins: "قطع", badgeEarned: "وسام جديد!", switchProfile: "تبديل الملف",
       bookMode: "الكتاب", gameMode: "اللعبة", challenge: "تحدٍّ",
@@ -35,7 +35,7 @@
       create: "Beginnen", world: (n) => `Wereld ${n}`, level: "Level", locked: "Op slot", start: "Start",
       play: "Spelen", back: "Terug", listen: "Luister", chooseSound: "Tik op de letter die je hoorde",
       chooseMatch: "Tik op dezelfde letter", pairs: "Tik op het bijpassende paar",
-      correct: ["Goed zo!", "MashaAllah!", "Uitstekend!", "Knap gedaan!"], tryAgain: "Bijna! Probeer nog eens",
+      correct: ["Goed zo!", "MashaAllah!", "Uitstekend!", "Knap gedaan!"], tryAgain: "Bijna! Probeer nog eens", timeUp: "Tijd op! Dit is het juiste antwoord",
       levelDone: "Level voltooid!", newLetter: "Nieuwe letter", next: "Volgend level", toMap: "Kaart",
       xp: "XP", coins: "munten", badgeEarned: "Nieuwe badge!", switchProfile: "Profiel wisselen",
       bookMode: "Boek", gameMode: "Spel", challenge: "Uitdaging",
@@ -49,7 +49,7 @@
       create: "Start", world: (n) => `World ${n}`, level: "Level", locked: "Locked", start: "Start",
       play: "Play", back: "Back", listen: "Listen", chooseSound: "Tap the letter you heard",
       chooseMatch: "Tap the matching letter", pairs: "Tap the matching pair",
-      correct: ["Well done!", "MashaAllah!", "Excellent!", "Great job!"], tryAgain: "Almost! Try again",
+      correct: ["Well done!", "MashaAllah!", "Excellent!", "Great job!"], tryAgain: "Almost! Try again", timeUp: "Time's up! Here's the right answer",
       levelDone: "Level complete!", newLetter: "New letter", next: "Next level", toMap: "Map",
       xp: "XP", coins: "coins", badgeEarned: "New badge!", switchProfile: "Switch profile",
       bookMode: "Book", gameMode: "Game", challenge: "Challenge",
@@ -616,11 +616,14 @@
     renderChoiceQuestion(q);
   }
 
+  const QUESTION_TIME_MS = 5000;
+
   function renderChoiceQuestion(q) {
     const t = GT();
     const isAudio = q.type === "AUDIO_TO_LETTER";
     scr.level.innerHTML = `
       ${levelHeader()}
+      <div class="g-timer"><i id="gTimerBar"></i></div>
       <div class="g-q">
         <p class="g-q-prompt">${isAudio ? t.chooseSound : t.chooseMatch}</p>
         ${isAudio
@@ -631,23 +634,64 @@
         </div>
       </div>
       ${companionHtml()}`;
-    $("gLvlBack").onclick = () => gohash(`#/spel/wereld/${runState.world.id}`);
-    let first = true, locked = false;
+    $("gLvlBack").onclick = () => { clearTimer(); gohash(`#/spel/wereld/${runState.world.id}`); };
+    let first = true, locked = false, timeoutStrikes = 0, timerHandle = null;
+
+    function clearTimer() {
+      if (timerHandle) { clearTimeout(timerHandle); timerHandle = null; }
+    }
+    function startTimer() {
+      if (locked) return;
+      clearTimer();
+      const bar = $("gTimerBar");
+      if (bar) {
+        bar.style.transition = "none";
+        bar.style.width = "100%";
+        // Dubbele rAF: forceert de browser om de 100%-status echt te schilderen
+        // vóórdat de transition naar 0% begint (anders wordt hij overgeslagen).
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          bar.style.transition = `width ${QUESTION_TIME_MS}ms linear`;
+          bar.style.width = "0%";
+        }));
+      }
+      timerHandle = setTimeout(onTimeout, QUESTION_TIME_MS);
+    }
+    function onTimeout() {
+      if (locked) return;
+      timeoutStrikes++;
+      sfx.wrong(); companionMood("sad", 1100);
+      if (first) { updateMastery(q.letter, false); first = false; }
+      if (timeoutStrikes >= 2) {
+        // Tweede keer geen antwoord: laat het juiste antwoord zien en ga door.
+        locked = true;
+        const correctBtn = [...scr.level.querySelectorAll(".g-opt")].find((b) => q.options[Number(b.dataset.i)] === q.letter);
+        if (correctBtn) correctBtn.classList.add("correct");
+        toast(t.timeUp);
+        setTimeout(() => { runState.i++; renderQuestion(); }, 1100);
+      } else {
+        toast(t.tryAgain);
+        AudioManager.playRandomRetryFeedback();
+        startTimer();
+      }
+    }
+
     if (isAudio) {
       const replay = () => playLetter(q.letter);
       $("gQPlay").onclick = replay;
-      AudioManager.playInstruction("which-letter").then((ok) => { if (ok) playLetter(q.letter); });
+      AudioManager.playInstruction("which-letter").then(() => playLetter(q.letter, startTimer));
     } else {
       AudioManager.playInstruction("find-letter");
+      startTimer();
     }
     scr.level.querySelectorAll(".g-opt").forEach((btn) => {
       btn.onclick = () => {
         if (locked) return;
+        clearTimer();
         const ok = q.options[Number(btn.dataset.i)] === q.letter;
         if (ok) locked = true;
         answerFeedback(btn, ok, first, () => { runState.i++; renderQuestion(); }, q.letter);
         if (ok && first) { runState.correctFirstTry++; updateMastery(q.letter, true); }
-        else if (!ok) { if (first) updateMastery(q.letter, false); first = false; }
+        else if (!ok) { if (first) updateMastery(q.letter, false); first = false; startTimer(); }
       };
     });
   }
