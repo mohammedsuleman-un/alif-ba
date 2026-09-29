@@ -96,13 +96,16 @@
     },
 
     // ---------- Renderer ----------
-    // Eén consistente, layer-based placeholderstijl: silhouet + inkleurbare
-    // vlakken (huid/kleding/hijab-of-haar/schoenen/accessoire) + stemming-
-    // afhankelijk gezicht. Zodra er definitieve illustraties zijn, vervang je
-    // per categorie deze vaste vormen door een <image>-laag die het "asset"-pad
-    // van het gekozen item gebruikt — de aanroep (svg(cfg, mood)) blijft gelijk.
+    // Eén consistente, layer-based placeholderstijl (lichaam/huid → kleding →
+    // hijab-of-haar → gezicht → accessoire), met zachte gradients/schaduw voor
+    // meer diepte dan platte vlakken. Nog GEEN definitieve illustratie — zie
+    // het eindrapport voor precies welke assets een illustrator nog moet maken.
+    // Zodra die er zijn: vervang per categorie de vaste vormen hieronder door
+    // een <image>-laag die het "asset"-pad van het gekozen item gebruikt; de
+    // aanroep (svg(cfg, mood)) blijft ongewijzigd voor de rest van de app.
     svg(cfg, mood) {
       if (!cfg) cfg = { type: "boy", skinTone: C.skinTones[1] };
+      const uid = "c" + (idCounter++);
       const skin = cfg.skinTone || C.skinTones[1];
       const outfit = this.itemById(cfg.outfit);
       const outfitColor = (outfit && outfit.color) || "#5b8fb0";
@@ -112,33 +115,98 @@
       const hijab = cfg.type === "girl" ? this.itemById(cfg.hijab) : null;
       const hijabColor = (hijab && hijab.color) || "#d98fa3";
       const isWave = mood === "wave";
-      return `<svg viewBox="0 0 120 168" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="60" cy="160" rx="28" ry="6" fill="#000" opacity=".08"/>
-        <path d="M40 160 L40 130 L52 130 L52 160Z" fill="${shoesColor}"/>
-        <path d="M68 160 L68 130 L80 160 L80 130Z" fill="${shoesColor}"/>
-        <path d="M32 152 L34 92 Q60 80 86 92 L88 152 Q60 163 32 152Z" fill="${outfitColor}"/>
-        <path d="M12 108 Q6 100 12 92" stroke="${skin}" stroke-width="9" fill="none" stroke-linecap="round"
-          transform="${isWave ? "rotate(-25 12 100)" : ""}"/>
-        <path d="M108 108 Q114 100 108 92" stroke="${skin}" stroke-width="9" fill="none" stroke-linecap="round"/>
-        <circle cx="60" cy="56" r="30" fill="${skin}"/>
+      const isCelebrate = mood === "celebrate";
+      const rArm = isWave
+        ? `rotate(-30 108 104)`
+        : isCelebrate ? `rotate(-18 108 104)` : "";
+      const lArm = isCelebrate ? `rotate(18 12 104)` : "";
+      return `<svg viewBox="0 0 120 172" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="${uid}skin" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="${lighten(skin, 14)}"/><stop offset="1" stop-color="${skin}"/>
+          </linearGradient>
+          <linearGradient id="${uid}outfit" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="${lighten(outfitColor, 10)}"/><stop offset="1" stop-color="${darken(outfitColor, 8)}"/>
+          </linearGradient>
+          <linearGradient id="${uid}hijab" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="${lighten(hijabColor, 12)}"/><stop offset="1" stop-color="${darken(hijabColor, 6)}"/>
+          </linearGradient>
+        </defs>
+
+        <ellipse cx="60" cy="164" rx="26" ry="5.5" fill="#000" opacity=".1"/>
+
+        <!-- schoenen -->
+        <path d="M38 164 Q38 150 41 138 L53 138 Q54 150 55 164 Q46 168 38 164Z" fill="${shoesColor}"/>
+        <path d="M65 164 Q66 150 67 138 L79 138 Q82 150 82 164 Q74 168 65 164Z" fill="${shoesColor}"/>
+
+        <!-- lichaam / outfit -->
+        <path d="M34 155 L36 96 Q60 82 84 96 L86 155 Q60 167 34 155Z" fill="url(#${uid}outfit)"/>
+        <path d="M60 96 L60 150" stroke="${darken(outfitColor, 14)}" stroke-width="1.4" opacity=".5"/>
+        <path d="M40 105 Q60 96 80 105" stroke="${lighten(outfitColor, 20)}" stroke-width="2" fill="none" opacity=".55"/>
+
+        <!-- armen -->
+        <g transform="${lArm}">
+          <path d="M35 100 Q17 104 14 122" stroke="url(#${uid}outfit)" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <circle cx="13" cy="126" r="7.5" fill="url(#${uid}skin)"/>
+        </g>
+        <g transform="${rArm}">
+          <path d="M85 100 Q103 104 106 122" stroke="url(#${uid}outfit)" stroke-width="15" fill="none" stroke-linecap="round"/>
+          <circle cx="107" cy="126" r="7.5" fill="url(#${uid}skin)"/>
+        </g>
+
+        <!-- hals + hoofd -->
+        <rect x="52" y="70" width="16" height="16" rx="6" fill="${darken(skin, 4)}"/>
+        <circle cx="60" cy="54" r="29" fill="url(#${uid}skin)"/>
+        <ellipse cx="49" cy="58" rx="7" ry="9" fill="${lighten(skin, 10)}" opacity=".35"/>
+
+        <!-- hijab of haar -->
         ${cfg.type === "girl"
-          ? `<path d="M27 62 Q28 18 60 14 Q92 18 93 62 L93 82 Q84 68 76 64 Q60 76 44 64 Q36 68 27 82 Z" fill="${hijabColor}"/>`
-          : `<path d="M31 42 Q33 20 60 18 Q87 20 89 42 L89 36 Q60 25 31 36 Z" fill="#3a2a1e"/>`}
+          ? `<path d="M25 60 Q25 14 60 10 Q95 14 95 60 L96 84 Q90 72 85 64 Q80 58 74 58
+               Q76 44 60 40 Q44 44 46 58 Q40 58 35 64 Q30 72 24 84 Z" fill="url(#${uid}hijab)"/>
+             <path d="M60 10 Q95 14 95 60" stroke="${lighten(hijabColor, 22)}" stroke-width="2" fill="none" opacity=".5"/>
+             <circle cx="82" cy="40" r="2.6" fill="${lighten(hijabColor, 30)}" opacity=".8"/>`
+          : `<path d="M29 44 Q30 16 60 14 Q90 16 91 44 Q91 32 82 27 Q84 34 78 30
+               Q78 38 68 30 Q70 38 60 31 Q52 38 52 30 Q44 38 44 30 Q38 34 40 27 Q31 32 29 44Z"
+               fill="#4a3323"/>
+             <path d="M32 30 Q60 15 88 30" stroke="#2a1c12" stroke-width="1.5" fill="none" opacity=".4"/>`}
+
         ${faceFor(mood || "idle")}
-        ${acc && acc.color ? `<circle cx="60" cy="98" r="6" fill="${acc.color}" stroke="#fff" stroke-width="1.5"/>` : ""}
+        ${acc && acc.color ? `<circle cx="60" cy="100" r="6.5" fill="${acc.color}" stroke="#fff" stroke-width="1.6"/><circle cx="60" cy="100" r="6.5" fill="none" stroke="${darken(acc.color, 15)}" stroke-width=".6"/>` : ""}
       </svg>`;
     },
   };
 
+  let idCounter = 1;
+  // Kleine kleur-helpers (hex → lichter/donkerder) voor de gradients hierboven —
+  // geen afhankelijkheid nodig voor zo'n eenvoudige bewerking.
+  function clamp255(v) { return Math.max(0, Math.min(255, v)); }
+  function shade(hex, percent) {
+    if (!hex || hex[0] !== "#") return hex;
+    const num = parseInt(hex.slice(1), 16);
+    const amt = Math.round(2.55 * percent);
+    const r = clamp255((num >> 16) + amt);
+    const g = clamp255(((num >> 8) & 0x00ff) + amt);
+    const b = clamp255((num & 0x0000ff) + amt);
+    return "#" + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
+  }
+  const lighten = (hex, pct) => shade(hex, pct);
+  const darken = (hex, pct) => shade(hex, -pct);
+
   function faceFor(mood) {
     const INK = "#3a2a1e";
-    const dotEyes = (r) => `<circle cx="50" cy="55" r="${r}" fill="${INK}"/><circle cx="70" cy="55" r="${r}" fill="${INK}"/>`;
-    const arcEyes = `<path d="M46 54q4 -5 8 0" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>` +
-      `<path d="M66 54q4 -5 8 0" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    const dotEyes = (r) => `<circle cx="50" cy="53" r="${r}" fill="${INK}"/><circle cx="70" cy="53" r="${r}" fill="${INK}"/>` +
+      `<circle cx="${51.2 - r * 0.2}" cy="${52 - r * 0.2}" r="${r * 0.32}" fill="#fff" opacity=".85"/>` +
+      `<circle cx="${71.2 - r * 0.2}" cy="${52 - r * 0.2}" r="${r * 0.32}" fill="#fff" opacity=".85"/>`;
+    const arcEyes = `<path d="M46 52q4 -5 8 0" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>` +
+      `<path d="M66 52q4 -5 8 0" stroke="${INK}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    const brows = `<path d="M44 45q6 -3 11 -1" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7"/>` +
+      `<path d="M65 44q5 -2 11 1" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7"/>`;
+    const browsUp = `<path d="M44 42q6 -4 11 -1" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7"/>` +
+      `<path d="M65 41q5 -3 11 1" stroke="${INK}" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".7"/>`;
     const eyes = {
       idle: dotEyes(3),
-      listening: dotEyes(3.6),
-      thinking: `<circle cx="50" cy="55" r="3" fill="${INK}"/><circle cx="72" cy="53" r="3" fill="${INK}"/>`,
+      listening: dotEyes(3.4),
+      thinking: `<circle cx="50" cy="53" r="3" fill="${INK}"/><circle cx="73" cy="50" r="3" fill="${INK}"/>`,
       happy: arcEyes,
       celebrate: arcEyes,
       encouraging: dotEyes(3),
@@ -146,21 +214,22 @@
       proud: arcEyes,
       wave: arcEyes,
     };
+    const eyebrows = { thinking: browsUp, surprised: browsUp, celebrate: browsUp };
     const path = (d) => `<path d="${d}" stroke="${INK}" stroke-width="2.3" fill="none" stroke-linecap="round"/>`;
     const mouths = {
-      idle: path("M52 66q8 4 16 0"),
-      listening: `<ellipse cx="60" cy="67" rx="3.5" ry="3" fill="${INK}"/>`,
-      thinking: path("M54 67q6 -1 12 0"),
-      happy: path("M50 64q10 10 20 0"),
-      celebrate: path("M48 63q12 14 24 0"),
-      encouraging: path("M52 65q8 6 16 0"),
-      surprised: `<ellipse cx="60" cy="69" rx="4.5" ry="5" fill="${INK}"/>`,
-      proud: path("M50 64q10 9 20 0"),
-      wave: path("M50 64q10 9 20 0"),
+      idle: path("M52 64q8 4 16 0"),
+      listening: `<ellipse cx="60" cy="65" rx="3.5" ry="3" fill="${INK}"/>`,
+      thinking: path("M54 65q6 -1 12 0"),
+      happy: path("M50 62q10 10 20 0"),
+      celebrate: `<path d="M48 61q12 15 24 0" fill="${INK}"/><path d="M52 63q8 7 16 0" fill="#fff"/>`,
+      encouraging: path("M52 63q8 6 16 0"),
+      surprised: `<ellipse cx="60" cy="67" rx="4.5" ry="5" fill="${INK}"/>`,
+      proud: path("M50 62q10 9 20 0"),
+      wave: path("M50 62q10 9 20 0"),
     };
     const cheeks = ["happy", "celebrate", "proud", "wave"].includes(mood)
-      ? `<circle cx="40" cy="60" r="4" fill="#f4a2a2" opacity=".5"/><circle cx="80" cy="60" r="4" fill="#f4a2a2" opacity=".5"/>` : "";
-    return `${eyes[mood] || eyes.idle}${mouths[mood] || mouths.idle}${cheeks}`;
+      ? `<circle cx="40" cy="58" r="4" fill="#f4a2a2" opacity=".5"/><circle cx="80" cy="58" r="4" fill="#f4a2a2" opacity=".5"/>` : "";
+    return `${eyebrows[mood] || brows}${eyes[mood] || eyes.idle}${mouths[mood] || mouths.idle}${cheeks}`;
   }
 
   window.Character = Character;
