@@ -165,6 +165,8 @@
     const stop = nextStop(state);
     const worldLabel = gsub(stop.world.title);
     const href = stop.level ? `#/spel/level/${stop.world.id}/${stop.level.n}` : `#/spel/wereld/${stop.world.id}`;
+    const doneInWorld = stop.world.levels.filter((l) => state.levels && state.levels[levelKey(stop.world, l)]).length;
+    const pct = Math.round((doneInWorld / stop.world.levels.length) * 100);
     const charCfg = window.Character && window.Character.getConfig(p.id);
     const charHtml = charCfg
       ? `<div class="app-home-character">${window.Character.svg(charCfg, "idle")}</div>`
@@ -172,17 +174,20 @@
     root.innerHTML = `
       <div class="app-home">
         <div class="app-home-hero">
-          ${charHtml}
-          <p class="app-home-greet">${t.greeting(p.name)}</p>
-          <div class="app-home-stats">
-            <span>⭐ ${totalStars}</span>
-            <span>✨ ${state.xp || 0} XP</span>
+          <div class="ahc-row">
+            <div class="ahc-avatar">${charHtml}</div>
+            <p class="app-home-greet">${t.greeting(p.name)}</p>
+            <div class="app-home-stats">
+              <span class="ahp-pill">⭐ ${totalStars}</span>
+              <span class="ahp-pill">✨ ${state.xp || 0}</span>
+            </div>
           </div>
           <div class="app-home-current">
             <span class="ahc-label">${worldLabel}</span>
             <span class="ahc-level">${stop.level ? `${t.level} ${stop.level.n}` : t.allDone}</span>
+            <div class="ahc-progress"><i style="width:${pct}%"></i></div>
           </div>
-          <a href="${href}" class="app-cta">${t.continueLearning} <span class="cta-arrow">→</span></a>
+          <a href="${href}" class="app-cta app-cta-full">${t.continueLearning} <span class="cta-arrow">→</span></a>
           ${charCfg ? `<a href="#/spel/kledingkast" class="app-home-wardrobe-link">👕 ${t.wardrobe}</a>` : ""}
         </div>
         ${bookCardHtml(t)}
