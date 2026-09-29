@@ -732,16 +732,25 @@
     if (level.letters.length) renderIntro(); else renderQuestion();
   }
 
+  // TOP BAR van de oefening: [terug] [voortgang] [sterren]. Voortgang wordt
+  // als losse stippen getoond (zoals de referentie) zolang het level een
+  // overzichtelijk aantal vragen heeft; bij ongebruikelijk veel vragen valt
+  // dit terug op een doorlopende balk (stippen zouden dan te klein/druk worden).
   function levelHeader() {
     const t = GT();
     const { level, questions, i } = runState;
+    const totalStars = Object.values(state.levels || {}).reduce((s, l) => s + (l.stars || 0), 0);
+    const progress = questions.length <= 12
+      ? `<div class="g-lvl-dots">${questions.map((_, idx) =>
+          `<i class="${idx < i ? "done" : idx === i ? "cur" : ""}"></i>`).join("")}</div>`
+      : `<div class="g-lvl-progress"><i style="width:${(i / questions.length) * 100}%"></i></div>`;
     return `
       <div class="g-lvl-head">
         <button id="gLvlBack" class="g-icon-btn" aria-label="${t.back}">
           <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
         </button>
-        <div class="g-lvl-progress"><i style="width:${(i / questions.length) * 100}%"></i></div>
-        <span class="g-lvl-n">${level.n}</span>
+        ${progress}
+        <span class="g-lvl-stars">⭐ ${totalStars}</span>
       </div>`;
   }
 
@@ -788,7 +797,13 @@
       ${levelHeader()}
       <div class="g-timer"><i id="gTimerBar"></i></div>
       <div class="g-q">
-        <p class="g-q-prompt">${isAudio ? t.chooseSound : t.chooseMatch}</p>
+        <div class="g-instr-card">
+          <span class="g-instr-icon">${isAudio ? "🔊" : "👆"}</span>
+          <div class="g-instr-text">
+            ${isAudio ? `<span class="g-instr-kicker">${t.listen}</span>` : ""}
+            <span class="g-instr-main">${isAudio ? t.chooseSound : t.chooseMatch}</span>
+          </div>
+        </div>
         ${isAudio
           ? `<button id="gQPlay" class="g-play-big" aria-label="${t.listen}">🔊</button>`
           : `<div class="g-q-ref" lang="ar">${q.letter}</div>`}
@@ -869,7 +884,10 @@
     scr.level.innerHTML = `
       ${levelHeader()}
       <div class="g-q">
-        <p class="g-q-prompt">${t.pairs}</p>
+        <div class="g-instr-card">
+          <span class="g-instr-icon">👆</span>
+          <div class="g-instr-text"><span class="g-instr-main">${t.pairs}</span></div>
+        </div>
         <div class="g-pairs">${deck.map((c, idx) => `<button class="g-pair-card" data-idx="${idx}" data-l="${c.l}"><span lang="ar">?</span></button>`).join("")}</div>
       </div>
       ${companionHtml()}`;
@@ -969,18 +987,23 @@
       if (worldNowComplete || worldUnlocksNext) await AudioManager.playInstruction("world-complete");
     })();
 
+    // Volgorde volgt de referentie: titel → sterren → hype-regel → gevierd
+    // character → beloningen → (optioneel) vrijgespeelde items → grote
+    // primaire CTA ("volgende") bovenaan, kleinere secundaire CTA (kaart)
+    // eronder — in plaats van twee gelijke knoppen naast elkaar.
     scr.complete.hidden = false;
     scr.complete.innerHTML = `
       <div class="g-complete-card">
-        <div class="g-companion-celebrate">${Character.svg(charCfg(), "celebrate")}</div>
+        <h2 class="g-complete-title">${t.levelDone}</h2>
         <div class="g-stars-big">${[1, 2, 3].map((n) => `<span class="${n <= stars ? "on" : ""}">★</span>`).join("")}</div>
-        <h2>${t.levelDone}</h2>
+        <p class="g-complete-hype">${pickCorrectMsg()}</p>
+        <div class="g-companion-celebrate">${Character.svg(charCfg(), "celebrate")}</div>
         <div class="g-rewards"><span>+${xp} ${t.xp}</span><span>+${coins} 🪙</span></div>
         ${newBadge ? `<div class="g-badge-earned"><span class="g-badge-icon">${newBadge.icon}</span><span>${t.badgeEarned}<br>${gsub(newBadge)}</span></div>` : ""}
         ${newItems.length ? `<a href="#/spel/kledingkast" class="g-badge-earned g-wardrobe-earned"><span class="g-badge-icon">👕</span><span>${t.newOutfitEarned}<br>${newItems.map((it) => gsub(it.label)).join(", ")}</span></a>` : ""}
         <div class="g-complete-actions">
+          <button id="gNextLevel" class="g-cta g-cta-primary"><span>${t.next}</span> →</button>
           <button id="gToMap" class="g-cta ghost">${t.toMap}</button>
-          <button id="gNextLevel" class="g-cta"><span>${t.next}</span> →</button>
         </div>
       </div>`;
     $("gToMap").onclick = () => gohash(`#/spel/wereld/${world.id}`);

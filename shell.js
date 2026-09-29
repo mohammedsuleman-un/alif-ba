@@ -168,24 +168,42 @@
     const doneInWorld = stop.world.levels.filter((l) => state.levels && state.levels[levelKey(stop.world, l)]).length;
     const pct = Math.round((doneInWorld / stop.world.levels.length) * 100);
     const charCfg = window.Character && window.Character.getConfig(p.id);
-    const charHtml = charCfg
+    // CharacterStage: hetzelfde CharacterRenderer-fragment (Character.svg) dat
+    // ook op wereldkaart/oefening/level-compleet/profiel/kledingkast wordt
+    // gebruikt — hier alleen groter en met een eigen "podium"-achtergrond,
+    // zodat het personage op Home de dominante hero-positie krijgt in plaats
+    // van een kleine avatar-badge. Zonder geconfigureerd personage valt dit
+    // terug op het profiel-emoji, ook groot getoond.
+    const stageHtml = charCfg
       ? `<div class="app-home-character">${window.Character.svg(charCfg, "idle")}</div>`
-      : `<span class="app-home-avatar">${p.avatar}</span>`;
+      : `<span class="app-home-avatar-big">${p.avatar}</span>`;
+    const smallAvatarHtml = charCfg
+      ? `<div class="ahc-avatar-mini">${window.Character.svg(charCfg, "idle")}</div>`
+      : `<span class="ahc-avatar-mini-emoji">${p.avatar}</span>`;
+    // World-preview asset-slot: nog geen wereld-thumbnail-illustraties
+    // aangeleverd (zie CHARACTER_ASSET_REQUIREMENTS.md) — tot die er zijn
+    // toont dit een rustige, thema-gekleurde placeholder op exact dezelfde
+    // plek/afmeting, zodat het asset later 1-op-1 vervangen kan worden.
+    const worldThumbHtml = `<span class="ahc-world-thumb g-theme-${stop.world.theme}" aria-hidden="true"></span>`;
     root.innerHTML = `
       <div class="app-home">
-        <div class="app-home-hero">
-          <div class="ahc-row">
-            <div class="ahc-avatar">${charHtml}</div>
-            <p class="app-home-greet">${t.greeting(p.name)}</p>
-            <div class="app-home-stats">
-              <span class="ahp-pill">⭐ ${totalStars}</span>
-              <span class="ahp-pill">✨ ${state.xp || 0}</span>
-            </div>
+        <div class="app-home-topbar">
+          ${smallAvatarHtml}
+          <p class="app-home-greet">${t.greeting(p.name)}</p>
+          <div class="app-home-stats">
+            <span class="ahp-pill">⭐ ${totalStars}</span>
+            <span class="ahp-pill">✨ ${state.xp || 0}</span>
           </div>
+        </div>
+        <div class="app-home-stage">${stageHtml}</div>
+        <div class="app-home-worldcard">
           <div class="app-home-current">
-            <span class="ahc-label">${worldLabel}</span>
-            <span class="ahc-level">${stop.level ? `${t.level} ${stop.level.n}` : t.allDone}</span>
-            <div class="ahc-progress"><i style="width:${pct}%"></i></div>
+            ${worldThumbHtml}
+            <div class="ahc-current-text">
+              <span class="ahc-label">${worldLabel}</span>
+              <span class="ahc-level">${stop.level ? `${t.level} ${stop.level.n}` : t.allDone}</span>
+              <div class="ahc-progress"><i style="width:${pct}%"></i></div>
+            </div>
           </div>
           <a href="${href}" class="app-cta app-cta-full">${t.continueLearning} <span class="cta-arrow">→</span></a>
           ${charCfg ? `<a href="#/spel/kledingkast" class="app-home-wardrobe-link">👕 ${t.wardrobe}</a>` : ""}

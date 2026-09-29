@@ -558,11 +558,22 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 
 /* ---------- Level: intro & vragen ---------- */
 #gLevel { background: var(--cream); min-height: 100dvh; display: flex; flex-direction: column; }
-.g-lvl-head { display: flex; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top)) 14px 8px; }
-.g-lvl-head .g-icon-btn { background: var(--gold-soft); color: var(--gold); }
+.g-lvl-head { display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top)) 14px 8px; }
+.g-lvl-head .g-icon-btn { background: var(--gold-soft); color: var(--gold); flex: none; }
 .g-lvl-progress { flex: 1; height: 10px; border-radius: 5px; background: var(--gold-soft); overflow: hidden; }
 .g-lvl-progress i { display: block; height: 100%; background: var(--gold); transition: width .3s; }
-.g-lvl-n { min-width: 30px; height: 30px; border-radius: 15px; background: var(--gold); color: #fff; font-weight: 800; display: grid; place-items: center; }
+/* Vraag-voor-vraag voortgang als stippen (referentie: ●●●○○) i.p.v. een balk. */
+.g-lvl-dots { flex: 1; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.g-lvl-dots i {
+  width: 9px; height: 9px; border-radius: 50%; background: var(--gold-soft); border: 2px solid var(--gold-light);
+  transition: transform .2s, background .2s;
+}
+.g-lvl-dots i.done { background: var(--color-success); border-color: var(--color-success-strong); }
+.g-lvl-dots i.cur { background: var(--gold); border-color: var(--gold); transform: scale(1.35); }
+.g-lvl-stars {
+  flex: none; display: inline-flex; align-items: center; gap: 3px; font-weight: 800; font-size: 13px;
+  background: var(--gold-soft); color: var(--gold); border-radius: 999px; padding: 6px 10px; white-space: nowrap;
+}
 
 /* Tijdslimiet per vraag: dunne balk die leegloopt. */
 .g-timer { height: 5px; margin: 0 14px; border-radius: 3px; background: var(--gold-soft); overflow: hidden; }
@@ -579,10 +590,20 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 .g-big-letter.playing { animation: pop .4s ease-out; }
 .g-intro-hint { color: var(--muted); font-weight: 700; }
 
-.g-q-prompt {
-  font-weight: 800; font-size: 15px; color: var(--gold); max-width: 320px;
-  background: var(--gold-soft); padding: 8px 18px; border-radius: 999px; letter-spacing: .01em;
+/* Instructiekaart: icoon + korte kicker ("Luister") + de eigenlijke vraag —
+   vervangt de losse pill van vroeger, zodat de oefening meteen leest als een
+   kaart-gebaseerd schermtype i.p.v. een formulierregel. */
+.g-instr-card {
+  display: flex; align-items: center; gap: 12px; width: 100%; max-width: 380px; text-align: start;
+  background: var(--card); border-radius: var(--radius-lg); box-shadow: var(--shadow-card); padding: 14px 18px;
 }
+.g-instr-icon {
+  flex: none; width: 42px; height: 42px; border-radius: 50%; font-size: 19px;
+  background: var(--gold-soft); color: var(--gold); display: grid; place-items: center;
+}
+.g-instr-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.g-instr-kicker { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.g-instr-main { font-size: 15px; font-weight: 800; color: var(--ink); }
 .g-play-big {
   width: 96px; height: 96px; border-radius: 50%; border: 0; background: var(--gold); color: #fff;
   font-size: 40px; box-shadow: 0 4px 0 #8a6218;
@@ -614,26 +635,41 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 .g-pair-card.flipped, .g-pair-card.matched { background: var(--card); color: var(--ink); box-shadow: 0 3px 0 var(--gold-light); }
 .g-pair-card.matched { opacity: .55; }
 
-/* ---------- Level voltooid ---------- */
+/* ---------- Level voltooid: volwaardig celebration-scherm ---------- */
+/* Warme, stralende achtergrond (geen donkere dialoog-dimmer) — dit moet
+   voelen als een bestemming/hoogtepunt, niet als een gesloten modal. */
 .g-overlay {
-  position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; padding: 24px;
-  background: rgba(43, 33, 24, .55); backdrop-filter: blur(3px);
+  position: fixed; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center;
+  padding: 24px calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));
+  overflow-y: auto;
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(255, 210, 87, .55), transparent 60%),
+    linear-gradient(180deg, #fff4d6 0%, var(--cream) 45%);
 }
 .g-complete-card {
-  width: min(360px, 100%); text-align: center; padding: 30px 24px; border-radius: 28px;
-  background: linear-gradient(180deg, var(--gold-soft), #fff 55%); border: 3px solid var(--gold-light);
-  box-shadow: 0 20px 50px rgba(60, 40, 10, .35); animation: rise .35s cubic-bezier(.2, .9, .3, 1.2);
+  width: min(380px, 100%); text-align: center; padding: 34px 26px; border-radius: 32px;
+  background: var(--card); box-shadow: 0 20px 50px rgba(60, 40, 10, .22);
+  animation: rise .35s cubic-bezier(.2, .9, .3, 1.2);
 }
+.g-complete-title { font-family: "Amiri", serif; font-size: clamp(24px, 6.5vw, 30px); margin: 0 0 12px; color: var(--ink); }
 .g-stars-big { font-size: 48px; letter-spacing: 6px; color: #d8cbb0; }
 .g-stars-big .on { color: var(--glow); text-shadow: 0 2px 4px rgba(0, 0, 0, .25); }
-.g-complete-card h2 { font-family: "Amiri", serif; margin: 10px 0 4px; }
-.g-rewards { display: flex; justify-content: center; gap: 16px; font-weight: 800; color: var(--muted); margin-bottom: 14px; }
+.g-complete-hype { font-weight: 800; color: var(--gold); margin: 8px 0 0; font-size: 15px; }
+.g-rewards { display: flex; justify-content: center; gap: 16px; font-weight: 800; color: var(--muted); margin: 4px 0 14px; }
 .g-badge-earned {
   display: flex; align-items: center; gap: 10px; justify-content: center; text-align: start;
-  background: #fff8e3; border-radius: 16px; padding: 10px 14px; margin-bottom: 16px; font-weight: 700; font-size: 14px;
+  background: var(--gold-soft); border-radius: 16px; padding: 10px 14px; margin-bottom: 16px; font-weight: 700; font-size: 14px;
 }
 .g-badge-icon { font-size: 28px; }
-.g-complete-actions { display: flex; gap: 10px; justify-content: center; }
+/* Grote primaire CTA bovenaan, kleinere secundaire eronder — i.p.v. twee
+   gelijkwaardige knoppen naast elkaar. */
+.g-complete-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; margin-top: 4px; }
+.g-cta-primary {
+  background: var(--color-success); box-shadow: 0 4px 0 var(--color-success-strong);
+  font-size: 18px; padding: 15px 26px;
+}
+.g-cta-primary:active { box-shadow: 0 1px 0 var(--color-success-strong); }
+.g-complete-actions .g-cta.ghost { background: none; color: var(--muted); box-shadow: none; font-size: 14px; padding: 8px; }
 
 .g-toast {
   position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px);
@@ -705,29 +741,56 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
   border-radius: var(--radius-lg); text-align: start; color: var(--ink);
   background: var(--card); box-shadow: var(--shadow-card);
 }
+.app-home-worldcard {
+  margin: 6px 0 18px; padding: 20px; border-radius: var(--radius-lg);
+  background: var(--card); box-shadow: var(--shadow-card);
+}
 .app-home-kicker { display: block; font-family: "Amiri", serif; font-size: 14px; color: var(--gold); opacity: .85; margin-bottom: 6px; }
 .app-home-title { font-family: "Amiri", serif; font-size: clamp(30px, 8vw, 44px); margin: 0 0 10px; }
 .app-home-sub { color: var(--muted); margin: 0 0 18px; font-weight: 700; }
 .app-home-avatar { font-size: 40px; display: block; }
-.ahc-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.ahc-avatar {
-  flex: none; width: 56px; height: 56px; border-radius: 50%; overflow: hidden;
+
+/* TOP: identiteitsbalk (kleine avatar + begroeting + sterren/XP-pills). */
+.app-home-topbar {
+  display: flex; align-items: center; gap: 10px;
+  margin: calc(16px + env(safe-area-inset-top)) 0 4px;
+}
+.ahc-avatar-mini, .ahc-avatar-mini-emoji {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
   background: var(--gold-soft); border: 3px solid var(--gold-light); display: grid; place-items: center;
 }
-.app-home-character { width: 100%; height: 100%; margin: 0 auto; transform: translateY(14%) scale(1.55); animation: charIdle 3.4s ease-in-out infinite; }
-.app-home-character svg { width: 100%; height: 100%; }
-.app-home-wardrobe-link { display: block; margin-top: 10px; color: var(--gold); font-weight: 700; font-size: 13px; text-decoration: none; }
-@media (prefers-reduced-motion: reduce) { .app-home-character { animation: none; } }
+.ahc-avatar-mini-emoji { font-size: 22px; }
+.ahc-avatar-mini svg { width: 100%; height: 100%; transform: translateY(14%) scale(1.55); }
 .app-home-greet { flex: 1; min-width: 0; font-weight: 800; font-size: clamp(16px, 4.4vw, 19px); margin: 0; }
 .app-home-stats { display: flex; gap: 6px; flex: none; }
 .ahp-pill {
   display: inline-flex; align-items: center; gap: 3px; font-weight: 800; font-size: 13px;
   background: var(--gold-soft); color: var(--gold); border-radius: 999px; padding: 5px 10px;
 }
+
+/* HERO: CharacterStage — het personage neemt hier bewust de dominante
+   visuele positie in, los van de kaart eronder (net als referentie-Home). */
+.app-home-stage {
+  height: clamp(190px, 46vw, 260px); display: flex; align-items: flex-end; justify-content: center;
+  margin: 6px 0 4px;
+}
+.app-home-character { width: clamp(150px, 40vw, 210px); height: 100%; animation: charIdle 3.4s ease-in-out infinite; }
+.app-home-character svg { width: 100%; height: 100%; }
+.app-home-avatar-big { font-size: clamp(72px, 22vw, 110px); line-height: 1; }
+.app-home-wardrobe-link { display: block; margin-top: 10px; color: var(--gold); font-weight: 700; font-size: 13px; text-decoration: none; }
+@media (prefers-reduced-motion: reduce) { .app-home-character { animation: none; } }
+
+/* CURRENT WORLD: WorldCard met thumbnail-asset-slot + naam/level/voortgang. */
 .app-home-current {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px;
+  display: flex; align-items: center; gap: 12px;
   background: var(--gold-soft); border-radius: 16px; padding: 12px 16px; margin-bottom: 16px;
 }
+/* Wereld-thumbnail: asset-slot met vaste afmeting/aspect-ratio (1:1). Nog geen
+   illustratie aangeleverd → toont voorlopig een rustige, thema-gekleurde vlak
+   (dezelfde --theme-* gradient als de wereldkaart-achtergrond) op exact de
+   plek waar later assets/worlds/<theme>/thumbnail.webp 1-op-1 in komt. */
+.ahc-world-thumb { flex: none; width: 46px; height: 46px; border-radius: 12px; display: block; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+.ahc-current-text { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; }
 .ahc-label { font-weight: 700; color: var(--muted); font-size: 13px; }
 .ahc-level { font-weight: 800; font-size: 18px; color: var(--ink); }
 .ahc-progress { flex-basis: 100%; height: 8px; border-radius: 5px; background: rgba(184, 134, 43, .18); overflow: hidden; margin-top: 6px; }
@@ -740,10 +803,10 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 .app-cta:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a6218; }
 /* Primaire leeractie ("Verder leren" op Home) volgt de referentie: groen
    i.p.v. goud, zodat goud gereserveerd blijft voor sterren/beloningen. */
-.app-home-hero .app-cta {
+.app-home-worldcard .app-cta, .app-home-hero .app-cta {
   background: var(--color-success); box-shadow: 0 4px 0 var(--color-success-strong);
 }
-.app-home-hero .app-cta:active { box-shadow: 0 1px 0 var(--color-success-strong); }
+.app-home-worldcard .app-cta:active, .app-home-hero .app-cta:active { box-shadow: 0 1px 0 var(--color-success-strong); }
 .cta-arrow { display: inline-block; }
 [dir="rtl"] .cta-arrow, [dir="rtl"] .book-card-arrow { transform: scaleX(-1); }
 
