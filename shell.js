@@ -11,7 +11,7 @@
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   };
 
-  const LANGS = ["nl", "en", "ar"];
+  const LANGS = ["nl", "en", "ar", "tr"];
   const curLang = () => (LANGS.includes(store.get("lang", "nl")) ? store.get("lang", "nl") : "nl");
   const gsub = (obj) => (curLang() === "ar" ? obj.ar : obj[curLang()] || obj.ar);
 
@@ -75,6 +75,26 @@
       voiceOn: "Turn off spoken instructions", voiceOff: "Turn on spoken instructions",
       sfxOn: "Turn off sound effects", sfxOff: "Turn on sound effects",
       child: "Child", levelsDone: "Levels done",
+    },
+    tr: {
+      dir: "ltr",
+      nav: { leren: "Öğren", boek: "Kitap", beloningen: "Ödüller", profiel: "Profil" },
+      kicker: "Qa'idah al-Fath ar-Rabbani",
+      greeting: (n) => `Selamün aleyküm, ${n}`,
+      startAdventure: "Arapça maceranı başlatmaya hazır mısın?",
+      chooseProfile: "Profilini seç",
+      continueLearning: "Öğrenmeye devam et", wardrobe: "Gardırop",
+      allDone: "Hepsi tamamlandı! MaşaAllah",
+      level: "Seviye",
+      bookCardTitle: "Alif Ba Kitabım",
+      bookCardCta: "Kaldığın yerden devam et",
+      rewardsTitle: "Ödüllerim",
+      stars: "yıldız", coins: "jeton", badges: "Rozetler", noBadgesYet: "Henüz rozet yok — oynamaya devam et!",
+      profileTitle: "Profil", switchProfile: "Profil değiştir", noProfileYet: "Henüz profil yok",
+      language: "Dil", forParents: "Ebeveynler için",
+      voiceOn: "Sesli talimatları kapat", voiceOff: "Sesli talimatları aç",
+      sfxOn: "Ses efektlerini kapat", sfxOff: "Ses efektlerini aç",
+      child: "Çocuk", levelsDone: "Tamamlanan seviyeler",
     },
   };
   const ST = () => SHELL_I18N[curLang()];

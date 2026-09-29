@@ -28,7 +28,7 @@
   const DEV = ["localhost", "127.0.0.1", ""].includes(location.hostname);
   const VOICE = (window.VOICE && window.VOICE.instructions) ? window.VOICE : { instructions: {} };
   const INSTR_DIR = "audio/instructions/";
-  const LANGS = ["nl", "en", "ar"];
+  const LANGS = ["nl", "en", "ar", "tr"];
 
   const settings = {
     get voiceOn() { return store.get("voiceInstructionsEnabled", true); },

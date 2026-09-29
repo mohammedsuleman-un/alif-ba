@@ -83,6 +83,28 @@
       unlockAtLevel: (n) => `At ${n} levels completed`, unlockAtStars: (n) => `At ${n} stars`,
       unlockAtWorld: "When you complete this world",
     },
+    tr: { dir: "ltr", who: "Bugün kim oynuyor?", newProfile: "Yeni profil", namePlaceholder: "Adın",
+      create: "Başla", world: (n) => `Dünya ${n}`, level: "Seviye", locked: "Kilitli", start: "Başla",
+      play: "Oyna", back: "Geri", listen: "Dinle", chooseSound: "Duyduğun harfe dokun",
+      chooseMatch: "Aynı harfe dokun", pairs: "Eşleşen çifte dokun",
+      correct: ["Aferin!", "MaşaAllah!", "Mükemmel!", "Harika!"], tryAgain: "Neredeyse! Tekrar dene", timeUp: "Süre bitti! Doğru cevap bu",
+      levelDone: "Seviye tamamlandı!", newLetter: "Yeni harf", next: "Sonraki seviye", toMap: "Harita",
+      xp: "XP", coins: "jeton", badgeEarned: "Yeni rozet!", switchProfile: "Profil değiştir",
+      bookMode: "Kitap", gameMode: "Oyun", challenge: "Meydan okuma",
+      levelsProgress: (d, n) => `${n} seviyeden ${d} tamamlandı`, discover: (l) => `${l} harfini keşfet`,
+      checkpointTitle: "Dinlenme durağı", checkpointReward: (n) => `+${n} 🪙`, claim: "Aç",
+      worldDone: "Dünya tamamlandı!", nextWorldSoon: "Yeni dünya yakında…",
+      voiceOn: "Sesli talimatları kapat", voiceOff: "Sesli talimatları aç",
+      sfxOn: "Ses efektlerini kapat", sfxOff: "Ses efektlerini aç",
+      newOutfitEarned: "Yeni kıyafet!", openWardrobe: "Gardırop", makeCharacter: "Öğrenme arkadaşını oluştur",
+      chooseGender: "Erkek mi kız mı?", boy: "Erkek", girl: "Kız", chooseSkin: "Bir ten rengi seç",
+      chooseOutfit: "Kıyafetini seç", chooseHijab: "Bir başörtüsü rengi seç", meetCharacter: "İşte öğrenme arkadaşın!",
+      charContinue: "İleri", charStart: "Bismillah, hadi başlayalım!",
+      wardrobeTitle: "Gardırobum", categoryOutfit: "Kıyafet", categoryHijab: "Başörtüsü",
+      categoryShoes: "Ayakkabı", categoryAccessory: "Aksesuarlar",
+      unlockAtLevel: (n) => `${n} seviye tamamlanınca`, unlockAtStars: (n) => `${n} yıldızda`,
+      unlockAtWorld: "Bu dünya tamamlanınca",
+    },
   };
   const glang = () => (I18N_LANG_OK() ? store.get("lang", "nl") : "nl");
   // De boekmodus (app.js) beheert `lang` al; we lezen 'm alleen uit.
@@ -292,6 +314,7 @@
           <button type="button" data-l="ar" class="${glang() === "ar" ? "sel" : ""}">ع</button>
           <button type="button" data-l="nl" class="${glang() === "nl" ? "sel" : ""}">NL</button>
           <button type="button" data-l="en" class="${glang() === "en" ? "sel" : ""}">EN</button>
+          <button type="button" data-l="tr" class="${glang() === "tr" ? "sel" : ""}">TR</button>
         </div>
       </div>
       <h2 class="g-who">${t.who}</h2>

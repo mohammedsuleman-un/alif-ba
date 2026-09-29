@@ -82,6 +82,22 @@
       progress: (done, total) => `${done} of ${total} lessons`,
       playGame: "Play the game",
     },
+    tr: {
+      dir: "ltr",
+      subtitle: "İçindekiler · bir derse dokun",
+      continue: (n) => `${n}. derse devam et`,
+      lessons: (n) => `${n} ders`,
+      missing: "Kayıt yakında 🎙️",
+      missingAll: "Kayıtlar yakında 🎙️",
+      missingSome: (n) => `${n} kayıt yakında 🎙️`,
+      noTiles: "Bu sayfada henüz kare yok",
+      home: "İçindekilere dön", playAll: "Hepsini oynat", next: "Sonraki sayfa", prev: "Önceki sayfa",
+      tile: (n) => `Kare ${n}`,
+      chapter: (n) => `Bölüm ${n}`, lessonOf: (i, n) => `Ders ${i} / ${n}`, start: "Başla",
+      search: "Bir ders ara…", noResults: "Ders bulunamadı",
+      progress: (done, total) => `${total} dersten ${done} tamamlandı`,
+      playGame: "Oyunu oyna",
+    },
   };
   const guessLang = () => {
     const l = (navigator.language || "nl").slice(0, 2);
