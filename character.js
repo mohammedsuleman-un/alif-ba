@@ -95,15 +95,66 @@
       return newly;
     },
 
-    // ---------- Renderer ----------
+    // ---------- CharacterRenderer ----------
+    // render(cfg, mood) is de ENIGE aanroep die de rest van de app gebruikt
+    // (home, wereldkaart, oefeningen, level-complete, rewards, profiel,
+    // kledingkast, onboarding). Ze weten niets van assets vs. placeholder —
+    // dat wordt hier centraal opgelost:
+    //
+    //   1. Kandidaat-asset-URL's opbouwen (meest specifiek → generiek) uit
+    //      resolveAssetCandidates(cfg, mood): outfit-asset voor deze mood →
+    //      hijab-asset (meisje) → type-brede default voor deze mood.
+    //   2. Een <img> renderen die bij een 404 automatisch de volgende
+    //      kandidaat probeert (onerror-cascade, geen async/fetch-probing
+    //      nodig — werkt synchroon en zonder flikkering bij succes).
+    //   3. Zijn ALLE kandidaten weg (nog geen enkele illustratie aangeleverd),
+    //      dan vervangt de laatste onerror de <img> door de bestaande
+    //      SVG-placeholder (placeholderSvg) — zo blijft de app altijd een
+    //      net personage tonen, ook voordat er assets zijn.
+    //
+    // Assets toevoegen = alleen character-data.js invullen (per item een
+    // `assets: { <mood>: "pad/naar/bestand.png" }`) of bestanden neerzetten
+    // op de default-paden in assets/characters/<type>/<mood>/default.*  —
+    // GEEN aanpassing aan character.js of aan de call sites nodig.
+    render(cfg, mood) {
+      mood = mood || "idle";
+      if (!cfg) cfg = { type: "boy", skinTone: C.skinTones[1] };
+      const candidates = resolveAssetCandidates(cfg, mood);
+      const uid = "cr" + (idCounter++);
+      const placeholder = this.placeholderSvg(cfg, mood);
+      if (!candidates.length) return placeholder;
+      const list = candidates.join("|");
+      return `<span class="char-render" data-idx="0" data-candidates="${escapeAttr(list)}">` +
+        `<img src="${candidates[0]}" alt="" draggable="false" onerror="window.Character._onImgError(this)" />` +
+        `<template class="char-placeholder">${placeholder}</template>` +
+        `</span>`;
+    },
+
+    // Interne fallback-handler voor de onerror-cascade hierboven.
+    _onImgError(img) {
+      const wrap = img.parentElement;
+      if (!wrap || !wrap.classList.contains("char-render")) return;
+      const list = (wrap.getAttribute("data-candidates") || "").split("|").filter(Boolean);
+      const idx = parseInt(wrap.getAttribute("data-idx") || "0", 10) + 1;
+      if (idx < list.length) {
+        wrap.setAttribute("data-idx", String(idx));
+        img.src = list[idx];
+      } else {
+        const tpl = wrap.querySelector("template.char-placeholder");
+        wrap.outerHTML = tpl ? tpl.innerHTML : "";
+      }
+    },
+
+    // Backwards-compatible alias — bestaande call sites in game.js/shell.js
+    // gebruikten tot nu toe Character.svg(cfg, mood).
+    svg(cfg, mood) { return this.render(cfg, mood); },
+
     // Eén consistente, layer-based placeholderstijl (lichaam/huid → kleding →
     // hijab-of-haar → gezicht → accessoire), met zachte gradients/schaduw voor
-    // meer diepte dan platte vlakken. Nog GEEN definitieve illustratie — zie
-    // het eindrapport voor precies welke assets een illustrator nog moet maken.
-    // Zodra die er zijn: vervang per categorie de vaste vormen hieronder door
-    // een <image>-laag die het "asset"-pad van het gekozen item gebruikt; de
-    // aanroep (svg(cfg, mood)) blijft ongewijzigd voor de rest van de app.
-    svg(cfg, mood) {
+    // meer diepte dan platte vlakken. Dit is BEWUST tijdelijk — wordt gebruikt
+    // zolang er geen (of geen passende) illustratie-asset is. Zie
+    // CHARACTER_ASSET_REQUIREMENTS.md voor de definitieve assetlijst.
+    placeholderSvg(cfg, mood) {
       if (!cfg) cfg = { type: "boy", skinTone: C.skinTones[1] };
       const uid = "c" + (idCounter++);
       const skin = cfg.skinTone || C.skinTones[1];
@@ -177,6 +228,25 @@
   };
 
   let idCounter = 1;
+
+  // Bouwt de kandidaat-lijst met assetpaden voor deze config+mood, van
+  // specifiek naar generiek. Puur paden opbouwen/lezen uit character-data.js —
+  // geen bestandscontrole (dat doet de onerror-cascade in de browser zelf).
+  function resolveAssetCandidates(cfg, mood) {
+    const type = cfg.type === "girl" ? "girl" : "boy";
+    const out = [];
+    const outfit = C.items.find((i) => i.id === cfg.outfit);
+    if (outfit && outfit.assets && outfit.assets[mood]) out.push(outfit.assets[mood]);
+    if (type === "girl") {
+      const hijab = C.items.find((i) => i.id === cfg.hijab);
+      if (hijab && hijab.assets && hijab.assets[mood]) out.push(hijab.assets[mood]);
+    }
+    out.push(`assets/characters/${type}/${mood}/default.webp`);
+    out.push(`assets/characters/${type}/${mood}/default.png`);
+    return out;
+  }
+  function escapeAttr(s) { return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;"); }
+
   // Kleine kleur-helpers (hex → lichter/donkerder) voor de gradients hierboven —
   // geen afhankelijkheid nodig voor zo'n eenvoudige bewerking.
   function clamp255(v) { return Math.max(0, Math.min(255, v)); }

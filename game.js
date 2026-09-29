@@ -627,6 +627,10 @@
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">
+        <img class="g-scene-bg" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
+          data-fallback="assets/worlds/${world.theme}/background.png"
+          onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.remove();}"
+          onload="this.classList.add('loaded')" />
         <div class="g-scene" id="gScene" style="height:${sceneH}px">
           <svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">
             <path d="${smoothPath(pathPts)}" class="g-route-line" />
