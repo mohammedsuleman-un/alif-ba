@@ -36,13 +36,13 @@ window.CHARACTER = {
 
     // ---------- Kleding (meisje) ----------
     { id: "outfit_girl_starter", category: "outfit", characterType: "girl", unlockType: "starter",
-      color: "#b06a9a", assets: {}, label: { ar: "فستان وردي", nl: "Roze jurk", en: "Pink dress" } },
+      color: "#b06a9a", assets: { wave: "assets/characters/girl/wave/outfit_girl_starter.png" }, label: { ar: "فستان وردي", nl: "Roze jurk", en: "Pink dress" } },
     { id: "outfit_girl_starter2", category: "outfit", characterType: "girl", unlockType: "starter",
-      color: "#6a7fb0", assets: {}, label: { ar: "فستان أزرق", nl: "Blauwe jurk", en: "Blue dress" } },
+      color: "#6a7fb0", assets: { wave: "assets/characters/girl/wave/outfit_girl_starter2.png" }, label: { ar: "فستان أزرق", nl: "Blauwe jurk", en: "Blue dress" } },
     { id: "outfit_girl_teal", category: "outfit", characterType: "girl", unlockType: "level", unlockValue: 5,
       color: "#3f8f8a", assets: {}, label: { ar: "فستان فيروزي", nl: "Turquoise jurk", en: "Teal dress" } },
     { id: "outfit_girl_abaya", category: "outfit", characterType: "girl", unlockType: "level", unlockValue: 10,
-      color: "#3a3a4a", assets: {}, label: { ar: "عباية", nl: "Abaya", en: "Abaya" } },
+      color: "#3a3a4a", assets: { wave: "assets/characters/girl/wave/outfit_girl_abaya.png" }, label: { ar: "عباية", nl: "Abaya", en: "Abaya" } },
     { id: "outfit_girl_oasis", category: "outfit", characterType: "girl", unlockType: "world", unlockValue: "letter_oasis",
       color: "#c99a3c", assets: {}, label: { ar: "حلة الواحة", nl: "Oase-outfit", en: "Oasis outfit" } },
 

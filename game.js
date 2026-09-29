@@ -475,8 +475,15 @@
           ${items.map((i) => {
             const isUnlocked = unlocked.includes(i.id);
             const isEquipped = cfg[i.category] === i.id;
+            // Illustratie-thumbnail i.p.v. vlakke kleurcirkel zodra het item een
+            // aangeleverde asset heeft (welke mood dan ook — puur als voorbeeld-
+            // beeld); anders blijft de kleurcirkel de nette placeholder.
+            const thumbSrc = i.assets && Object.values(i.assets)[0];
+            const swatch = thumbSrc
+              ? `<span class="wardrobe-swatch wardrobe-swatch-img" style="background:${i.color || "#ddd"}"><img src="${thumbSrc}" alt="" onerror="this.remove()" />${isUnlocked ? "" : "🔒"}</span>`
+              : `<span class="wardrobe-swatch" style="background:${i.color || "#ddd"}">${isUnlocked ? "" : "🔒"}</span>`;
             return `<button type="button" class="wardrobe-item ${isEquipped ? "equipped" : ""} ${isUnlocked ? "" : "locked"}" data-id="${i.id}" ${isUnlocked ? "" : "disabled"}>
-              <span class="wardrobe-swatch" style="background:${i.color || "#ddd"}">${isUnlocked ? "" : "🔒"}</span>
+              ${swatch}
               <span class="wardrobe-label">${gsub(i.label)}</span>
               ${!isUnlocked ? `<span class="wardrobe-hint">${unlockHint(i)}</span>` : ""}
             </button>`;
@@ -628,8 +635,8 @@
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">
         <img class="g-scene-bg" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
-          data-fallback="assets/worlds/${world.theme}/background.png"
-          onerror="if(this.dataset.fallback){this.src=this.dataset.fallback;this.dataset.fallback='';}else{this.remove();}"
+          data-fallbacks="assets/worlds/${world.theme}/background.png|assets/worlds/${world.theme}/background.jpg" data-idx="0"
+          onerror="const l=(this.dataset.fallbacks||'').split('|').filter(Boolean);const i=+this.dataset.idx;if(i&lt;l.length){this.dataset.idx=i+1;this.src=l[i];}else{this.remove();}"
           onload="this.classList.add('loaded')" />
         <div class="g-scene" id="gScene" style="height:${sceneH}px">
           <svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">

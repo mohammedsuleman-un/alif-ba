@@ -1,0 +1,5 @@
+# Ruwe, aangeleverde bron-illustraties (sprite sheets, ongecropt) — niet nodig
+# voor de live app, alleen de verwerkte losse assets in assets/characters/ en
+# assets/worlds/ worden gebruikt/gecommit. Grote bestanden (tientallen MB),
+# horen niet in de GitHub Pages-deploy.
+assets/modern/
