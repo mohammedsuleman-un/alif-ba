@@ -512,6 +512,35 @@
   const nodeX = (i) => 50 + Math.sin(i * 1.05 + 0.4) * MAP_AMP;
   const nodeY = (i) => MAP_TOP + i * MAP_ROWH;
 
+  // ---------- Letter Oase: knopen volgen het echte pad uit de illustratie ----------
+  // Handmatig opgemeten in assets/worlds/oasis/background.jpg (1024×1536,
+  // dezelfde afbeelding als de "zonder letters"-bronillustratie): voor elk
+  // van de 10 levels de positie van het bijbehorende rondje in die
+  // afbeelding, van start (onder) naar boven. x = pixels vanaf links,
+  // yFromBottom = pixels vanaf de ONDERKANT van de afbeelding — die twee
+  // laatste (8/9) vielen buiten de aangeleverde knoppen en zijn een
+  // voorzichtige verlenging van het pad richting de moskee-ingang.
+  const OASIS_IMG_W = 1024, OASIS_IMG_H = 1536;
+  const OASIS_PATH = [
+    { x: 410, yFromBottom: 286 },
+    { x: 695, yFromBottom: 516 },
+    { x: 630, yFromBottom: 646 },
+    { x: 690, yFromBottom: 791 },
+    { x: 760, yFromBottom: 926 },
+    { x: 720, yFromBottom: 1036 },
+    { x: 785, yFromBottom: 1146 },
+    { x: 825, yFromBottom: 1246 },
+    { x: 700, yFromBottom: 1336 },
+    { x: 600, yFromBottom: 1406 },
+  ];
+  // sceneWpx = de daadwerkelijk gerenderde breedte van .g-scene (zelfde
+  // breedte waarop de achtergrondillustratie met width:100% wordt getoond),
+  // zodat de knoop-coördinaten exact meeschalen met de afbeelding eronder.
+  const oasisScale = (sceneWpx) => sceneWpx / OASIS_IMG_W;
+  const oasisNodeX = (i) => (OASIS_PATH[i].x / OASIS_IMG_W) * 100;
+  const oasisNodeY = (i, sceneH, sceneWpx) => sceneH - OASIS_PATH[i].yFromBottom * oasisScale(sceneWpx);
+  const oasisSceneH = (sceneWpx) => OASIS_IMG_H * oasisScale(sceneWpx) + MAP_TOP;
+
   function smoothPath(pts) {
     if (pts.length < 2) return "";
     let d = `M ${pts[0].x} ${pts[0].y}`;
@@ -612,9 +641,24 @@
     const cpUnlocked = !!state.levels[levelId(world, levels[4])];
 
     // Coördinaten van elk level + eventueel het checkpoint (tussen level 5 en 6).
-    const pts = levels.map((lv, i) => ({ x: nodeX(i), y: nodeY(i), lv, i }));
-    const cpPoint = { x: nodeX(4.5), y: (nodeY(4) + nodeY(5)) / 2 };
-    const sceneH = MAP_TOP + (levels.length - 1) * MAP_ROWH + MAP_BOT;
+    // Wereld 1 (Letter Oase) heeft een echte illustratie met een getekend
+    // pad (assets/worlds/oasis/background.jpg) — daar volgen de knopen de
+    // exacte, opgemeten pixelposities uit die afbeelding i.p.v. het
+    // generieke golf-patroon, en wordt de scène-hoogte afgeleid van de
+    // afbeelding zelf (op volle breedte getoond) in plaats van een vast
+    // aantal pixels per level.
+    const isOasisPath = world.id === "letter_oasis" && levels.length === OASIS_PATH.length;
+    // scr.map is de al-bestaande, correct gepositioneerde containerdiv —
+    // document.documentElement.clientWidth gaf hier soms de volledige
+    // vensterbreedte i.p.v. de werkelijke (max-width: 980px) scènebreedte.
+    const sceneWpx = Math.min(scr.map.clientWidth || 390, 980);
+    const sceneH = isOasisPath ? oasisSceneH(sceneWpx) : MAP_TOP + (levels.length - 1) * MAP_ROWH + MAP_BOT;
+    const getX = isOasisPath ? oasisNodeX : nodeX;
+    const getY = isOasisPath ? (i) => oasisNodeY(i, sceneH, sceneWpx) : nodeY;
+    const pts = levels.map((lv, i) => ({ x: getX(i), y: getY(i), lv, i }));
+    const cpPoint = isOasisPath
+      ? { x: (getX(4) + getX(5)) / 2, y: (getY(4) + getY(5)) / 2 }
+      : { x: nodeX(4.5), y: (nodeY(4) + nodeY(5)) / 2 };
     const pathPts = [...pts.slice(0, 5).map((p) => ({ x: p.x, y: p.y })), cpPoint, ...pts.slice(5).map((p) => ({ x: p.x, y: p.y }))];
     // Kleine "stapstenen" tussen de knopen, verdeeld over elk padsegment (rechte interpolatie volstaat visueel).
     const stones = [];
@@ -640,7 +684,7 @@
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">
-        <img class="g-scene-bg" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
+        <img class="g-scene-bg${isOasisPath ? " g-scene-bg--aligned" : ""}" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
           data-fallbacks="assets/worlds/${world.theme}/background.png|assets/worlds/${world.theme}/background.jpg" data-idx="0"
           onerror="const l=(this.dataset.fallbacks||'').split('|').filter(Boolean);const i=+this.dataset.idx;if(i&lt;l.length){this.dataset.idx=i+1;this.src=l[i];}else{this.remove();}"
           onload="this.classList.add('loaded')" />
@@ -671,7 +715,7 @@
             const isCurrent = unlocked && p.i === currentIdx && stars === 0;
             const label = gsub(p.lv.title);
             return `
-            <div class="g-node2 ${p.i % 2 ? "side-r" : "side-l"} ${p.lv.challenge ? "is-challenge" : ""}" style="left:${p.x}%; top:${p.y}px">
+            <div class="g-node2 ${p.i % 2 ? "side-r" : "side-l"} ${p.lv.challenge ? "is-challenge" : ""} ${isOasisPath ? "g-node2--aligned" : ""}" style="left:${p.x}%; top:${p.y}px">
               <button class="g-node-btn2 ${unlocked ? "on" : "locked"} ${isCurrent ? "current" : ""} ${stars ? "completed" : ""}"
                 data-n="${p.lv.n}" aria-label="${t.level} ${p.lv.n}${unlocked ? ": " + label : ": " + t.locked}">
                 ${nodeInner(t, p.lv, unlocked, isCurrent, stars)}
