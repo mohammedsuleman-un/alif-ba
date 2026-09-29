@@ -568,7 +568,15 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 }
 
 /* ---------- Level: intro & vragen ---------- */
-#gLevel { background: var(--cream); min-height: 100dvh; display: flex; flex-direction: column; }
+/* Zelfde algemene achtergrond-illustratie als Home/keuzescherm, met een
+   lichte warme wash zodat instructiekaart/antwoordkaarten (wit/opaque)
+   dominant en leesbaar blijven. */
+#gLevel {
+  background:
+    linear-gradient(180deg, rgba(255, 249, 236, .88) 0%, rgba(253, 248, 238, .93) 45%, rgba(253, 248, 238, .82) 100%),
+    url("assets/backgrounds/general.jpg") center/cover no-repeat, var(--cream);
+  min-height: 100dvh; display: flex; flex-direction: column;
+}
 .g-lvl-head { display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top)) 14px 8px; }
 .g-lvl-head .g-icon-btn { background: var(--gold-soft); color: var(--gold); flex: none; }
 .g-lvl-progress { flex: 1; height: 10px; border-radius: 5px; background: var(--gold-soft); overflow: hidden; }
@@ -589,7 +597,12 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 /* Tijdslimiet per vraag: dunne balk die leegloopt. */
 .g-timer { height: 5px; margin: 0 14px; border-radius: 3px; background: var(--gold-soft); overflow: hidden; }
 .g-timer i { display: block; height: 100%; width: 100%; background: var(--gold); }
-@media (prefers-reduced-motion: reduce) { .g-timer i { transition: none !important; } }
+/* Waarschuwing dat de tijd bijna om is: balk verspringt naar oranje/rood en
+   pulseert zachtjes — duidelijk voelbaar, niet fel/eng. */
+.g-timer.warn { height: 7px; animation: timerPulse 1s ease-in-out infinite; }
+.g-timer.warn i { background: linear-gradient(90deg, #e2762f, #e0503f); }
+@keyframes timerPulse { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .g-timer i { transition: none !important; } .g-timer.warn { animation: none; } }
 
 .g-intro, .g-q { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px; text-align: center; }
 .g-intro-kicker { font-weight: 800; color: var(--muted); letter-spacing: .04em; }

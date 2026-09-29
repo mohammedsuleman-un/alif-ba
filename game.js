@@ -259,6 +259,12 @@
       const ctx = audioCtx(); if (!ctx) return;
       tone(ctx, ctx.currentTime, 700, 0.05, { type: "sine", gain: 0.08 });
     },
+    // Zachte waarschuwing dat de vraag-tijd bijna om is — geen hard/eng geluid.
+    timeWarning() {
+      if (!AudioManager.settings.sfxOn) return;
+      const ctx = audioCtx(); if (!ctx) return;
+      tone(ctx, ctx.currentTime, 900, 0.09, { type: "sine", gain: 0.09 });
+    },
     // Vuurwerk bij het voltooien van een level: 3 keer omhoogschieten + knallen.
     fireworks() {
       if (!AudioManager.settings.sfxOn) return;
@@ -796,13 +802,14 @@
   }
 
   const QUESTION_TIME_MS = 10000;
+  const QUESTION_WARN_MS = 3000; // laatste 3 seconden: waarschuwing (kleur + zacht geluid)
 
   function renderChoiceQuestion(q) {
     const t = GT();
     const isAudio = q.type === "AUDIO_TO_LETTER";
     scr.level.innerHTML = `
       ${levelHeader()}
-      <div class="g-timer"><i id="gTimerBar"></i></div>
+      <div class="g-timer" id="gTimer"><i id="gTimerBar"></i></div>
       <div class="g-q">
         <div class="g-instr-card">
           <span class="g-instr-icon">${isAudio ? "🔊" : "👆"}</span>
@@ -820,10 +827,13 @@
       </div>
       ${companionHtml()}`;
     $("gLvlBack").onclick = () => { clearTimer(); gohash(`#/spel/wereld/${runState.world.id}`); };
-    let first = true, locked = false, timeoutStrikes = 0, timerHandle = null;
+    let first = true, locked = false, timeoutStrikes = 0, timerHandle = null, warnHandle = null;
 
     function clearTimer() {
       if (timerHandle) { clearTimeout(timerHandle); timerHandle = null; }
+      if (warnHandle) { clearTimeout(warnHandle); warnHandle = null; }
+      const timerEl = document.getElementById("gTimer");
+      if (timerEl) timerEl.classList.remove("warn");
     }
     function startTimer() {
       if (locked) return;
@@ -840,6 +850,13 @@
         }));
       }
       timerHandle = setTimeout(onTimeout, QUESTION_TIME_MS);
+      // Waarschuwing dat de tijd bijna om is: kleur verspringt naar oranje/rood
+      // en pulseert, plus één zacht tikje — geen fel/eng alarm.
+      warnHandle = setTimeout(() => {
+        const timerEl = document.getElementById("gTimer");
+        if (timerEl) timerEl.classList.add("warn");
+        sfx.timeWarning();
+      }, Math.max(0, QUESTION_TIME_MS - QUESTION_WARN_MS));
     }
     function onTimeout() {
       if (locked) return;
