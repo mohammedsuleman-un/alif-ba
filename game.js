@@ -893,8 +893,10 @@
               if (solvedPairs >= needed) {
                 if (first) { runState.correctFirstTry++; updateMastery(q.letter, true); }
                 toast(pickCorrectMsg());
-                AudioManager.playRandomCorrectFeedback();
-                setTimeout(() => { runState.i++; renderQuestion(); }, 500);
+                // Zie answerFeedback() hierboven: wachten op de audio zelf
+                // i.p.v. een vaste timer, anders knipt de volgende vraag het
+                // (vooral Arabische) complimentfragment af.
+                AudioManager.playRandomCorrectFeedback().then(() => { runState.i++; renderQuestion(); });
               }
             } else {
               sfx.wrong(); companionMood("encouraging", 1100);
@@ -922,8 +924,10 @@
       btn.classList.add("correct");
       toast(pickCorrectMsg());
       sfx.correct(); companionMood("happy", 1200);
-      AudioManager.playRandomCorrectFeedback();
-      setTimeout(next, 550);
+      // Wacht tot het complimentfragment is uitgesproken (of meteen door bij
+      // uitgeschakelde spraak) — een vaste timer knipte langere zinnen
+      // (vooral Arabisch) af zodra de volgende vraag alvast begon te praten.
+      AudioManager.playRandomCorrectFeedback().then(() => next());
     } else {
       btn.classList.add("wrong");
       setTimeout(() => btn.classList.remove("wrong"), 420);
