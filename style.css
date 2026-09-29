@@ -1,4 +1,9 @@
 :root {
+  /* Bestaande tokens — blijven de basis voor kaarten/typografie/spacing.
+     Niet vervangen (zou elk scherm tegelijk moeten worden aangepast en
+     opnieuw getest); de semantische tokens hieronder zijn er nieuw naast
+     gezet en worden per fase op schermen toegepast (zie git-historie voor
+     welke fase welk scherm heeft omgezet). */
   --gold: #b8862b;
   --gold-light: #e9c877;
   --gold-soft: #f7ecd2;
@@ -16,6 +21,23 @@
   --shadow-card: 0 3px 0 var(--gold-light), 0 10px 24px rgba(120, 80, 20, .14);
   --nav-h: 64px;
   --arabic-hero: clamp(80px, 20vw, 176px);
+
+  /* ---- Alif Ba design system: semantische tokens (referentieafbeelding) ----
+     Rolgebaseerd, niet component-gebonden. Elk onderdeel kiest een rol
+     (bv. "primaire leeractie" = --color-success), nooit een losse hexcode. */
+  --color-background: var(--cream);
+  --color-surface: var(--card);
+  --color-primary: #2451a3;        /* dieper blauw — belangrijke navigatie/koppen */
+  --color-primary-strong: #163b7e;
+  --color-secondary: #3a8fd9;      /* helder blauw — interactieve controls/links */
+  --color-success: #3fa85c;        /* groen — primaire leeractie ("Verder leren"), goed-antwoord */
+  --color-success-strong: #2f7d45;
+  --color-reward: var(--gold);     /* sterren/beloningen — bestaand goud hergebruikt */
+  --color-reward-strong: #8a6218;
+  --color-character-accent: #8452b0; /* paars — character/hero-accentkleur */
+  --color-text: var(--ink);
+  --color-text-muted: var(--muted);
+  --color-locked: #b9ada0;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -716,6 +738,12 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 }
 .app-cta-full { display: flex; justify-content: center; width: 100%; }
 .app-cta:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a6218; }
+/* Primaire leeractie ("Verder leren" op Home) volgt de referentie: groen
+   i.p.v. goud, zodat goud gereserveerd blijft voor sterren/beloningen. */
+.app-home-hero .app-cta {
+  background: var(--color-success); box-shadow: 0 4px 0 var(--color-success-strong);
+}
+.app-home-hero .app-cta:active { box-shadow: 0 1px 0 var(--color-success-strong); }
 .cta-arrow { display: inline-block; }
 [dir="rtl"] .cta-arrow, [dir="rtl"] .book-card-arrow { transform: scaleX(-1); }
 
