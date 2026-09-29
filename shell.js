@@ -147,10 +147,14 @@
     const t = ST();
     const root = $("appHome");
     const p = activeProfile();
+    // Startscherm (nog geen profiel): eigen achtergrond-illustratie i.p.v. de
+    // lichte kaartstijl van het dashboard hieronder — vandaar de losse
+    // modifier-klasse op #appHome zelf.
+    root.classList.toggle("is-start", !p);
     if (!p) {
       root.innerHTML = `
         <div class="app-home">
-          <div class="app-home-hero">
+          <div class="app-home-hero app-home-hero--start">
             <span class="app-home-kicker">${t.kicker}</span>
             <h1 class="app-home-title" lang="ar" dir="rtl">ألف با قرءاني</h1>
             <p class="app-home-sub">${t.startAdventure}</p>

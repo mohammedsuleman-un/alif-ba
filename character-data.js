@@ -24,13 +24,13 @@ window.CHARACTER = {
   items: [
     // ---------- Kleding (jongen) ----------
     { id: "outfit_boy_starter", category: "outfit", characterType: "boy", unlockType: "starter",
-      color: "#5b8fb0", assets: {}, label: { ar: "ثوب أزرق", nl: "Blauwe outfit", en: "Blue outfit" } },
+      color: "#5b8fb0", assets: { idle: "assets/characters/boy/idle/outfit_boy_starter.png" }, label: { ar: "ثوب أزرق", nl: "Blauwe outfit", en: "Blue outfit" } },
     { id: "outfit_boy_starter2", category: "outfit", characterType: "boy", unlockType: "starter",
       color: "#8a6b4a", assets: {}, label: { ar: "ثوب بني", nl: "Bruine outfit", en: "Brown outfit" } },
     { id: "outfit_boy_green", category: "outfit", characterType: "boy", unlockType: "level", unlockValue: 5,
-      color: "#4c8a5e", assets: {}, label: { ar: "ثوب أخضر", nl: "Groene outfit", en: "Green outfit" } },
+      color: "#4c8a5e", assets: { idle: "assets/characters/boy/idle/outfit_boy_green.png" }, label: { ar: "ثوب أخضر", nl: "Groene outfit", en: "Green outfit" } },
     { id: "outfit_boy_thobe", category: "outfit", characterType: "boy", unlockType: "level", unlockValue: 10,
-      color: "#f4f1e8", assets: {}, label: { ar: "ثوب أبيض", nl: "Witte thobe", en: "White thobe" } },
+      color: "#f4f1e8", assets: { idle: "assets/characters/boy/idle/outfit_boy_thobe.png" }, label: { ar: "ثوب أبيض", nl: "Witte thobe", en: "White thobe" } },
     { id: "outfit_boy_oasis", category: "outfit", characterType: "boy", unlockType: "world", unlockValue: "letter_oasis",
       color: "#c99a3c", assets: {}, label: { ar: "حلة الواحة", nl: "Oase-outfit", en: "Oasis outfit" } },
 
