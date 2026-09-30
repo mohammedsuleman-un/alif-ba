@@ -536,6 +536,41 @@
   // sceneWpx = de daadwerkelijk gerenderde breedte van .g-scene (zelfde
   // breedte waarop de achtergrondillustratie met width:100% wordt getoond),
   // zodat de knoop-coördinaten exact meeschalen met de afbeelding eronder.
+  // ---------- Brede wereldkaarten (camera/viewport-aanpak) ----------
+  // Aangeleverde landschap-illustraties (1672x941) voor Letter Oase en
+  // Lettertuin — vervangen de staande achtergrond met een "WorldMapStage":
+  // de wereld leeft in zijn EIGEN pixelruimte (WIDE_MAP_W x WIDE_MAP_H),
+  // en een viewport toont daar een uitsnede van, gecentreerd op het
+  // huidige level. Zo ontstaat nooit lege ruimte (de wereld wordt altijd
+  // minstens zo groot als de viewport geschaald) en blijven achtergrond,
+  // pad, knopen en personage in exact dezelfde coördinaten (fracties 0-1
+  // van de wereldafbeelding) — geen aparte %-gebaseerde knop-plaatsing
+  // die los van de achtergrond kan raken.
+  // De knoop-posities volgen het geschilderde pad in elke illustratie
+  // (opgemeten); de eventuele ingebakken letters/sloten in de illustraties
+  // zelf zijn alleen sfeerbeeld, nooit de echte interactieve elementen.
+  const WIDE_MAP_W = 1672, WIDE_MAP_H = 941;
+  const WIDE_MAPS = {
+    letter_oasis: {
+      bg: "assets/worlds/oasis/map-wide.jpg",
+      path: [
+        { x: 0.6071, y: 0.9192 }, { x: 0.6163, y: 0.8702 }, { x: 0.6222, y: 0.8127 },
+        { x: 0.6247, y: 0.7468 }, { x: 0.6237, y: 0.6726 }, { x: 0.6194, y: 0.5899 },
+        { x: 0.6117, y: 0.4989 }, { x: 0.6006, y: 0.3994 }, { x: 0.5861, y: 0.2916 },
+        { x: 0.5682, y: 0.1753 },
+      ],
+    },
+    letter_garden: {
+      bg: "assets/worlds/garden/map-wide.jpg",
+      path: [
+        { x: 0.4217, y: 0.8608 }, { x: 0.4475, y: 0.8030 }, { x: 0.4772, y: 0.7418 },
+        { x: 0.5107, y: 0.6772 }, { x: 0.5481, y: 0.6091 }, { x: 0.5893, y: 0.5377 },
+        { x: 0.6343, y: 0.4629 }, { x: 0.6832, y: 0.3846 }, { x: 0.7359, y: 0.3029 },
+        { x: 0.7925, y: 0.2179 },
+      ],
+    },
+  };
+
   const oasisScale = (sceneWpx) => sceneWpx / OASIS_IMG_W;
   const oasisNodeX = (i) => (OASIS_PATH[i].x / OASIS_IMG_W) * 100;
   const oasisNodeY = (i, sceneH, sceneWpx) => sceneH - OASIS_PATH[i].yFromBottom * oasisScale(sceneWpx);
@@ -643,6 +678,10 @@
     const cpId = `${world.id}_cp5`;
     const cpClaimed = (state.checkpoints || []).includes(cpId);
     const cpUnlocked = !!state.levels[levelId(world, levels[4])];
+
+    if (WIDE_MAPS[world.id] && WIDE_MAPS[world.id].path.length === levels.length) {
+      return renderWideMap(world, levels, doneCount, currentIdx, totalStars, cpId, cpClaimed, cpUnlocked, t);
+    }
 
     // Coördinaten van elk level + eventueel het checkpoint (tussen level 5 en 6).
     // Wereld 1 (Letter Oase) heeft een echte illustratie met een getekend
@@ -756,6 +795,83 @@
       const target = scr.map.querySelector(`.g-node-btn2[data-n="${levels[currentIdx].n}"]`);
       target?.scrollIntoView({ block: "center", behavior: reduceMotion ? "auto" : "smooth" });
     });
+  }
+
+  // ---------- WorldMapStage: camera/viewport-weergave voor de brede kaarten ----------
+  function renderWideMap(world, levels, doneCount, currentIdx, totalStars, cpId, cpClaimed, cpUnlocked, t) {
+    const map = WIDE_MAPS[world.id];
+    const pts = levels.map((lv, i) => ({ ...map.path[i], lv, i }));
+    const cur = pts[currentIdx];
+
+    scr.map.innerHTML = `
+      <div class="g-map-head g-theme-${world.theme}">
+        <button id="gSwitchProfile" class="g-icon-btn" aria-label="${t.switchProfile}">${activeProfile.avatar}</button>
+        <div class="g-map-title">
+          <span class="g-map-ar" lang="ar" dir="rtl">${world.title.ar}</span>
+          <span class="g-map-sub">${gsub(world.subtitle)}</span>
+        </div>
+        <div class="g-stats">
+          <span>${t.levelsProgress(doneCount, levels.length)}</span>
+          <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
+        </div>
+        <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
+      </div>
+      <div class="g-world-viewport" id="gWorldViewport">
+        <div class="g-world-stage" id="gWorldStage">
+          <img class="g-world-bg" src="${map.bg}" alt="" aria-hidden="true" />
+          ${pts.map((p) => {
+            const unlocked = isLevelUnlocked(world, p.i);
+            const stars = levelStars(world, p.lv);
+            const isCurrent = unlocked && p.i === currentIdx && stars === 0;
+            const label = gsub(p.lv.title);
+            return `
+            <div class="g-wnode ${p.lv.challenge ? "is-challenge" : ""}" style="left:${p.x * 100}%; top:${p.y * 100}%">
+              <button class="g-node-btn2 ${unlocked ? "on" : "locked"} ${isCurrent ? "current" : ""} ${stars ? "completed" : ""}"
+                data-n="${p.lv.n}" aria-label="${t.level} ${p.lv.n}${unlocked ? ": " + label : ": " + t.locked}">
+                ${nodeInner(t, p.lv, unlocked, isCurrent, stars)}
+              </button>
+              ${unlocked ? `<div class="g-node-stars2">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</div>` : ""}
+              ${isCurrent ? `<div class="g-node-flag">${t.play} →</div>` : ""}
+            </div>`;
+          }).join("")}
+          <div class="g-wchar" id="gWorldChar" style="left:${cur.x * 100}%; top:${cur.y * 100}%">
+            ${Character.svg(Character.getConfig(activeProfile.id), "wave")}
+          </div>
+        </div>
+      </div>`;
+
+    $("gSwitchProfile").onclick = () => gohash("#/spel");
+    scr.map.querySelectorAll(".g-node-btn2.on").forEach((b) => {
+      b.onclick = () => gohash(`#/spel/level/${world.id}/${b.dataset.n}`);
+    });
+
+    // Camera: de "wereld" (stage) wordt geschaald zodat ze de viewport in
+    // beide richtingen minstens vult (cover-gedrag, nooit lege randen), plus
+    // een extra zoom-factor op kleine schermen zodat er daar maar een paar
+    // knopen tegelijk zichtbaar zijn — op desktop is de extra zoom minimaal
+    // zodat juist meer van de wereld te zien is. Daarna wordt de stage
+    // verschoven zodat het huidige level gecentreerd in beeld staat, geklemd
+    // aan de wereldranden zodat er nooit voorbij de illustratie zichtbaar is.
+    const applyCamera = () => {
+      const vp = $("gWorldViewport");
+      const stage = $("gWorldStage");
+      if (!vp || !stage) return;
+      const vw = vp.clientWidth, vh = vp.clientHeight;
+      if (!vw || !vh) return;
+      const zoomBoost = vw < 600 ? 2.1 : vw < 1024 ? 1.5 : 1.08;
+      const coverZoom = Math.max(vw / WIDE_MAP_W, vh / WIDE_MAP_H);
+      const zoom = coverZoom * zoomBoost;
+      const stageW = WIDE_MAP_W * zoom, stageH = WIDE_MAP_H * zoom;
+      stage.style.width = stageW + "px";
+      stage.style.height = stageH + "px";
+      let tx = vw / 2 - cur.x * stageW;
+      let ty = vh / 2 - cur.y * stageH;
+      tx = Math.min(0, Math.max(vw - stageW, tx));
+      ty = Math.min(0, Math.max(vh - stageH, ty));
+      stage.style.transform = `translate(${tx}px, ${ty}px)`;
+    };
+    requestAnimationFrame(applyCamera);
+    window.addEventListener("resize", applyCamera);
   }
 
   // ---------- Level: vraag-generators ----------

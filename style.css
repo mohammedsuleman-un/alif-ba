@@ -1001,6 +1001,43 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
   .g-map-character { width: 122px; height: 175px; transform: translate(calc(-50% - 92px), -86%); }
 }
 
+/* WorldMapStage: brede (1672x941) illustratie-wereldkaarten met camera/viewport.
+   .g-world-viewport is het venster (overflow:hidden, vult altijd het scherm);
+   .g-world-stage is de volledige wereld op ware grootte * zoom, verschoven via
+   JS zodat het huidige level gecentreerd staat. Alle knopen/character gebruiken
+   dezelfde %-coördinaten (0-1 fractie van de wereldafbeelding) binnen de stage,
+   zodat ze nooit los raken van het pad. */
+#gMap .g-world-viewport {
+  position: relative; overflow: hidden; flex: 1; width: 100%; background: var(--cream);
+}
+#gMap .g-world-stage {
+  position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform;
+}
+#gMap .g-world-bg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+#gMap .g-wnode { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; z-index: 2; }
+#gMap .g-wnode .g-node-btn2 { width: 56px; height: 56px; }
+#gMap .g-wnode .g-node-btn2.current { width: 84px; height: 84px; box-shadow: 0 6px 0 var(--color-success-strong), 0 0 0 6px rgba(255, 210, 87, .4), 0 10px 20px rgba(0, 0, 0, .25); }
+#gMap .g-wnode .g-node-letter, #gMap .g-wnode .g-node-n-big { font-size: 24px; }
+#gMap .g-wnode .g-node-btn2.current .g-node-letter, #gMap .g-wnode .g-node-btn2.current .g-node-n-big { font-size: 34px; }
+#gMap .g-wnode .g-node-stars2 { font-size: 14px; }
+#gMap .g-wnode .g-node-flag { position: absolute; top: 100%; margin-top: 4px; white-space: nowrap; }
+#gMap .g-wnode.is-challenge .g-node-btn2 { width: 66px; height: 66px; }
+#gMap .g-wnode.is-challenge .g-node-btn2.current { width: 90px; height: 90px; }
+#gMap .g-wchar {
+  position: absolute; width: 100px; height: 140px; transform: translate(calc(-50% - 56px), -82%); z-index: 3;
+  pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .3)); animation: charIdle 3.4s ease-in-out infinite;
+}
+#gMap .g-wchar svg { width: 100%; height: 100%; }
+@media (min-width: 640px) {
+  #gMap .g-wchar { width: 130px; height: 178px; transform: translate(calc(-50% - 68px), -82%); }
+}
+@media (min-width: 1024px) {
+  #gMap .g-wchar { width: 150px; height: 205px; transform: translate(calc(-50% - 78px), -82%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #gMap .g-wchar { animation: none; }
+}
+
 /* CharacterRenderer: <span class="char-render"> vult exact dezelfde ruimte
    als de vroegere inline <svg> in elke plek waar het personage getoond wordt
    (companion, app-home, profielkaart, wereldkaart-marker, creator-preview). */
