@@ -549,8 +549,8 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 }
 .g-node-stars2 { margin-top: 3px; color: var(--glow); font-size: 15px; letter-spacing: 1px; text-shadow: 0 1px 2px rgba(0, 0, 0, .4); }
 .g-node-flag {
-  margin-top: 5px; background: var(--gold); color: #fff; font-size: 12px; font-weight: 800;
-  padding: 4px 12px; border-radius: 10px; white-space: nowrap; box-shadow: 0 2px 0 #8a6218;
+  margin-top: 7px; background: var(--color-success); color: #fff; font-size: 14px; font-weight: 800;
+  padding: 7px 16px; border-radius: 999px; white-space: nowrap; box-shadow: 0 3px 0 var(--color-success-strong);
 }
 
 .g-node2.is-challenge .g-node-btn2 { width: 128px; height: 128px; }
@@ -567,21 +567,23 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
    bronvolgorde die media query laten winnen). */
 #gMap .g-node2--aligned { width: auto; }
 #gMap .g-node2--aligned .g-node-btn2 { width: 52px; height: 52px; }
-#gMap .g-node2--aligned .g-node-btn2.current { width: 62px; height: 62px; }
+/* De current-node blijft hier duidelijk groter dan de rest (net als in de
+   generieke kaart), zodat "waar ben ik nu" onmiddellijk duidelijk is. */
+#gMap .g-node2--aligned .g-node-btn2.current { width: 78px; height: 78px; box-shadow: 0 6px 0 #b9860f, 0 0 0 6px rgba(255, 210, 87, .4), 0 10px 20px rgba(0, 0, 0, .25); }
 #gMap .g-node2--aligned .g-node-letter, #gMap .g-node2--aligned .g-node-n-big { font-size: 22px; }
-#gMap .g-node2--aligned .g-node-btn2.current .g-node-letter, #gMap .g-node2--aligned .g-node-btn2.current .g-node-n-big { font-size: 26px; }
+#gMap .g-node2--aligned .g-node-btn2.current .g-node-letter, #gMap .g-node2--aligned .g-node-btn2.current .g-node-n-big { font-size: 32px; }
 #gMap .g-node2--aligned .g-node-num { display: none; }
 #gMap .g-node2--aligned .g-node-stars2 {
   position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
   margin: 0; font-size: 9px; background: rgba(43, 33, 24, .55); border-radius: 8px; padding: 1px 4px; white-space: nowrap;
 }
 #gMap .g-node2--aligned .g-node-flag {
-  position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
-  margin: 0; font-size: 10px; padding: 3px 8px; white-space: nowrap; z-index: 3;
+  position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+  margin: 0; font-size: 13px; padding: 5px 12px; white-space: nowrap; z-index: 3;
 }
 #gMap .g-node2--aligned .g-node-lock { width: 20px; height: 20px; font-size: 13px; bottom: -2px; }
 #gMap .g-node2--aligned.is-challenge .g-node-btn2 { width: 62px; height: 62px; }
-#gMap .g-node2--aligned.is-challenge .g-node-btn2.current { width: 70px; height: 70px; }
+#gMap .g-node2--aligned.is-challenge .g-node-btn2.current { width: 84px; height: 84px; }
 #gMap .g-node2--aligned.is-challenge .g-node-letter { font-size: 28px; }
 
 /* Mobiel: iets compactere knopen, zoals gevraagd (64-80px) */
@@ -970,11 +972,20 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 .cc-wrap .g-cta[disabled] { opacity: .45; pointer-events: none; }
 
 /* ---------- Personage op de wereldkaart ---------- */
+/* Het leermaatje staat NAAST de current-level node (niet erop/eronder als
+   klein icoontje) — duidelijk het dominante element, alsof het kind zelf
+   op het pad staat. Horizontale verschuiving t.o.v. de node-positie via
+   transform (px, naast de %-gebaseerde left van de node zelf), voeten
+   landen dicht bij het pad-niveau van de node (translateY iets minder dan
+   -100% i.p.v. er bovenuit te steken). */
 .g-map-character {
-  position: absolute; width: 56px; height: 76px; transform: translate(-50%, -100%); z-index: 6;
-  pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .25)); animation: charIdle 3.4s ease-in-out infinite;
+  position: absolute; width: 92px; height: 132px; transform: translate(calc(-50% - 74px), -86%); z-index: 6;
+  pointer-events: none; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .3)); animation: charIdle 3.4s ease-in-out infinite;
 }
 .g-map-character svg { width: 100%; height: 100%; }
+@media (min-width: 640px) {
+  .g-map-character { width: 122px; height: 175px; transform: translate(calc(-50% - 92px), -86%); }
+}
 
 /* CharacterRenderer: <span class="char-render"> vult exact dezelfde ruimte
    als de vroegere inline <svg> in elke plek waar het personage getoond wordt
