@@ -539,7 +539,11 @@
   const oasisScale = (sceneWpx) => sceneWpx / OASIS_IMG_W;
   const oasisNodeX = (i) => (OASIS_PATH[i].x / OASIS_IMG_W) * 100;
   const oasisNodeY = (i, sceneH, sceneWpx) => sceneH - OASIS_PATH[i].yFromBottom * oasisScale(sceneWpx);
-  const oasisSceneH = (sceneWpx) => OASIS_IMG_H * oasisScale(sceneWpx) + MAP_TOP;
+  // Kleine marge boven de afbeelding (lucht boven level 10) — bewust veel
+  // kleiner dan de generieke MAP_TOP, anders ontstaat er een kaal
+  // verlopen-kleur vlak boven de illustratie voordat die begint.
+  const OASIS_TOP_PAD = 36;
+  const oasisSceneH = (sceneWpx) => OASIS_IMG_H * oasisScale(sceneWpx) + OASIS_TOP_PAD;
 
   function smoothPath(pts) {
     if (pts.length < 2) return "";
