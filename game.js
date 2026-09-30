@@ -688,12 +688,16 @@
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">
-        <img class="g-scene-bg${isOasisPath ? " g-scene-bg--aligned" : ""}" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
+        ${!isOasisPath ? `<img class="g-scene-bg" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
           data-fallbacks="assets/worlds/${world.theme}/background.png|assets/worlds/${world.theme}/background.jpg" data-idx="0"
           onerror="const l=(this.dataset.fallbacks||'').split('|').filter(Boolean);const i=+this.dataset.idx;if(i&lt;l.length){this.dataset.idx=i+1;this.src=l[i];}else{this.remove();}"
-          onload="this.classList.add('loaded')" />
+          onload="this.classList.add('loaded')" />` : ""}
         <div class="g-scene" id="gScene" style="height:${sceneH}px">
-          <svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">
+          ${isOasisPath ? `<img class="g-scene-bg g-scene-bg--aligned" src="assets/worlds/${world.theme}/background.webp" alt="" aria-hidden="true"
+            data-fallbacks="assets/worlds/${world.theme}/background.png|assets/worlds/${world.theme}/background.jpg" data-idx="0"
+            onerror="const l=(this.dataset.fallbacks||'').split('|').filter(Boolean);const i=+this.dataset.idx;if(i&lt;l.length){this.dataset.idx=i+1;this.src=l[i];}else{this.remove();}"
+            onload="this.classList.add('loaded')" />` : ""}
+          ${!isOasisPath ? `<svg class="g-route" viewBox="0 0 100 ${sceneH}" preserveAspectRatio="none" aria-hidden="true">
             <path d="${smoothPath(pathPts)}" class="g-route-line" />
             <path d="${smoothPath(pathPts)}" class="g-route-line-inner" />
           </svg>
@@ -701,7 +705,7 @@
           <div class="g-cloud g-cloud-a">${ICON.cloud}</div>
           <div class="g-cloud g-cloud-b">${ICON.cloud}</div>
           ${pts.map((p) => zoneDecorations(p.i, p.x, p.y, world.theme)).join("")}
-          <div class="g-gate" style="top:${sceneH - 40}px">${ICON.gate}</div>
+          <div class="g-gate" style="top:${sceneH - 40}px">${ICON.gate}</div>` : ""}
 
           <div class="g-map-character" style="left:${pts[currentIdx].x}%; top:${pts[currentIdx].y - 6}px">
             ${Character.svg(Character.getConfig(activeProfile.id), "wave")}

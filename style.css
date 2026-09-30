@@ -423,11 +423,15 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 .g-stats { display: flex; flex-direction: column; gap: 2px; font-weight: 800; font-size: 12px; text-align: end; white-space: nowrap; }
 
 /* ---------- Werelkaart: het doorlopende landschap ---------- */
-/* #gMap krijgt hier zijn eigen hoogte via de scene — de geërfde min-height:100dvh van
-   .g-screen mag dat niet overschrijven, anders ontstaat er wit/leeg vlak onder de wereld. */
-#gMap.g-screen { min-height: 0; display: block; }
+/* #gMap vult altijd minstens het volledige scherm tussen header en onder-
+   navigatie — .g-scene-wrap rekt mee (flex:1) zodat zijn eigen achtergrond
+   (gradient/illustratie) die ruimte vult. Zonder dit ontstond er op lange
+   vensters (ingezoomd uit op desktop, of een telefoon met veel verticale
+   ruimte) een kaal wit/crème vlak onder de wereld, in plaats van dat de
+   thema-achtergrond doorloopt tot aan de taak-/navigatiebalk. */
+#gMap.g-screen { min-height: 100dvh; display: flex; flex-direction: column; }
 .g-scene-wrap {
-  position: relative; overflow-x: hidden;
+  position: relative; overflow-x: hidden; flex: 1; display: flex; flex-direction: column;
   background: linear-gradient(180deg, #cfe6c9 0%, #f3e2ae 34%, #f6d998 66%, #e7c179 100%);
 }
 .g-scene-wrap[data-theme="garden"] {
@@ -457,7 +461,11 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 }
 .g-scene-bg.loaded { opacity: 1; }
 .g-scene-wrap .g-scene { position: relative; z-index: 1; }
-.g-scene { position: relative; max-width: 980px; margin-inline: auto; overflow: hidden; }
+/* width:100% expliciet nodig: .g-scene-wrap is nu flex (voor de volledige-
+   hoogte achtergrond hierboven), en als flex-item met uitsluitend absoluut
+   gepositioneerde kinderen heeft .g-scene anders geen eigen intrinsieke
+   breedte (komt op 0px uit, dan is ook de achtergrondafbeelding onzichtbaar). */
+.g-scene { position: relative; width: 100%; max-width: 980px; margin-inline: auto; overflow: hidden; flex: none; }
 .g-route { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .g-route-line {
   fill: none; stroke: #d7ae74; stroke-width: 34; stroke-linecap: round; stroke-linejoin: round;
