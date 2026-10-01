@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="chase.css">
 </head>
 <body>
   <!-- App-startscherm: begroeting, voortgang, "verder leren"-CTA. Geen inhoudsopgave. -->
@@ -139,6 +140,9 @@
     <div id="gComplete" class="g-overlay" hidden></div>
   </section>
 
+  <!-- Letter Chase Prototype (V1): geïsoleerde experimentele minigame, eigen route (#/gamestage/...). -->
+  <section id="gamestage" class="screen" hidden></section>
+
   <script src="book-data.js"></script>
   <script src="voice-manifest.js"></script>
   <script src="audio-manager.js"></script>
@@ -148,5 +152,6 @@
   <script src="character.js"></script>
   <script src="game.js"></script>
   <script src="shell.js"></script>
+  <script src="game-chase.js"></script>
 </body>
 </html>

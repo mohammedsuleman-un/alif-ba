@@ -1,0 +1,91 @@
+/* Letter Chase Prototype (V1) — volledig eigen stylesheet, raakt style.css niet aan.
+   Hergebruikt alleen bestaande design tokens (var(--...)) uit style.css en de
+   globale .g-icon-btn / .char-render klassen die daar al gedefinieerd staan. */
+
+#gamestage.screen { position: fixed; inset: 0; z-index: 50; background: var(--cream); }
+html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 100%; }
+
+.chase-screen {
+  height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
+  touch-action: none; -webkit-user-select: none; user-select: none;
+}
+
+.chase-head {
+  flex: none; display: flex; align-items: center; gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  background: var(--gold-soft); border-bottom: 3px solid var(--gold-light);
+}
+.chase-instr { flex: 1; display: flex; align-items: baseline; justify-content: center; gap: 8px; }
+.chase-instr-text { font-weight: 800; font-size: clamp(16px, 4vw, 20px); color: var(--color-text); }
+.chase-instr-letter { font-family: "Amiri", serif; font-weight: 700; font-size: clamp(26px, 7vw, 34px); color: var(--color-character-accent); }
+.chase-dots { display: flex; gap: 6px; }
+.chase-dots i { width: 12px; height: 12px; border-radius: 50%; background: var(--gold-soft); border: 2px solid var(--gold-light); display: block; }
+.chase-dots i.done { background: var(--color-success); border-color: var(--color-success-strong); }
+
+.chase-field {
+  position: relative; flex: 1; min-height: 0; overflow: hidden;
+  background: linear-gradient(180deg, #bfe4f5 0%, #e7f4de 62%, #ead9a6 100%);
+}
+.chase-sun { position: absolute; top: 18px; right: 22px; width: 54px; height: 54px; border-radius: 50%; background: radial-gradient(circle, #ffe8a0, #ffd264); box-shadow: 0 0 28px rgba(255, 210, 100, .6); }
+.chase-cloud { position: absolute; width: 70px; height: 26px; background: #fff; border-radius: 999px; opacity: .85; }
+.chase-cloud::before, .chase-cloud::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+.chase-cloud::before { width: 36px; height: 36px; top: -16px; left: 8px; }
+.chase-cloud::after { width: 28px; height: 28px; top: -12px; left: 36px; }
+.chase-cloud-a { top: 14%; left: 8%; }
+.chase-cloud-b { top: 24%; left: 60%; transform: scale(.8); }
+.chase-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(180deg, #e3c276, #c99f52); }
+
+.chase-letters { position: absolute; inset: 0; }
+.chase-letter {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 84px; height: 84px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: linear-gradient(180deg, #fff, var(--gold-soft));
+  box-shadow: var(--shadow-card);
+  font-family: "Amiri", serif; font-weight: 700; font-size: 44px; color: var(--color-text);
+  transition: transform .15s ease;
+}
+.chase-letter.is-correct { animation: chaseCorrectPulse .6s ease; background: linear-gradient(180deg, #d9f3d2, #a9e2a0); }
+.chase-letter.is-wrong { animation: chaseWrongShake .45s ease; }
+@keyframes chaseCorrectPulse { 0% { transform: translate(-50%, -50%) scale(1); } 40% { transform: translate(-50%, -50%) scale(1.3); } 100% { transform: translate(-50%, -50%) scale(1.15); } }
+@keyframes chaseWrongShake { 0%, 100% { transform: translate(-50%, -50%); } 25% { transform: translate(calc(-50% - 6px), -50%); } 75% { transform: translate(calc(-50% + 6px), -50%); } }
+
+.chase-char {
+  position: absolute; width: clamp(100px, 24vw, 150px); height: clamp(130px, 30vw, 195px);
+  transform: translate(-50%, -100%); transition: transform .08s linear;
+  pointer-events: none; z-index: 3; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .25));
+}
+.chase-char .char-render { width: 100%; height: 100%; }
+
+.chase-controls {
+  flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
+  background: var(--gold-soft); border-top: 3px solid var(--gold-light);
+  touch-action: none;
+}
+.chase-btn-row { display: flex; align-items: center; gap: 14px; }
+.chase-btn {
+  width: 60px; height: 60px; border-radius: 16px; border: none; flex: none;
+  background: #fff; color: var(--gold); box-shadow: 0 4px 0 var(--gold-light), 0 8px 16px rgba(120, 80, 20, .15);
+  display: grid; place-items: center; touch-action: none; -webkit-tap-highlight-color: transparent;
+}
+.chase-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-light); }
+.chase-btn svg { width: 28px; height: 28px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+@media (min-width: 640px) { .chase-btn { width: 68px; height: 68px; } }
+
+.chase-overlay {
+  position: absolute; inset: 0; z-index: 10; display: grid; place-items: center;
+  background: rgba(60, 39, 18, .45); padding: 16px;
+}
+.chase-card {
+  background: #fff; border-radius: 24px; padding: 28px 24px; text-align: center;
+  box-shadow: var(--shadow-card); max-width: 320px; width: 100%;
+}
+.chase-card-emoji { font-size: 48px; }
+.chase-card h2 { margin: 6px 0 2px; font-size: 22px; color: var(--color-text); }
+.chase-card-score { font-size: 28px; font-weight: 800; color: var(--color-success-strong); margin: 4px 0 18px; }
+.chase-cta { display: block; width: 100%; border: none; border-radius: 16px; padding: 14px; font-weight: 800; font-size: 16px; margin-top: 10px; }
+.chase-cta-primary { background: var(--color-success); color: #fff; box-shadow: 0 4px 0 var(--color-success-strong); }
+.chase-cta-ghost { background: transparent; color: var(--color-text-muted); }
+
+html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
