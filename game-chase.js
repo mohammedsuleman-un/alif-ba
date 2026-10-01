@@ -1,6 +1,7 @@
-// Letter Chase Prototype (V1) — geïsoleerde gameplay-minigame.
+// Letter Chase Prototype (V1.1) — geïsoleerde gameplay-minigame, UX/gameplay polish pass.
 // Doel: bewijzen dat een kind een character kan bewegen, een gesproken
-// opdracht krijgt en de juiste Arabische letter kan "vangen".
+// opdracht krijgt en de juiste Arabische letter kan "vangen", en dat dit
+// prettig aanvoelt op een touchscherm.
 //
 // Volledig losstaand van de bestaande quiz-engine (game.js): eigen route-
 // prefix (#/gamestage/...), eigen hashchange-listener, eigen opslagsleutel
@@ -26,14 +27,18 @@
 
   // ---------- Taal (minimale, eigen set — deelt alleen de taalkeuze zelf) ----------
   const LANG = {
-    nl: { find: "Vind", good: "Goed gedaan!", again: "Nog een keer", toWorld: "Terug naar wereld",
-      up: "Omhoog", down: "Omlaag", left: "Links", right: "Rechts", back: "Terug" },
-    en: { find: "Find", good: "Well done!", again: "Play again", toWorld: "Back to world",
-      up: "Up", down: "Down", left: "Left", right: "Right", back: "Back" },
-    ar: { find: "ابحث عن", good: "أحسنت!", again: "مرة أخرى", toWorld: "العودة إلى العالم",
-      up: "أعلى", down: "أسفل", left: "يسار", right: "يمين", back: "رجوع" },
-    tr: { find: "Bul", good: "Aferin!", again: "Tekrar oyna", toWorld: "Dünyaya dön",
-      up: "Yukarı", down: "Aşağı", left: "Sol", right: "Sağ", back: "Geri" },
+    nl: { find: "Vind", good: "Goed gedaan", again: "Nog een keer", toWorld: "Terug",
+      up: "Omhoog", down: "Omlaag", left: "Links", right: "Rechts", back: "Terug",
+      listen: "Luister opnieuw", modeDpad: "Knoppen", modeTap: "Tik om te lopen" },
+    en: { find: "Find", good: "Well done", again: "Play again", toWorld: "Back",
+      up: "Up", down: "Down", left: "Left", right: "Right", back: "Back",
+      listen: "Listen again", modeDpad: "Buttons", modeTap: "Tap to walk" },
+    ar: { find: "ابحث عن", good: "أحسنت", again: "مرة أخرى", toWorld: "رجوع",
+      up: "أعلى", down: "أسفل", left: "يسار", right: "يمين", back: "رجوع",
+      listen: "استمع مرة أخرى", modeDpad: "أزرار", modeTap: "اضغط للمشي" },
+    tr: { find: "Bul", good: "Aferin", again: "Tekrar oyna", toWorld: "Geri",
+      up: "Yukarı", down: "Aşağı", left: "Sol", right: "Sağ", back: "Geri",
+      listen: "Tekrar dinle", modeDpad: "Düğmeler", modeTap: "Yürümek için dokun" },
   };
   const lang = () => { const l = store.get("lang", "nl"); return LANG[l] ? l : "nl"; };
   const T = () => LANG[lang()];
@@ -69,6 +74,16 @@
     store.set(chaseKey(pid), data);
   }
 
+  // ---------- Begrensde gameplay-coördinatenruimte ----------
+  // Op desktop mag de scenery (achtergrond) het hele scherm vullen, maar de
+  // daadwerkelijke speelafstanden mogen daar NIET van afhangen (anders staan
+  // letters "kilometers" uit elkaar op een breed scherm). Alle spawn- en
+  // bewegingslogica werkt daarom binnen een vaste, gecentreerde "playBox"
+  // die begrensd is op mobile-achtige afmetingen, ongeacht de werkelijke
+  // (scenery-)breedte van .chase-field.
+  const PLAY_MAX_W = 420;
+  const PLAY_MAX_H = 560;
+
   // ---------- Module state ----------
   let active = false;        // true zolang #/gamestage-route actief is
   let chaseId = "1";
@@ -80,15 +95,23 @@
   let correctCount = 0;
   let roundStartTs = 0;
   let collisionLocked = false;
+  let hintGivenThisRound = false;
 
   let fieldEl = null, charEl = null, lettersLayer = null;
   let fieldRect = { w: 0, h: 0 };
+  let playBox = { x0: 0, y0: 0, x1: 0, y1: 0, w: 0, h: 0 };
   let charBox = { w: 100, h: 140 };
   let charX = 0, charY = 0;  // logische positie = voetpunt van character, field-relatief
   const pressed = new Set(); // 'up'|'down'|'left'|'right'
-  const SPEED = 230;         // px/sec
+  const SPEED = 260;         // px/sec
   let rafHandle = null;
   let lastTs = 0;
+
+  // Tap-to-move (experimentele tweede inputmethode, A/B-vergelijkbaar via een
+  // zichtbare toggle — zie sectie 5 van de opdracht). Metrics worden hier
+  // bewust niet apart voor uitgebreid.
+  let inputMode = "dpad"; // 'dpad' | 'tap'
+  let moveTarget = null;  // {x,y} field-relatief, of null
 
   let roundLetters = []; // [{letter, isTarget, x, y, el}]
 
@@ -102,6 +125,7 @@
   function teardown() {
     active = false;
     pressed.clear();
+    moveTarget = null;
     if (rafHandle) { cancelAnimationFrame(rafHandle); rafHandle = null; }
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
@@ -137,9 +161,7 @@
     correctCount = 0;
     round = 0;
     phase = PHASE.INTRO;
-    charX = fieldRect.w / 2;
-    charY = fieldRect.h - 56;
-    applyCharTransform();
+    placeCharAtStart();
     updateProgressDots();
 
     window.addEventListener("keydown", onKeyDown);
@@ -151,17 +173,21 @@
     if (!rafHandle) rafHandle = requestAnimationFrame(loop);
   }
 
+  function placeCharAtStart() {
+    charX = playBox.x0 + playBox.w / 2;
+    charY = playBox.y1 - Math.max(24, charBox.h * 0.15);
+  }
+
   function onResize() {
     if (!active) return;
     measureField();
     measureChar();
-    charX = clamp(charX, charBox.w / 2, fieldRect.w - charBox.w / 2);
-    charY = clamp(charY, charBox.h * 0.5, fieldRect.h - 8);
+    clampCharToBounds();
     applyCharTransform();
-    // Letters zijn bij rondestart op pixelposities van het toenmalige
-    // speelveld gezet; na een resize (bv. schermrotatie) kunnen ze anders
-    // buiten het nieuwe speelveld komen te staan. Alleen herpositioneren
-    // tijdens PLAYING, zodat een feedback-animatie niet wordt onderbroken.
+    // Letters zijn bij rondestart op pixelposities van de toenmalige playBox
+    // gezet; na een resize (bv. schermrotatie) kunnen ze anders buiten de
+    // nieuwe playBox komen te staan. Alleen herpositioneren tijdens PLAYING,
+    // zodat een feedback-animatie niet wordt onderbroken.
     if (phase === PHASE.PLAYING && roundLetters.length) layoutLetters();
   }
 
@@ -169,6 +195,10 @@
     if (!fieldEl) return;
     const r = fieldEl.getBoundingClientRect();
     fieldRect = { w: r.width, h: r.height };
+    const w = Math.min(fieldRect.w, PLAY_MAX_W);
+    const h = Math.min(fieldRect.h, PLAY_MAX_H);
+    const x0 = (fieldRect.w - w) / 2, y0 = (fieldRect.h - h) / 2;
+    playBox = { x0, y0, x1: x0 + w, y1: y0 + h, w, h };
   }
   function measureChar() {
     if (!charEl) return;
@@ -187,6 +217,7 @@
           <button id="chaseBack" class="g-icon-btn" aria-label="${t.back}">
             <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>
           </button>
+          <button id="chaseReplay" class="chase-replay" aria-label="${t.listen}">🔊</button>
           <div class="chase-instr">
             <span class="chase-instr-text">${t.find}</span>
             <span class="chase-instr-letter" lang="ar" dir="rtl">${chaseConfig.target}</span>
@@ -204,33 +235,57 @@
         </div>
 
         <div class="chase-controls" id="chaseControls">
-          <button class="chase-btn chase-btn-up" data-dir="up" aria-label="${t.up}">
-            <svg viewBox="0 0 24 24"><path d="M12 5l7 7M12 5l-7 7M12 5v14"/></svg>
-          </button>
-          <div class="chase-btn-row">
-            <button class="chase-btn chase-btn-left" data-dir="left" aria-label="${t.left}">
-              <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          <button id="chaseModeToggle" class="chase-mode-toggle" type="button"></button>
+          <div class="chase-dpad" id="chaseDpad">
+            <button class="chase-btn chase-btn-up" data-dir="up" aria-label="${t.up}">
+              <svg viewBox="0 0 24 24"><path d="M12 5l7 7M12 5l-7 7M12 5v14"/></svg>
             </button>
-            <button class="chase-btn chase-btn-down" data-dir="down" aria-label="${t.down}">
-              <svg viewBox="0 0 24 24"><path d="M12 19l7-7M12 19l-7-7M12 19V5"/></svg>
-            </button>
-            <button class="chase-btn chase-btn-right" data-dir="right" aria-label="${t.right}">
-              <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
+            <div class="chase-btn-row">
+              <button class="chase-btn chase-btn-left" data-dir="left" aria-label="${t.left}">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              </button>
+              <button class="chase-btn chase-btn-down" data-dir="down" aria-label="${t.down}">
+                <svg viewBox="0 0 24 24"><path d="M12 19l7-7M12 19l-7-7M12 19V5"/></svg>
+              </button>
+              <button class="chase-btn chase-btn-right" data-dir="right" aria-label="${t.right}">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
           </div>
+          <p class="chase-tap-hint" id="chaseTapHint" hidden></p>
         </div>
 
         <div class="chase-overlay" id="chaseOverlay" hidden></div>
       </div>`;
 
     $("chaseBack").onclick = () => { location.hash = RETURN_HASH; };
+    $("chaseReplay").onclick = () => playRoundAudio();
+    $("chaseModeToggle").onclick = () => setInputMode(inputMode === "dpad" ? "tap" : "dpad");
     bindControls();
+    bindFieldTap();
+    setInputMode(inputMode);
+  }
+
+  function setInputMode(mode) {
+    inputMode = mode;
+    pressed.clear();
+    moveTarget = null;
+    const t = T();
+    const dpad = $("chaseDpad");
+    const tapHint = $("chaseTapHint");
+    const toggle = $("chaseModeToggle");
+    if (!dpad || !tapHint || !toggle) return;
+    const isTap = mode === "tap";
+    dpad.hidden = isTap;
+    tapHint.hidden = !isTap;
+    tapHint.textContent = t.modeTap;
+    toggle.textContent = isTap ? `🕹️ ${t.modeDpad}` : `👆 ${t.modeTap}`;
   }
 
   function bindControls() {
-    $("chaseControls").querySelectorAll(".chase-btn").forEach((btn) => {
+    $("chaseDpad").querySelectorAll(".chase-btn").forEach((btn) => {
       const d = btn.dataset.dir;
-      const start = (e) => { e.preventDefault(); pressed.add(d); try { btn.setPointerCapture(e.pointerId); } catch {} };
+      const start = (e) => { e.preventDefault(); moveTarget = null; pressed.add(d); try { btn.setPointerCapture(e.pointerId); } catch {} };
       const end = (e) => { if (e) e.preventDefault(); pressed.delete(d); };
       btn.addEventListener("pointerdown", start, { passive: false });
       btn.addEventListener("pointerup", end);
@@ -239,12 +294,25 @@
     });
   }
 
+  function bindFieldTap() {
+    fieldEl = $("chaseField");
+    fieldEl.addEventListener("pointerdown", (e) => {
+      if (inputMode !== "tap" || phase !== PHASE.PLAYING) return;
+      const r = fieldEl.getBoundingClientRect();
+      const x = clamp(e.clientX - r.left, playBox.x0, playBox.x1);
+      const y = clamp(e.clientY - r.top, playBox.y0, playBox.y1);
+      pressed.clear();
+      moveTarget = { x, y };
+    }, { passive: true });
+  }
+
   function onKeyDown(e) {
     if (!active || phase !== PHASE.PLAYING) return;
     const map = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right", w: "up", s: "down", a: "left", d: "right" };
     const d = map[e.key];
     if (!d) return;
     e.preventDefault();
+    moveTarget = null;
     pressed.add(d);
   }
   function onKeyUp(e) {
@@ -266,7 +334,7 @@
     charEl.innerHTML = window.Character.svg(charCfg, mood);
   }
 
-  let facing = 1; // 1 = normaal, -1 = horizontaal gespiegeld (naar links bewegend)
+  let facing = 1; // 1 = normaal, -1 = horizontaal gespiegeld — uitsluitend op basis van daadwerkelijke bewegingsrichting, nooit op basis van RTL
   function applyCharTransform() {
     if (!charEl) return;
     charEl.style.left = `${charX}px`;
@@ -274,42 +342,65 @@
     charEl.style.transform = `translate(-50%, -100%) scaleX(${facing})`;
   }
 
-  // ---------- Rondes ----------
-  function startRound() {
-    round++;
-    collisionLocked = false;
-    phase = PHASE.PLAYING;
-    roundStartTs = performance.now();
-    setCharMood(round === 1 ? "wave" : "idle");
-    layoutLetters();
-
-    // Audio: speel eerst de gesproken opdracht; ontbreekt die, dan is de
-    // Promise meteen `false` en volgt alsnog de Arabische leeruitspraak van
-    // de doelletter (AudioManager-gedrag, niet hier opnieuw uitgevonden).
+  // ---------- Audio ----------
+  // Speel eerst de gesproken opdracht; ontbreekt die, dan is de Promise
+  // meteen `false` en volgt alsnog de Arabische leeruitspraak van de
+  // doelletter (AudioManager-barge-in-gedrag, niet hier opnieuw uitgevonden
+  // — dus ook veilig tegen snel herhaald indrukken van de 🔊-knop).
+  function playRoundAudio() {
     window.AudioManager.playInstruction("find-letter").then(() => {
       const base = window.GAME && window.GAME.letterAudio ? window.GAME.letterAudio[chaseConfig.target] : null;
       if (base) window.AudioManager.playLearningAudio(base);
     });
   }
 
+  // ---------- Rondes ----------
+  function startRound() {
+    round++;
+    collisionLocked = false;
+    hintGivenThisRound = false;
+    phase = PHASE.PLAYING;
+    roundStartTs = performance.now();
+    setCharMood(round === 1 ? "wave" : "idle");
+    layoutLetters();
+    playRoundAudio();
+  }
+
+  // Letterafmeting conservatief op het grootste breakpoint gehouden (zie
+  // chase.css: 104px mobiel, 118px vanaf 640px) — iets te veel tussenruimte
+  // op mobiel is onschuldig, te weinig ruimte geeft overlap.
+  const LETTER_R = 59;
+
   function layoutLetters() {
     measureField();
     const letters = shuffle([chaseConfig.target, ...chaseConfig.distractors]);
-    const avoid = { x: charX / fieldRect.w, y: charY / fieldRect.h };
+    const minDist = LETTER_R * 2 + 34;              // letters nooit overlappend + comfortabele lucht
+    const marginX = LETTER_R + 8, marginY = LETTER_R + 8;
+    // "avoid" gebruikt het VISUELE middelpunt van het character (niet het
+    // voetpunt waarop charX/charY zelf gebaseerd zijn), anders lijkt een
+    // letter vlak boven het hoofd van het character niet "op" het character
+    // te spawnen terwijl het er visueel wel bovenop staat.
+    const avoidX = charX, avoidY = charY - charBox.h / 2;
+    const avoidR = charBox.h / 2 + LETTER_R + 30;
+    const yMax = playBox.y0 + playBox.h * 0.62;     // onderste deel vrij voor de startzone van het character
+
     const pts = [];
     let tries = 0;
-    while (pts.length < letters.length && tries < 400) {
+    while (pts.length < letters.length && tries < 500) {
       tries++;
-      const p = { x: rand(0.14, 0.86), y: rand(0.14, 0.6) };
-      if (Math.hypot(p.x - avoid.x, p.y - avoid.y) < 0.26) continue;
-      if (pts.some((q) => Math.hypot(p.x - q.x, p.y - q.y) < 0.24)) continue;
-      pts.push(p);
+      const x = rand(playBox.x0 + marginX, playBox.x1 - marginX);
+      const y = rand(playBox.y0 + marginY, Math.max(playBox.y0 + marginY, yMax));
+      if (Math.hypot(x - avoidX, y - avoidY) < avoidR) continue;
+      if (pts.some((q) => Math.hypot(x - q.x, y - q.y) < minDist)) continue;
+      pts.push({ x, y });
     }
-    while (pts.length < letters.length) pts.push({ x: rand(0.14, 0.86), y: rand(0.14, 0.6) });
+    while (pts.length < letters.length) {
+      pts.push({ x: rand(playBox.x0 + marginX, playBox.x1 - marginX), y: rand(playBox.y0 + marginY, Math.max(playBox.y0 + marginY, yMax)) });
+    }
 
     lettersLayer.innerHTML = "";
     roundLetters = letters.map((letter, i) => {
-      const x = pts[i].x * fieldRect.w, y = pts[i].y * fieldRect.h;
+      const { x, y } = pts[i];
       const node = document.createElement("div");
       node.className = "chase-letter";
       node.dataset.letter = letter;
@@ -331,30 +422,48 @@
     rafHandle = requestAnimationFrame(loop);
   }
 
+  function clampCharToBounds() {
+    const halfW = charBox.w / 2;
+    const minX = Math.min(playBox.x0 + halfW, playBox.x0 + playBox.w / 2);
+    const maxX = Math.max(playBox.x1 - halfW, playBox.x0 + playBox.w / 2);
+    charX = clamp(charX, minX, maxX);
+    const minY = Math.min(playBox.y0 + charBox.h * 0.4, playBox.y1);
+    const maxY = playBox.y1;
+    charY = clamp(charY, minY, Math.max(minY, maxY));
+  }
+
   function updateMovement(dt) {
     if (phase !== PHASE.PLAYING) return;
     let dx = 0, dy = 0;
-    if (pressed.has("left")) dx -= 1;
-    if (pressed.has("right")) dx += 1;
-    if (pressed.has("up")) dy -= 1;
-    if (pressed.has("down")) dy += 1;
+    if (inputMode === "tap" && moveTarget) {
+      const rdx = moveTarget.x - charX, rdy = moveTarget.y - charY;
+      const dist = Math.hypot(rdx, rdy);
+      if (dist < 6) {
+        moveTarget = null;
+      } else {
+        dx = rdx / dist; dy = rdy / dist;
+      }
+    } else {
+      if (pressed.has("left")) dx -= 1;
+      if (pressed.has("right")) dx += 1;
+      if (pressed.has("up")) dy -= 1;
+      if (pressed.has("down")) dy += 1;
+      if (dx || dy) { const len = Math.hypot(dx, dy) || 1; dx /= len; dy /= len; }
+    }
     if (dx || dy) {
-      const len = Math.hypot(dx, dy) || 1;
-      charX += (dx / len) * SPEED * dt;
-      charY += (dy / len) * SPEED * dt;
+      charX += dx * SPEED * dt;
+      charY += dy * SPEED * dt;
       if (dx) facing = dx < 0 ? -1 : 1;
     }
-    const halfW = charBox.w / 2;
-    charX = clamp(charX, halfW, Math.max(halfW, fieldRect.w - halfW));
-    charY = clamp(charY, charBox.h * 0.45, Math.max(charBox.h * 0.45, fieldRect.h - 6));
+    clampCharToBounds();
     applyCharTransform();
   }
 
   function checkCollisions() {
     if (phase !== PHASE.PLAYING || collisionLocked) return;
     const charCenterX = charX, charCenterY = charY - charBox.h * 0.35;
-    const charRadius = Math.min(charBox.w, charBox.h) * 0.3;
-    const letterRadius = 52; // iets groter dan de zichtbare letter — vergevingsgezind voor jonge kinderen
+    const charRadius = Math.min(charBox.w, charBox.h) * 0.32;
+    const letterRadius = 62; // ruim groter dan de zichtbare letter — vergevingsgezind voor jonge kinderen
     for (const item of roundLetters) {
       const d = Math.hypot(charCenterX - item.x, charCenterY - item.y);
       if (d < charRadius + letterRadius) {
@@ -366,6 +475,8 @@
 
   function onCollision(item) {
     collisionLocked = true;
+    pressed.clear();
+    moveTarget = null;
     const responseTimeMs = Math.round(performance.now() - roundStartTs);
     recordAttempt(profileId, {
       target: chaseConfig.target, selectedLetter: item.letter, correct: item.isTarget,
@@ -382,12 +493,18 @@
     correctCount++;
     updateProgressDots();
 
-    window.AudioManager.playRandomCorrectFeedback().then(() => {
-      const base = window.GAME && window.GAME.letterAudio ? window.GAME.letterAudio[item.letter] : null;
-      return base ? window.AudioManager.playLearningAudio(base) : Promise.resolve(true);
-    }).then(() => {
+    const finished = correctCount >= chaseConfig.requiredCorrect;
+    const base = window.GAME && window.GAME.letterAudio ? window.GAME.letterAudio[item.letter] : null;
+    // Kort houden bij elke vangst (alleen de letteruitspraak zelf); de iets
+    // langere positieve frase is bewaard voor de laatste vangst, vlak vóór
+    // de completion-overlay, zodat het geen "lange viering na elke vangst" wordt.
+    const chain = finished
+      ? window.AudioManager.playRandomCorrectFeedback().then(() => base ? window.AudioManager.playLearningAudio(base) : true)
+      : (base ? window.AudioManager.playLearningAudio(base) : Promise.resolve(true));
+
+    chain.then(() => {
       if (!active) return;
-      if (correctCount >= chaseConfig.requiredCorrect) complete();
+      if (finished) complete();
       else startRound();
     });
   }
@@ -400,24 +517,41 @@
     window.AudioManager.playRandomRetryFeedback().then(() => {
       if (!active) return;
       item.el.classList.remove("is-wrong");
-      collisionLocked = false;
-      phase = PHASE.PLAYING;
-      layoutLetters();
-      setCharMood("encouraging");
+      const giveHint = !hintGivenThisRound;
+      hintGivenThisRound = true;
+      const targetEl = roundLetters.find((l) => l.isTarget);
+      const resume = () => {
+        if (!active) return;
+        collisionLocked = false;
+        phase = PHASE.PLAYING;
+        layoutLetters();
+        setCharMood("encouraging");
+      };
+      // Bij de EERSTE fout van een ronde: laat de echte doelletter kort subtiel
+      // pulsen als hint, voordat de posities opnieuw geschud worden. Niet bij
+      // elke fout — anders wordt het een voortdurende hint in plaats van een
+      // incidentele aanwijzing.
+      if (giveHint && targetEl) {
+        targetEl.el.classList.add("is-hint");
+        setTimeout(() => { targetEl.el.classList.remove("is-hint"); resume(); }, 420);
+      } else {
+        resume();
+      }
     });
   }
 
   function complete() {
     phase = PHASE.COMPLETE;
     pressed.clear();
+    moveTarget = null;
     setCharMood("celebrate");
     const t = T();
     const overlay = $("chaseOverlay");
     overlay.hidden = false;
     overlay.innerHTML = `
       <div class="chase-card">
-        <div class="chase-card-emoji">🎉</div>
         <h2>${t.good}</h2>
+        <span class="chase-card-letter" lang="ar" dir="rtl">${chaseConfig.target}</span>
         <p class="chase-card-score">${correctCount} / ${chaseConfig.requiredCorrect}</p>
         <button id="chaseAgain" class="chase-cta chase-cta-primary">${t.again}</button>
         <button id="chaseToWorld" class="chase-cta chase-cta-ghost">${t.toWorld}</button>
@@ -430,8 +564,7 @@
     correctCount = 0;
     round = 0;
     collisionLocked = false;
-    charX = fieldRect.w / 2;
-    charY = fieldRect.h - 56;
+    placeCharAtStart();
     applyCharTransform();
     updateProgressDots();
     startRound();
@@ -451,5 +584,5 @@
   window.addEventListener("hashchange", chaseRoute);
   chaseRoute();
 
-  if (DEBUG) window.GameChase = { get phase() { return phase; }, get chaseConfig() { return chaseConfig; } };
+  if (DEBUG) window.GameChase = { get phase() { return phase; }, get chaseConfig() { return chaseConfig; }, get playBox() { return playBox; } };
 })();
