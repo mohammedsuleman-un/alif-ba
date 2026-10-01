@@ -409,7 +409,7 @@
 
   let collisionRoundStartX = null; // (world pos bij ronde-start, voor chaseDistancePx)
 
-  function onSceneCollision({ letter, isTarget, worldX, worldY }) {
+  function onSceneCollision({ letterObj, letter, isTarget, worldX, worldY }) {
     if (phase !== PHASE.PLAYING) return;
     const responseTimeMs = Math.round(performance.now() - roundStartTs);
     const playerPos = scene ? scene.getPlayerWorldPos() : { x: worldX, y: worldY };
@@ -419,13 +419,13 @@
       responseTimeMs, round, timestamp: Date.now(),
       inputMode, movingTarget: chaseConfig.movingTarget, chaseDistancePx,
     });
-    if (isTarget) onCorrect(worldX, worldY, letter);
-    else onWrong(worldX, worldY);
+    if (isTarget) onCorrect(letterObj, letter);
+    else onWrong(letterObj);
   }
 
-  function onCorrect(worldX, worldY, letter) {
+  function onCorrect(letterObj, letter) {
     phase = PHASE.FEEDBACK_CORRECT;
-    if (scene) { scene.setCharMood("happy"); scene.celebrateAt(worldX, worldY); }
+    if (scene) { scene.setCharMood("happy"); scene.playCorrectAnim(letterObj); }
     correctCount++;
     updateProgressDots();
 
@@ -442,20 +442,29 @@
     });
   }
 
-  function onWrong() {
+  function onWrong(letterObj) {
     phase = PHASE.FEEDBACK_RETRY;
-    if (scene) scene.setCharMood("thinking");
+    if (scene) { scene.setCharMood("thinking"); scene.playWrongAnim(letterObj); }
 
     window.AudioManager.playRandomRetryFeedback().then(() => {
-      if (!active) return;
+      if (!active || !scene) return;
+      const giveHint = !hintGivenThisRound;
       hintGivenThisRound = true;
-      if (scene) {
+      const finishRetry = () => {
+        if (!active || !scene) return;
         scene.spawnRound();
         scene.unlockInput();
         scene.setCharMood("encouraging");
+        phase = PHASE.PLAYING;
+        roundStartTs = performance.now();
+      };
+      // Bij de EERSTE fout van een ronde: laat de echte doelletter kort
+      // pulsen als hint vóórdat de posities opnieuw geschud worden.
+      if (giveHint) {
+        const target = scene.getTargetLetterObj();
+        if (target) { scene.pulseHint(target); setTimeout(finishRetry, 260); return; }
       }
-      phase = PHASE.PLAYING;
-      roundStartTs = performance.now();
+      finishRetry();
     });
   }
 

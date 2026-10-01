@@ -13,14 +13,16 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
   touch-action: none; -webkit-user-select: none; user-select: none;
 }
 
+/* Minimaal gehouden (sectie 21 V3: "de wereld is de interface") — één dunne
+   balk, geen dashboard, geen kaart-in-kaart. */
 .chase-head {
   flex: none; display: flex; align-items: center; gap: 8px;
-  padding: calc(10px + env(safe-area-inset-top)) 12px 10px;
-  background: var(--gold-soft); border-bottom: 3px solid var(--gold-light);
+  padding: calc(7px + env(safe-area-inset-top)) 10px 7px;
+  background: rgba(253, 246, 230, .88); backdrop-filter: blur(2px); border-bottom: 2px solid var(--gold-light);
 }
 .chase-replay {
-  flex: none; width: 40px; height: 40px; border-radius: 50%; border: none;
-  background: #fff; color: var(--gold); font-size: 18px; display: grid; place-items: center;
+  flex: none; width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: #fff; color: var(--gold); font-size: 16px; display: grid; place-items: center;
   box-shadow: 0 3px 0 var(--gold-light), 0 6px 12px rgba(120, 80, 20, .15);
 }
 .chase-replay:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-light); }
