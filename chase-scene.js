@@ -29,6 +29,9 @@ class ChaseScene extends Phaser.Scene {
     this.charBoxSize = data.charBoxSize;
     this.tier = data.tier;
     this.inputMode = data.inputMode || "dpad";
+    // { assetId: probedUrl } — alleen IDs die game-stage.js al succesvol kon
+    // laden; alles hier ontbreekt → procedurele placeholder (sectie 16 V3.1).
+    this.sceneryAssets = data.sceneryAssets || {};
 
     this.letterR = 59;
     this.roundLetters = [];
@@ -45,6 +48,17 @@ class ChaseScene extends Phaser.Scene {
     Object.entries(this.textureUrls).forEach(([mood, url]) => {
       if (url) this.load.image(`char-${mood}`, url);
     });
+    Object.entries(this.sceneryAssets).forEach(([id, url]) => {
+      this.load.image(`prod-${id}`, url);
+    });
+  }
+
+  // Levert de te gebruiken texture-key voor een asset-ID: de productie-
+  // versie als die geladen is, anders de procedurele placeholder ("ph-"+id)
+  // — "production asset aanwezig + geldig → gebruik hem, anders placeholder".
+  textureKeyFor(id) {
+    const prodKey = `prod-${id}`;
+    return (this.sceneryAssets[id] && this.textures.exists(prodKey)) ? prodKey : `ph-${id}`;
   }
 
   create() {
@@ -85,6 +99,12 @@ class ChaseScene extends Phaser.Scene {
     // een grotere viewport na resize alsnog breder/hoger worden dan de
     // wereld, met lege ruimte als gevolg (zelfde klasse bug als hierboven).
     this.scale.on("resize", (gameSize) => {
+      // setZoom alléén is niet genoeg: de camera-VIEWPORT zelf volgt de
+      // canvasgrootte niet automatisch mee bij Scale.Mode.NONE + handmatige
+      // game.scale.resize() — zonder expliciete setSize() blijft Phaser in
+      // het oorspronkelijke (kleinere) camera-gebied tekenen, met een lege
+      // rand op de rest van het vergrote canvas tot gevolg.
+      this.cameras.main.setSize(gameSize.width, gameSize.height);
       const coverZoom = Math.max(gameSize.width / this.worldW, gameSize.height / this.worldH);
       const boost = this.tier === "mobile" ? 1.5 : this.tier === "tablet" ? 1.15 : 1.03;
       this.cameras.main.setZoom(coverZoom * boost);
@@ -328,17 +348,25 @@ class ChaseScene extends Phaser.Scene {
 
     // Rivier (twee tileSprites — noord/zuid — met de brug-opening ertussen).
     const gapY0 = M.bridgeGapY.y0, gapY1 = M.bridgeGapY.y1;
-    this.water1 = this.add.tileSprite(rx0, 0, rw, gapY0, "ph-water").setOrigin(0, 0).setDepth(DEPTH.MIDGROUND + 0.1);
-    this.water2 = this.add.tileSprite(rx0, gapY1, rw, this.worldH - gapY1, "ph-water").setOrigin(0, 0).setDepth(DEPTH.MIDGROUND + 0.1);
+    const waterKey = this.textureKeyFor("water_tile");
+    this.water1 = this.add.tileSprite(rx0, 0, rw, gapY0, waterKey).setOrigin(0, 0).setDepth(DEPTH.MIDGROUND + 0.1);
+    this.water2 = this.add.tileSprite(rx0, gapY1, rw, this.worldH - gapY1, waterKey).setOrigin(0, 0).setDepth(DEPTH.MIDGROUND + 0.1);
 
     // Waterval bovenaan de rivier (voedt hem), loopende frame-animatie.
     const wf = M.waterfall;
     this.waterfallSprite = this.add.sprite(wf.x, wf.y, "ph-waterfall").setOrigin(0.5, 0).setDisplaySize(90, 220).setDepth(DEPTH.MIDGROUND + 0.2);
     this.waterfallSprite.play("waterfall-flow");
 
-    // Brug-dek over de opening heen.
+    // Brug-dek over de opening heen. De productie-art heeft een eigen
+    // (bredere) beeldverhouding dan de placeholder-strook, dus een aparte
+    // wereldmaat die de brug-crossing netjes dekt i.p.v. de rivierbreedte
+    // blind te stretchen.
     const bridgeObj = M.objects.find((o) => o.asset === "bridge_01");
-    if (bridgeObj) this.add.image(bridgeObj.x, bridgeObj.y, "ph-bridge_01").setDisplaySize(rw + 80, 130).setDepth(DEPTH.MIDGROUND + 0.3);
+    if (bridgeObj) {
+      const bridgeKey = this.textureKeyFor("bridge_01");
+      const [bw, bh] = bridgeKey.startsWith("prod-") ? [340, 170] : [rw + 80, 130];
+      this.add.image(bridgeObj.x, bridgeObj.y, bridgeKey).setDisplaySize(bw, bh).setDepth(DEPTH.MIDGROUND + 0.3);
+    }
 
     this.waterRects = [
       { x0: rx0, y0: 0, x1: rx1, y1: gapY0 },
@@ -360,21 +388,34 @@ class ChaseScene extends Phaser.Scene {
 
   buildScenery() {
     const M = window.GameAssetManifest.WORLD_COMPOSITION;
+    // Placeholder-maten (passen bij de procedurele vormen) vs. productie-
+    // maten (passen bij de daadwerkelijke beeldverhouding van het aangeleverde
+    // bestand — zie sectie 7 V3.1: "schaal naar wereldmaten, neem geen
+    // pixelafmeting van de bron aan").
+    const placeholderSizes = { rock_01: [160, 120], rock_02: [120, 92], palm_01: [160, 240], palm_02: [130, 200], flower_cluster_01: [110, 80], bush_01: [110, 80] };
+    const productionSizes = { rock_01: [210, 140], palm_01: [214, 320], flower_cluster_01: [165, 110] };
     M.objects.forEach((o) => {
       if (o.asset === "bridge_01") return; // al apart getekend in buildMidground()
-      const key = `ph-${o.asset}`;
-      const sizes = { rock_01: [160, 120], rock_02: [120, 92], palm_01: [160, 240], palm_02: [130, 200], flower_cluster_01: [110, 80], bush_01: [110, 80] };
-      const [w, h] = sizes[o.asset] || [100, 100];
+      const key = this.textureKeyFor(o.asset);
+      const isProd = key.startsWith("prod-");
+      const [w, h] = (isProd && productionSizes[o.asset]) || placeholderSizes[o.asset] || [100, 100];
       const img = this.add.image(o.x, o.y, key).setOrigin(0.5, 1).setDisplaySize(w, h);
       const isForeground = !o.sortable;
       img.setDepth(isForeground ? DEPTH.FOREGROUND : DEPTH.GAMEPLAY);
       if (o.sortable) this.sortables.push({ obj: img, isPlayer: false });
 
       if (o.collision === "circle") {
-        const body = this.add.circle(o.x, o.y - h * 0.12, o.collisionR || 50, 0x000000, 0);
+        // Rotsen: collision rond de visuele rotsmassa (iets boven de
+        // grondanker). Palm: collision uitsluitend rond de stam/basis, dus
+        // vrijwel exact op het grondanker-punt zelf — de kroon/bladeren
+        // blijven volledig vrij van collision (sectie 9/11 V3.1).
+        const isPalm = o.asset === "palm_01" || o.asset === "palm_02";
+        const offsetY = isPalm ? h * 0.02 : h * 0.12;
+        const cy = o.y - offsetY;
+        const body = this.add.circle(o.x, cy, o.collisionR || 50, 0x000000, 0);
         this.physics.add.existing(body, true);
         this.collisionGroup.add(body);
-        this.rockColliders.push({ x: o.x, y: o.y - h * 0.12, r: (o.collisionR || 50) + this.letterR * 0.4 });
+        this.rockColliders.push({ x: o.x, y: cy, r: (o.collisionR || 50) + this.letterR * 0.4 });
       }
     });
   }
@@ -399,7 +440,7 @@ class ChaseScene extends Phaser.Scene {
     this.playerBody.body.setCollideWorldBounds(true); // Zone heeft geen setCollideWorldBounds-gemakslaag zoals Image/Sprite — rechtstreeks op body
     this.playerBody.setDepth(DEPTH.GAMEPLAY);
 
-    this.playerSprite = this.add.image(startX, startY, "char-wave")
+    this.playerSprite = this.add.image(startX, startY, "char-idle")
       .setDisplaySize(this.charBoxSize.w, this.charBoxSize.h)
       .setOrigin(0.5, 1)
       .setDepth(DEPTH.GAMEPLAY);

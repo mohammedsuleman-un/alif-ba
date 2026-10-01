@@ -132,10 +132,10 @@
     if (myEpoch !== epoch) return; // een nieuwere setup() is intussen gestart
 
     const tier = worldTier(window.innerWidth);
-    const textureUrls = await resolveCharacterTextures(charCfg);
+    const [textureUrls, sceneryAssets] = await Promise.all([resolveCharacterTextures(charCfg), resolveSceneryAssets()]);
     if (myEpoch !== epoch) return;
 
-    createGame(tier, textureUrls, myEpoch);
+    createGame(tier, textureUrls, sceneryAssets, myEpoch);
   }
 
   // ---------- Phaser lazy-load (gedocumenteerd: zie bestandskop) ----------
@@ -198,8 +198,24 @@
     return urls;
   }
 
+  // ---------- Scenery production-assets resolven (zelfde probe-principe) ----------
+  // Alleen ASSET_SPECS-entries met delivered:true worden geprobeerd; alles
+  // daarbuiten (nog niet aangeleverd) valt vanzelf terug op de procedurele
+  // placeholder in chase-scene.js — "production asset aanwezig + geldig →
+  // gebruik hem, anders bestaande placeholder" (sectie 16 V3.1).
+  async function resolveSceneryAssets() {
+    const specs = (window.GameAssetManifest && window.GameAssetManifest.ASSET_SPECS) || {};
+    const entries = Object.entries(specs).filter(([, s]) => s.delivered);
+    const result = {};
+    await Promise.all(entries.map(async ([id, spec]) => {
+      const ok = await probeImage(spec.path);
+      if (ok) result[id] = ok;
+    }));
+    return result;
+  }
+
   // ---------- Phaser.Game aanmaken ----------
-  function createGame(tier, textureUrls, myEpoch) {
+  function createGame(tier, textureUrls, sceneryAssets, myEpoch) {
     const mount = $("chasePhaserMount");
     if (!mount) return;
     const w = mount.clientWidth || 390, h = mount.clientHeight || 500;
@@ -229,7 +245,7 @@
         worldW: WORLD_W, worldH: WORLD_H,
         tier, spawnDist: SPAWN_DIST[tier],
         chaseConfig, textureUrls, charBoxSize: CHAR_BOX[tier],
-        inputMode,
+        inputMode, sceneryAssets,
       });
       scene = localScene;
       localScene.events.on("chase-collision", onSceneCollision);
