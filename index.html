@@ -140,7 +140,9 @@
     <div id="gComplete" class="g-overlay" hidden></div>
   </section>
 
-  <!-- Letter Chase Prototype (V1): geïsoleerde experimentele minigame, eigen route (#/gamestage/...). -->
+  <!-- Letter Chase Prototype (V2): geïsoleerde experimentele minigame, eigen route (#/gamestage/...).
+       Wereld/character/letters worden door Phaser getekend (lazy geladen vanaf
+       cdnjs door game-stage.js, zie dat bestand) zodra deze sectie opent. -->
   <section id="gamestage" class="screen" hidden></section>
 
   <script src="book-data.js"></script>
@@ -152,6 +154,7 @@
   <script src="character.js"></script>
   <script src="game.js"></script>
   <script src="shell.js"></script>
-  <script src="game-chase.js"></script>
+  <script src="chase-data.js"></script>
+  <script src="game-stage.js"></script>
 </body>
 </html>
