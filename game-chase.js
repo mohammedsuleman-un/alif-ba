@@ -74,15 +74,28 @@
     store.set(chaseKey(pid), data);
   }
 
-  // ---------- Begrensde gameplay-coördinatenruimte ----------
-  // Op desktop mag de scenery (achtergrond) het hele scherm vullen, maar de
-  // daadwerkelijke speelafstanden mogen daar NIET van afhangen (anders staan
-  // letters "kilometers" uit elkaar op een breed scherm). Alle spawn- en
-  // bewegingslogica werkt daarom binnen een vaste, gecentreerde "playBox"
-  // die begrensd is op mobile-achtige afmetingen, ongeacht de werkelijke
-  // (scenery-)breedte van .chase-field.
-  const PLAY_MAX_W = 420;
-  const PLAY_MAX_H = 560;
+  // ---------- WORLD / VIEWPORT / PLAYER / OBJECTS ----------
+  // De "wereld" is (voor nu) gewoon het volledige .chase-field — op elk
+  // apparaat wordt vrijwel de hele beschikbare GameStage gebruikt, zodat het
+  // character echt IN een ruimte staat in plaats van in een klein, kunstmatig
+  // begrensd vakje. Er is bewust nog GEEN camera/scroll: `world` representeert
+  // conceptueel al een los begrip van het DOM-element (viewport === world
+  // voor nu), zodat dit later kan groeien naar een grotere, scrollende wereld
+  // met een camera die de speler volgt, zonder de rest van de gameplay-code
+  // (spawn/movement/collision/state machine) opnieuw te hoeven ontwerpen.
+  //
+  // Het probleem dat V1.1 oploste door de wereld zelf klein te maken (anders
+  // stonden letters "kilometers" uit elkaar op desktop) wordt hier in plaats
+  // daarvan opgelost in de SPAWNLOGICA: nieuwe letters verschijnen altijd
+  // binnen een bruikbare afstandsrange rond de speler (niet overal in de
+  // wereld), per breakpoint afgestemd — zie SPAWN_DIST en layoutLetters().
+  const WORLD_MARGIN = 10; // kleine marge t.o.v. de randen van .chase-field zelf
+  const SPAWN_DIST = {
+    mobile: { min: 100, max: 300 },
+    tablet: { min: 140, max: 450 },
+    desktop: { min: 180, max: 650 },
+  };
+  function worldTier(w) { return w < 640 ? "mobile" : w < 1024 ? "tablet" : "desktop"; }
 
   // ---------- Module state ----------
   let active = false;        // true zolang #/gamestage-route actief is
@@ -99,7 +112,7 @@
 
   let fieldEl = null, charEl = null, lettersLayer = null;
   let fieldRect = { w: 0, h: 0 };
-  let playBox = { x0: 0, y0: 0, x1: 0, y1: 0, w: 0, h: 0 };
+  let world = { x0: 0, y0: 0, x1: 0, y1: 0, w: 0, h: 0 };
   let charBox = { w: 100, h: 140 };
   let charX = 0, charY = 0;  // logische positie = voetpunt van character, field-relatief
   const pressed = new Set(); // 'up'|'down'|'left'|'right'
@@ -126,6 +139,7 @@
     active = false;
     pressed.clear();
     moveTarget = null;
+    clearTimeout(tapMarkerTimeout);
     if (rafHandle) { cancelAnimationFrame(rafHandle); rafHandle = null; }
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
@@ -162,6 +176,7 @@
     round = 0;
     phase = PHASE.INTRO;
     placeCharAtStart();
+    applyCharTransform();
     updateProgressDots();
 
     window.addEventListener("keydown", onKeyDown);
@@ -174,8 +189,11 @@
   }
 
   function placeCharAtStart() {
-    charX = playBox.x0 + playBox.w / 2;
-    charY = playBox.y1 - Math.max(24, charBox.h * 0.15);
+    // Niet onderin tegen de rand gedrukt, maar echt "in" de wereld — geeft
+    // op een grote desktop-wereld meteen het gevoel van ruimte rondom het
+    // character in plaats van een klein mobile-vlakje.
+    charX = world.x0 + world.w / 2;
+    charY = world.y0 + world.h * 0.68;
   }
 
   function onResize() {
@@ -184,10 +202,10 @@
     measureChar();
     clampCharToBounds();
     applyCharTransform();
-    // Letters zijn bij rondestart op pixelposities van de toenmalige playBox
-    // gezet; na een resize (bv. schermrotatie) kunnen ze anders buiten de
-    // nieuwe playBox komen te staan. Alleen herpositioneren tijdens PLAYING,
-    // zodat een feedback-animatie niet wordt onderbroken.
+    // Letters staan op pixelposities van de toenmalige wereldgrootte; na een
+    // resize (bv. schermrotatie) kunnen ze anders buiten de nieuwe wereld
+    // komen te staan. Alleen herpositioneren tijdens PLAYING, zodat een
+    // feedback-animatie niet wordt onderbroken.
     if (phase === PHASE.PLAYING && roundLetters.length) layoutLetters();
   }
 
@@ -195,10 +213,8 @@
     if (!fieldEl) return;
     const r = fieldEl.getBoundingClientRect();
     fieldRect = { w: r.width, h: r.height };
-    const w = Math.min(fieldRect.w, PLAY_MAX_W);
-    const h = Math.min(fieldRect.h, PLAY_MAX_H);
-    const x0 = (fieldRect.w - w) / 2, y0 = (fieldRect.h - h) / 2;
-    playBox = { x0, y0, x1: x0 + w, y1: y0 + h, w, h };
+    const m = WORLD_MARGIN;
+    world = { x0: m, y0: m, x1: fieldRect.w - m, y1: fieldRect.h - m, w: fieldRect.w - 2 * m, h: fieldRect.h - 2 * m };
   }
   function measureChar() {
     if (!charEl) return;
@@ -231,6 +247,7 @@
           <div class="chase-cloud chase-cloud-b"></div>
           <div class="chase-ground"></div>
           <div class="chase-letters" id="chaseLetters"></div>
+          <div class="chase-tap-marker" id="chaseTapMarker"></div>
           <div class="chase-char" id="chaseChar">${window.Character.svg(charCfg, "wave")}</div>
         </div>
 
@@ -285,7 +302,7 @@
   function bindControls() {
     $("chaseDpad").querySelectorAll(".chase-btn").forEach((btn) => {
       const d = btn.dataset.dir;
-      const start = (e) => { e.preventDefault(); moveTarget = null; pressed.add(d); try { btn.setPointerCapture(e.pointerId); } catch {} };
+      const start = (e) => { e.preventDefault(); moveTarget = null; hideTapMarker(); pressed.add(d); try { btn.setPointerCapture(e.pointerId); } catch {} };
       const end = (e) => { if (e) e.preventDefault(); pressed.delete(d); };
       btn.addEventListener("pointerdown", start, { passive: false });
       btn.addEventListener("pointerup", end);
@@ -299,11 +316,32 @@
     fieldEl.addEventListener("pointerdown", (e) => {
       if (inputMode !== "tap" || phase !== PHASE.PLAYING) return;
       const r = fieldEl.getBoundingClientRect();
-      const x = clamp(e.clientX - r.left, playBox.x0, playBox.x1);
-      const y = clamp(e.clientY - r.top, playBox.y0, playBox.y1);
+      const x = clamp(e.clientX - r.left, world.x0, world.x1);
+      const y = clamp(e.clientY - r.top, world.y0, world.y1);
       pressed.clear();
       moveTarget = { x, y };
+      showTapMarker(x, y);
     }, { passive: true });
+  }
+
+  // Kleine, kortstondige ring-pulse op de tikbestemming — geen permanent
+  // icoon, verdwijnt vanzelf of zodra het character is aangekomen.
+  let tapMarkerTimeout = null;
+  function showTapMarker(x, y) {
+    const marker = $("chaseTapMarker");
+    if (!marker) return;
+    clearTimeout(tapMarkerTimeout);
+    marker.style.left = `${x}px`;
+    marker.style.top = `${y}px`;
+    marker.classList.remove("is-active");
+    void marker.offsetWidth; // forceer reflow zodat de animatie opnieuw start bij snel achter elkaar tikken
+    marker.classList.add("is-active");
+    tapMarkerTimeout = setTimeout(() => marker.classList.remove("is-active"), 650);
+  }
+  function hideTapMarker() {
+    clearTimeout(tapMarkerTimeout);
+    const marker = $("chaseTapMarker");
+    if (marker) marker.classList.remove("is-active");
   }
 
   function onKeyDown(e) {
@@ -345,12 +383,18 @@
   // ---------- Audio ----------
   // Speel eerst de gesproken opdracht; ontbreekt die, dan is de Promise
   // meteen `false` en volgt alsnog de Arabische leeruitspraak van de
-  // doelletter (AudioManager-barge-in-gedrag, niet hier opnieuw uitgevonden
-  // — dus ook veilig tegen snel herhaald indrukken van de 🔊-knop).
+  // doelletter. De 🔊-knop wordt tijdens het afspelen uitgeschakeld (i.p.v.
+  // AudioManager's eigen barge-in te laten afbreken) zodat snel spammen geen
+  // steeds opnieuw startend fragment geeft — gebruikt nog steeds uitsluitend
+  // de bestaande AudioManager Promise-keten om te weten wanneer het klaar is.
   function playRoundAudio() {
+    const btn = $("chaseReplay");
+    if (btn) { btn.disabled = true; btn.classList.add("is-playing"); }
     window.AudioManager.playInstruction("find-letter").then(() => {
       const base = window.GAME && window.GAME.letterAudio ? window.GAME.letterAudio[chaseConfig.target] : null;
-      if (base) window.AudioManager.playLearningAudio(base);
+      return base ? window.AudioManager.playLearningAudio(base) : Promise.resolve(true);
+    }).then(() => {
+      if (btn) { btn.disabled = false; btn.classList.remove("is-playing"); }
     });
   }
 
@@ -371,36 +415,89 @@
   // op mobiel is onschuldig, te weinig ruimte geeft overlap.
   const LETTER_R = 59;
 
+  // Nieuwe letters spawnen rond de SPELER (binnen een bruikbare afstandsrange
+  // per breakpoint — zie SPAWN_DIST), niet ergens willekeurig in de hele
+  // wereld. Zo kan de wereld zelf groot/ruim blijven (desktop) zonder dat een
+  // letter kilometers verderop kan verschijnen. Validatie (geen overlap, geen
+  // randoverschrijding, geen spawn op het character) gebeurt in drie trappen:
+  // willekeurige steekproeven, een deterministisch rooster van hoeken/
+  // afstanden, en pas als beide dat niet redden een geleidelijke versoepeling
+  // van de minimumafstanden — nooit een ongevalideerde positie.
   function layoutLetters() {
     measureField();
     const letters = shuffle([chaseConfig.target, ...chaseConfig.distractors]);
-    const minDist = LETTER_R * 2 + 34;              // letters nooit overlappend + comfortabele lucht
+    const { min: minD, max: maxD } = SPAWN_DIST[worldTier(fieldRect.w)];
     const marginX = LETTER_R + 8, marginY = LETTER_R + 8;
+    const wx0 = world.x0 + marginX, wx1 = Math.max(wx0, world.x1 - marginX);
+    const wy0 = world.y0 + marginY, wy1 = Math.max(wy0, world.y1 - marginY);
     // "avoid" gebruikt het VISUELE middelpunt van het character (niet het
-    // voetpunt waarop charX/charY zelf gebaseerd zijn), anders lijkt een
-    // letter vlak boven het hoofd van het character niet "op" het character
-    // te spawnen terwijl het er visueel wel bovenop staat.
+    // voetpunt waarop charX/charY zelf gebaseerd is), anders lijkt een letter
+    // vlak boven het hoofd van het character niet "op" het character te
+    // spawnen terwijl het er visueel wel bovenop staat.
     const avoidX = charX, avoidY = charY - charBox.h / 2;
-    const avoidR = charBox.h / 2 + LETTER_R + 30;
-    const yMax = playBox.y0 + playBox.h * 0.62;     // onderste deel vrij voor de startzone van het character
 
-    const pts = [];
-    let tries = 0;
-    while (pts.length < letters.length && tries < 500) {
-      tries++;
-      const x = rand(playBox.x0 + marginX, playBox.x1 - marginX);
-      const y = rand(playBox.y0 + marginY, Math.max(playBox.y0 + marginY, yMax));
-      if (Math.hypot(x - avoidX, y - avoidY) < avoidR) continue;
-      if (pts.some((q) => Math.hypot(x - q.x, y - q.y) < minDist)) continue;
-      pts.push({ x, y });
-    }
-    while (pts.length < letters.length) {
-      pts.push({ x: rand(playBox.x0 + marginX, playBox.x1 - marginX), y: rand(playBox.y0 + marginY, Math.max(playBox.y0 + marginY, yMax)) });
+    const minDistFloor = LETTER_R * 2 + 6;
+    const avoidRFloor = charBox.h / 2 + LETTER_R + 4;
+
+    const placed = [];
+    for (let li = 0; li < letters.length; li++) {
+      let minLetterDist = LETTER_R * 2 + 34;
+      let avoidR = charBox.h / 2 + LETTER_R + 30;
+      let found = null;
+
+      const inBounds = (x, y) => x >= wx0 && x <= wx1 && y >= wy0 && y <= wy1;
+      const isValid = (x, y) => inBounds(x, y)
+        && Math.hypot(x - avoidX, y - avoidY) >= avoidR
+        && placed.every((p) => Math.hypot(x - p.x, y - p.y) >= minLetterDist);
+      const randomCandidate = () => {
+        const angle = rand(0, Math.PI * 2), r = rand(minD, maxD);
+        return { x: clamp(avoidX + Math.cos(angle) * r, wx0, wx1), y: clamp(avoidY + Math.sin(angle) * r, wy0, wy1) };
+      };
+      const gridCandidates = () => {
+        const pts = [];
+        const angleSteps = 24, radii = [minD, (minD + maxD) / 2, maxD];
+        for (let a = 0; a < angleSteps; a++) {
+          const angle = (a / angleSteps) * Math.PI * 2;
+          for (const r of radii) {
+            pts.push({ x: clamp(avoidX + Math.cos(angle) * r, wx0, wx1), y: clamp(avoidY + Math.sin(angle) * r, wy0, wy1) });
+          }
+        }
+        return pts;
+      };
+
+      for (let relax = 0; relax < 6 && !found; relax++) {
+        for (let t = 0; t < 200 && !found; t++) {
+          const p = randomCandidate();
+          if (isValid(p.x, p.y)) found = p;
+        }
+        if (!found) {
+          for (const p of gridCandidates()) { if (isValid(p.x, p.y)) { found = p; break; } }
+        }
+        if (!found) {
+          minLetterDist = Math.max(minDistFloor, minLetterDist * 0.82);
+          avoidR = Math.max(avoidRFloor, avoidR * 0.82);
+        }
+      }
+      if (!found) {
+        // Zou in de praktijk nooit mogen gebeuren bij een redelijk formaat
+        // wereld: kies alsnog het best-geteste kandidaat-punt (grootste
+        // marge t.o.v. de floor-beperkingen) — nooit een ongeteste positie.
+        let best = null, bestScore = -Infinity;
+        for (const p of [...Array(200)].map(randomCandidate).concat(gridCandidates())) {
+          if (!inBounds(p.x, p.y)) continue;
+          const scoreAvoid = Math.hypot(p.x - avoidX, p.y - avoidY) - avoidRFloor;
+          const scoreLetters = placed.length ? Math.min(...placed.map((q) => Math.hypot(p.x - q.x, p.y - q.y))) - minDistFloor : Infinity;
+          const score = Math.min(scoreAvoid, scoreLetters);
+          if (score > bestScore) { bestScore = score; best = p; }
+        }
+        found = best || { x: (wx0 + wx1) / 2, y: (wy0 + wy1) / 2 };
+      }
+      placed.push(found);
     }
 
     lettersLayer.innerHTML = "";
     roundLetters = letters.map((letter, i) => {
-      const { x, y } = pts[i];
+      const { x, y } = placed[i];
       const node = document.createElement("div");
       node.className = "chase-letter";
       node.dataset.letter = letter;
@@ -424,11 +521,11 @@
 
   function clampCharToBounds() {
     const halfW = charBox.w / 2;
-    const minX = Math.min(playBox.x0 + halfW, playBox.x0 + playBox.w / 2);
-    const maxX = Math.max(playBox.x1 - halfW, playBox.x0 + playBox.w / 2);
+    const minX = Math.min(world.x0 + halfW, world.x0 + world.w / 2);
+    const maxX = Math.max(world.x1 - halfW, world.x0 + world.w / 2);
     charX = clamp(charX, minX, maxX);
-    const minY = Math.min(playBox.y0 + charBox.h * 0.4, playBox.y1);
-    const maxY = playBox.y1;
+    const minY = Math.min(world.y0 + charBox.h * 0.4, world.y1);
+    const maxY = world.y1;
     charY = clamp(charY, minY, Math.max(minY, maxY));
   }
 
@@ -440,6 +537,7 @@
       const dist = Math.hypot(rdx, rdy);
       if (dist < 6) {
         moveTarget = null;
+        hideTapMarker();
       } else {
         dx = rdx / dist; dy = rdy / dist;
       }
@@ -477,6 +575,7 @@
     collisionLocked = true;
     pressed.clear();
     moveTarget = null;
+    hideTapMarker();
     const responseTimeMs = Math.round(performance.now() - roundStartTs);
     recordAttempt(profileId, {
       target: chaseConfig.target, selectedLetter: item.letter, correct: item.isTarget,
@@ -584,5 +683,5 @@
   window.addEventListener("hashchange", chaseRoute);
   chaseRoute();
 
-  if (DEBUG) window.GameChase = { get phase() { return phase; }, get chaseConfig() { return chaseConfig; }, get playBox() { return playBox; } };
+  if (DEBUG) window.GameChase = { get phase() { return phase; }, get chaseConfig() { return chaseConfig; }, get world() { return world; } };
 })();

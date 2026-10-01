@@ -21,6 +21,9 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
   box-shadow: 0 3px 0 var(--gold-light), 0 6px 12px rgba(120, 80, 20, .15);
 }
 .chase-replay:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-light); }
+.chase-replay.is-playing { color: var(--color-secondary); animation: chaseReplayPulse .9s ease-in-out infinite; }
+.chase-replay:disabled { opacity: .9; }
+@keyframes chaseReplayPulse { 0%, 100% { box-shadow: 0 3px 0 var(--gold-light), 0 6px 12px rgba(120, 80, 20, .15); } 50% { box-shadow: 0 3px 0 var(--gold-light), 0 0 0 7px rgba(58, 143, 217, .25); } }
 .chase-instr { flex: 1; display: flex; align-items: baseline; justify-content: center; gap: 8px; min-width: 0; }
 .chase-instr-text { font-weight: 800; font-size: clamp(15px, 3.6vw, 19px); color: var(--color-text); }
 .chase-instr-letter { font-family: "Amiri", serif; font-weight: 700; font-size: clamp(26px, 7vw, 34px); color: var(--color-character-accent); }
@@ -41,6 +44,13 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
 .chase-cloud-a { top: 14%; left: 8%; }
 .chase-cloud-b { top: 24%; left: 60%; transform: scale(.8); }
 .chase-ground { position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(180deg, #e3c276, #c99f52); }
+
+.chase-tap-marker {
+  position: absolute; left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+  border-radius: 50%; border: 3px solid var(--color-secondary); opacity: 0; pointer-events: none; z-index: 2;
+}
+.chase-tap-marker.is-active { animation: chaseTapPulse .65s ease-out; }
+@keyframes chaseTapPulse { 0% { opacity: .9; transform: scale(.4); } 70% { opacity: .5; } 100% { opacity: 0; transform: scale(1.15); } }
 
 .chase-letters { position: absolute; inset: 0; }
 .chase-letter {
@@ -81,7 +91,11 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
   padding: 6px 12px; box-shadow: 0 2px 0 var(--gold-light);
 }
 .chase-tap-hint { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-text-muted); text-align: center; }
-.chase-dpad { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+/* direction:ltr is bewust hardcoded: de fysieke betekenis van de bewegings-
+   knoppen mag NOOIT meedraaien met de interfacetaal (RTL mag alleen tekst/UI
+   spiegelen) — zonder dit zou flexbox de knopvolgorde onder dir="rtl" omkeren
+   en "links" en "rechts" laten wisselen. */
+.chase-dpad { display: flex; flex-direction: column; align-items: center; gap: 10px; direction: ltr; }
 .chase-btn-row { display: flex; align-items: center; gap: 16px; }
 .chase-btn {
   width: 64px; height: 64px; border-radius: 20px; border: none; flex: none;
@@ -91,6 +105,21 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
 }
 .chase-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-light); }
 .chase-btn svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Desktop: toetsenbord is hier de primaire besturing (zie onKeyDown in
+   game-chase.js — WASD/pijltjes werken ongeacht of de D-pad zichtbaar is).
+   De D-pad blijft beschikbaar maar mag het grote, ruime gamebeeld niet
+   domineren: compacter, kleiner en naar de zijkant geschoven i.p.v. een
+   brede knoppenbalk in het midden. */
+@media (min-width: 1024px) {
+  .chase-controls { flex-direction: row; justify-content: flex-start; align-items: center; gap: 18px; min-height: 74px; padding-left: 28px; }
+  .chase-mode-toggle { position: static; }
+  .chase-dpad { gap: 5px; }
+  .chase-dpad .chase-btn-row { gap: 5px; }
+  .chase-btn { width: 40px; height: 40px; border-radius: 12px; }
+  .chase-btn svg { width: 18px; height: 18px; }
+  .chase-tap-hint { margin: 0; }
+}
 
 .chase-overlay {
   position: absolute; inset: 0; z-index: 10; display: grid; place-items: center;
