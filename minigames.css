@@ -170,3 +170,5 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .chase-card-shop { display: block; margin: 0 0 12px; padding: 9px 12px; border-radius: 14px; background: #eef7ff; border: 2px solid #b9dcf7; color: #2d5f8f; font-weight: 800; font-size: 14px; text-decoration: none; }
 .games-top { display: flex; align-items: center; gap: 8px; }
 .games-coins { background: #fff3c2; border: 2px solid #f0cf6a; color: #7a5410; font-weight: 900; border-radius: 999px; padding: 5px 11px; font-size: 14px; }
+.games-card.is-locked { filter: grayscale(.8); opacity: .65; cursor: default; }
+.games-card.is-locked:hover { transform: none; }

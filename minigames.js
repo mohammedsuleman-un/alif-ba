@@ -7,21 +7,25 @@
   const { lang, dir, store } = D;
 
   const GAMES = [
-    { hash: "#/gamestage/slingshot/1", icon: "🎯",
+    { key: "slingshot", hash: "#/gamestage/slingshot/1", icon: "🎯",
       title: { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" },
       sub: { nl: "Hoor de letter en schiet de goede lantaarn", en: "Hear the letter and hit the right lantern", ar: "اسمع الحرف وأصب الفانوس الصحيح", tr: "Harfi duy ve doğru fenere at" } },
-    { hash: "#/gamestage/photographer/1", icon: "📷",
+    { key: "photographer", hash: "#/gamestage/photographer/1", icon: "📷",
       title: { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" },
       sub: { nl: "Zoom in en fotografeer de goede letter", en: "Zoom in and photograph the right letter", ar: "قرّب وصوّر الحرف الصحيح", tr: "Yakınlaş ve doğru harfi fotoğrafla" } },
-    { hash: "#/gamestage/diver/1", icon: "🤿",
+    { key: "diver", hash: "#/gamestage/diver/1", icon: "🤿",
       title: { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" },
       sub: { nl: "Verzamel de parels met de goede letter", en: "Collect the pearls with the right letter", ar: "اجمع اللآلئ التي عليها الحرف الصحيح", tr: "Doğru harfli incileri topla" } },
-    { hash: "#/gamestage/bridge/1", icon: "🌉",
+    { key: "bridge", hash: "#/gamestage/bridge/1", icon: "🌉",
       title: { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" },
       sub: { nl: "Maak de alfabetrij af en steek over", en: "Complete the alphabet row and cross", ar: "أكمل صف الحروف واعبر", tr: "Alfabe sırasını tamamla ve geç" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
   const GROUP_LABEL = { nl: "Jouw route", en: "Your path", ar: "مسارك", tr: "Yolun" };
+  const LOCK_TXT = {
+    nl: (n) => `Speel Wereld 1 tot niveau ${n}`, en: (n) => `Reach level ${n} in World 1`,
+    ar: (n) => `أكمل المستوى ${n} في العالم 1`, tr: (n) => `Dünya 1'de ${n}. seviyeye ulaş`,
+  };
   const BACK = { nl: "Terug", en: "Back", ar: "رجوع", tr: "Geri" };
 
   let active = false;
@@ -52,12 +56,21 @@
             <div class="games-levels" id="gamesLevels"></div>
           </div>
           <div class="games-grid">
-            ${GAMES.map((g) => `
+            ${GAMES.map((g) => {
+              const pid = store.get("gp_active", null), MG = window.MiniGames;
+              const open = !MG || !pid || MG.gameOpen(pid, g.key), need = MG ? MG.UNLOCKS[g.key] : 0;
+              return open ? `
               <a class="games-card" href="${g.hash}">
                 <span class="games-icon">${g.icon}</span>
                 <span class="games-title">${g.title[l]}</span>
                 <span class="games-sub">${g.sub[l]}</span>
-              </a>`).join("")}
+              </a>` : `
+              <div class="games-card is-locked" aria-disabled="true">
+                <span class="games-icon">🔒</span>
+                <span class="games-title">${g.title[l]}</span>
+                <span class="games-sub">${LOCK_TXT[l](need)}</span>
+              </div>`;
+            }).join("")}
           </div>
         </div>
       </div>`;

@@ -1183,6 +1183,7 @@
     const stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
     const id = levelId(world, level);
     const prevStars = levelStars(world, level);
+    const MGd = window.MiniGames, oasisBefore = MGd ? MGd.oasisDone(activeProfile.id) : 0;
     state.levels[id] = { stars: Math.max(stars, prevStars), attempts: ((state.levels[id] || {}).attempts || 0) + 1 };
     const xp = level.challenge ? 200 : 80 + level.n;
     const coins = level.challenge ? 30 : 10;
@@ -1192,6 +1193,9 @@
     if (level.badge && !state.badges.includes(level.badge)) { state.badges.push(level.badge); newBadge = G.badges[level.badge]; }
     gstate.save(activeProfile.id, state);
     const newItems = Character.checkNewUnlocks(activeProfile.id, state, G.worlds);
+    const GN = { slingshot: ["🎯", { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" }], photographer: ["📷", { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" }], diver: ["🤿", { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" }], bridge: ["🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }] };
+    const oasisNow = MGd ? MGd.oasisDone(activeProfile.id) : 0;
+    const newGames = MGd ? Object.keys(MGd.UNLOCKS).filter((k) => MGd.UNLOCKS[k] > oasisBefore && MGd.UNLOCKS[k] <= oasisNow) : [];
     sfx.fireworks();
     const worldIdx0 = G.worlds.findIndex((w) => w.id === world.id);
     const isLastLevelOfWorld = world.levels[world.levels.length - 1].n === level.n;
@@ -1217,6 +1221,7 @@
         <div class="g-companion-celebrate">${Character.svg(charCfg(), "celebrate")}</div>
         <div class="g-rewards"><span>+${xp} ${t.xp}</span><span>+${coins} 🪙</span></div>
         ${newBadge ? `<div class="g-badge-earned"><span class="g-badge-icon">${newBadge.icon}</span><span>${t.badgeEarned}<br>${gsub(newBadge)}</span></div>` : ""}
+        ${newGames.length ? `<a href="#/gamestage/games" class="g-badge-earned g-wardrobe-earned"><span class="g-badge-icon">${GN[newGames[0]][0]}</span><span>${{ nl: "Nieuw spel!", en: "New game!", ar: "لعبة جديدة!", tr: "Yeni oyun!" }[glang()] || "Nieuw spel!"}<br>${newGames.map((k) => GN[k][1][glang()] || GN[k][1].nl).join(", ")}</span></a>` : ""}
         ${newItems.length ? `<a href="#/spel/kledingkast" class="g-badge-earned g-wardrobe-earned"><span class="g-badge-icon">👕</span><span>${t.newOutfitEarned}<br>${newItems.map((it) => gsub(it.label)).join(", ")}</span></a>` : ""}
         <div class="g-complete-actions">
           <button id="gNextLevel" class="g-cta g-cta-primary"><span>${t.next}</span> →</button>

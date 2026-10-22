@@ -158,9 +158,13 @@
     }).setOrigin(0.5);
   }
 
+  // Spellen komen vrij naarmate Wereld 1 (Letter Oase) vordert: aantal voltooide oase-niveaus.
+  const UNLOCKS = { slingshot: 0, photographer: 3, diver: 5, bridge: 7 };
+  const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
+  const gameOpen = (pid, key) => oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
     GROUPS, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
-    currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
+    UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => GROUPS[n] || GROUPS[0],
   };
 })();
