@@ -4,7 +4,7 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const D = window.ChaseData;
-  const { lang, dir } = D;
+  const { lang, dir, store } = D;
 
   const GAMES = [
     { hash: "#/gamestage/slingshot/1", icon: "🎯",
@@ -13,8 +13,15 @@
     { hash: "#/gamestage/photographer/1", icon: "📷",
       title: { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" },
       sub: { nl: "Zoom in en fotografeer de goede letter", en: "Zoom in and photograph the right letter", ar: "قرّب وصوّر الحرف الصحيح", tr: "Yakınlaş ve doğru harfi fotoğrafla" } },
+    { hash: "#/gamestage/diver/1", icon: "🤿",
+      title: { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" },
+      sub: { nl: "Verzamel de parels met de goede letter", en: "Collect the pearls with the right letter", ar: "اجمع اللآلئ التي عليها الحرف الصحيح", tr: "Doğru harfli incileri topla" } },
+    { hash: "#/gamestage/bridge/1", icon: "🌉",
+      title: { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" },
+      sub: { nl: "Maak de alfabetrij af en steek over", en: "Complete the alphabet row and cross", ar: "أكمل صف الحروف واعبر", tr: "Alfabe sırasını tamamla ve geç" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
+  const GROUP_LABEL = { nl: "Kies de letters", en: "Pick the letters", ar: "اختر الحروف", tr: "Harfleri seç" };
   const BACK = { nl: "Terug", en: "Back", ar: "رجوع", tr: "Geri" };
 
   let active = false;
@@ -39,6 +46,10 @@
           <div class="chase-instr"><span class="chase-instr-text">${HEAD[l]}</span></div>
         </header>
         <div class="games-hub">
+          <div class="games-levels-wrap">
+            <p class="games-levels-title">${GROUP_LABEL[l]}</p>
+            <div class="games-levels" id="gamesLevels"></div>
+          </div>
           ${GAMES.map((g) => `
             <a class="games-card" href="${g.hash}">
               <span class="games-icon">${g.icon}</span>
@@ -47,6 +58,16 @@
             </a>`).join("")}
         </div>
       </div>`;
+    renderLevels();
+  }
+
+  // Letter-groepen (heel het alfabet): kies waarmee je oefent; voltooide groepen krijgen een vinkje.
+  function renderLevels() {
+    const MG = window.MiniGames, el = $("gamesLevels"), pid = store.get("gp_active", null);
+    if (!MG || !el || !pid) return;
+    const cur = MG.currentLevel(pid), done = MG.doneLevels(pid);
+    el.innerHTML = MG.GROUPS.map((g, i) => `<button class="games-level ${i === cur ? "is-current" : ""} ${done.includes(i) ? "is-done" : ""}" data-i="${i}"><span lang="ar" dir="rtl">${g.join(" ")}</span>${done.includes(i) ? "<i>✓</i>" : ""}</button>`).join("");
+    el.querySelectorAll(".games-level").forEach((b) => { b.onclick = () => { MG.setLevel(pid, +b.dataset.i); renderLevels(); }; });
   }
 
   function route() {

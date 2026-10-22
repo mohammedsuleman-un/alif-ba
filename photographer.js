@@ -33,14 +33,16 @@
   };
   const tx = () => TXT[lang()] || TXT.nl;
 
-  const LETTERS = ["ب", "ت", "ث"];
-  const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [r[i], r[j]] = [r[j], r[i]]; } return r; };
+  const MG = window.MiniGames;
+  const shuffle = MG.shuffle;
+  let LETTERS = MG.group(0);
   const WORLD = { w: 1700, h: 1000 };
   const ZOOMS = [0.9, 1.6, 2.6];
 
   function buildMissions() {
-    // Elke missie een andere doelletter; meer tegels naarmate het spel vordert.
-    return shuffle(LETTERS).map((target, i) => ({ target, count: [10, 13, 16][i] }));
+    // Elke letter van de groep is een missie; meer tegels naarmate het spel vordert.
+    LETTERS = MG.group(MG.currentLevel(profileId));
+    return shuffle(LETTERS).map((target, i) => ({ target, count: [10, 13, 16, 16][Math.min(i, 3)] }));
   }
 
   // Tegels verspreid over de wereld met minimale onderlinge afstand; doel komt 2-3x voor.
@@ -247,17 +249,31 @@
       mission: missionIdx + 1, responseTimeMs: Math.round(performance.now() - missionStart), timestamp: Date.now(),
     });
     busy = true;
+    const field = $("phField"), letter = r.sign.letter;
     if (isTarget) {
       solved.push({ target: m.target, helped, wrong: wrongThisMission });
       updateDots();
       scene.celebrate(r.sign);
+      MG.sfx("ok");
+      MG.banner(field, { ok: true, letter });
       const finished = missionIdx + 1 >= missions.length;
-      const chain = finished ? window.AudioManager.playRandomCorrectFeedback().then(() => letterAudio(r.sign.letter)) : letterAudio(r.sign.letter);
-      chain.then(() => { if (!active) return; if (finished) complete(); else { missionIdx++; startMission(); } });
+      MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback())
+        .then(() => letterAudio(letter)).then(() => MG.wait(1100)).then(() => {
+          MG.hideBanner(field);
+          if (!active) return;
+          if (finished) complete(); else { missionIdx++; startMission(); }
+        });
     } else {
       wrongThisMission++;
       scene.wrongShot(r.sign);
-      window.AudioManager.playRandomRetryFeedback().then(() => { if (active) busy = false; });
+      MG.sfx("no");
+      MG.banner(field, { ok: false, letter });
+      MG.wait(900).then(() => window.AudioManager.playRandomRetryFeedback()).then(() => MG.wait(500)).then(() => {
+        MG.hideBanner(field);
+        if (!active) return;
+        busy = false;
+        playMissionAudio();
+      });
     }
   }
   function flash() {
@@ -266,20 +282,11 @@
   }
 
   function complete() {
-    const tt = tx();
-    const stars = solved.filter((s) => !s.helped).length;
-    const ov = $("phOverlay");
-    ov.hidden = false;
-    ov.innerHTML = `
-      <div class="chase-card">
-        <h2>${tt.good}</h2>
-        <span class="chase-card-letter" lang="ar" dir="rtl">${LETTERS.join(" ")}</span>
-        <p class="chase-card-score">${"⭐".repeat(Math.max(1, stars))}</p>
-        <button id="phAgain" class="chase-cta chase-cta-primary">${tt.again}</button>
-        <button id="phToWorld" class="chase-cta chase-cta-ghost">${tt.back}</button>
-      </div>`;
-    $("phAgain").onclick = () => { ov.hidden = true; missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); };
-    $("phToWorld").onclick = () => { location.hash = "#/gamestage/games"; };
+    MG.finish($("phOverlay"), {
+      pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
+      onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
+      onBack: () => { location.hash = "#/gamestage/games"; },
+    });
   }
 
   function onKey(e) {

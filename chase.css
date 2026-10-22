@@ -143,3 +143,41 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .games-icon { font-size: 48px; }
 .games-title { font-weight: 800; font-size: 20px; }
 .games-sub { font-size: 14px; color: var(--color-text-muted); }
+
+/* Feedbackbord (goed/fout), letter-groepen, Pearl Diver en Letter Bridge */
+.fb-banner { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 16px 30px; border-radius: 28px; pointer-events: none; color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); animation: fbPop .35s cubic-bezier(.2, 1.4, .4, 1); }
+.fb-banner.is-ok { background: linear-gradient(180deg, #62d33a, #3fa51c); }
+.fb-banner.is-no { background: linear-gradient(180deg, #ffb347, #f08a1c); }
+.fb-icon { font-size: 54px; font-weight: 900; line-height: 1; }
+.fb-letter { font-family: "Amiri", serif; font-weight: 700; font-size: 64px; line-height: 1.05; }
+.fb-text { font-weight: 800; font-size: 20px; }
+@keyframes fbPop { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+
+.games-levels-wrap { grid-column: 1 / -1; }
+.games-levels-title { margin: 0 0 8px; font-weight: 800; color: var(--color-text-muted); font-size: 14px; }
+.games-levels { display: flex; flex-wrap: wrap; gap: 8px; }
+.games-level { border: 2px solid var(--gold-light); background: #fff; border-radius: 14px; padding: 8px 12px; font-family: "Amiri", serif; font-weight: 700; font-size: 22px; color: var(--color-text); position: relative; }
+.games-level.is-current { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(58, 143, 217, .25); }
+.games-level i { position: absolute; top: -8px; right: -6px; background: var(--color-success); color: #fff; font-style: normal; font-size: 12px; font-weight: 900; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-family: inherit; }
+
+.dv-need { font-weight: 900; font-size: 22px; color: var(--color-success-strong); }
+
+.br-field { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 10px 12px; background: linear-gradient(180deg, #cfeefa 0%, #8fd6ea 55%, #5bb8d8 100%); }
+.br-scene { position: relative; width: 100%; flex: 1; display: flex; align-items: center; justify-content: center; }
+.br-row { display: flex; gap: 6px; padding: 10px 14px; background: repeating-linear-gradient(90deg, rgba(122, 74, 36, .0) 0 12px, rgba(122, 74, 36, .0) 12px 24px); border-top: 4px solid #8a5a2b; border-bottom: 4px solid #8a5a2b; direction: rtl; }
+.br-plank { width: clamp(48px, 13vw, 78px); height: clamp(60px, 16vw, 92px); border: 3px solid #b3803a; border-radius: 12px; background: linear-gradient(180deg, #e8b873, #cf9650); font-family: "Amiri", serif; font-weight: 700; font-size: clamp(28px, 8vw, 46px); color: #3a2410; display: grid; place-items: center; box-shadow: 0 4px 0 #8a5a2b; touch-action: none; user-select: none; transition: transform .15s, background .2s; }
+.br-plank.br-gap { background: rgba(255, 255, 255, .35); border: 3px dashed #fff; color: #fff; box-shadow: none; font-family: inherit; font-size: 32px; }
+.br-plank.br-fixed { opacity: .95; }
+.br-plank.is-ok { background: linear-gradient(180deg, #9be37a, #62c244); border-color: #3f9a24; }
+.br-plank.is-bad { background: linear-gradient(180deg, #ffb347, #f08a1c); border-color: #c9650c; transform: rotate(-12deg) translateY(10px); }
+.br-plank.is-help { animation: brHelp .8s ease-in-out infinite; box-shadow: 0 0 0 5px rgba(255, 213, 74, .85); }
+@keyframes brHelp { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+.br-tray { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; min-height: 96px; }
+.br-tray-plank.is-selected { transform: translateY(-8px); box-shadow: 0 4px 0 #8a5a2b, 0 0 0 4px rgba(58, 143, 217, .6); }
+.br-tray-plank.is-used { visibility: hidden; }
+.br-ghost { position: fixed; z-index: 100; transform: translate(-50%, -60%) scale(1.1); pointer-events: none; opacity: .9; }
+.br-cross { width: auto; padding: 12px 30px; margin: 0; }
+.br-cross:disabled { opacity: .5; }
+.br-explorer { position: absolute; font-size: 38px; transform: translate(-50%, -100%); transition: left .6s ease-in-out, top .3s; opacity: 0; pointer-events: none; z-index: 5; }
+.br-explorer.is-slip { animation: brSlip .9s ease-in forwards; }
+@keyframes brSlip { 0% { transform: translate(-50%, -100%) rotate(0); } 100% { transform: translate(-50%, 20%) rotate(40deg); opacity: .5; } }

@@ -34,18 +34,20 @@
   const tx = () => TXT[lang()] || TXT.nl;
 
   // ---------- Missies ----------
-  const LETTERS = ["ب", "ت", "ث"];
-  const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [r[i], r[j]] = [r[j], r[i]]; } return r; };
+  const MG = window.MiniGames;
+  const shuffle = MG.shuffle;
+  let LETTERS = MG.group(0);
 
-  // Elke missie traint een andere doelletter; de andere letters zijn afleiders.
+  // Elke letter van de huidige groep is een missie; de andere letters zijn afleiders.
   function buildMissions() {
-    const targets = shuffle(LETTERS);
-    const cfgs = [{ moving: false, speed: 0, count: 3 }, { moving: true, speed: 0.55, count: 3 }, { moving: true, speed: 0.9, count: 4 }];
-    return targets.map((target, i) => {
-      const others = LETTERS.filter((l) => l !== target);
-      let letters = [target, ...others];
-      if (cfgs[i].count === 4) letters.push(others[(Math.random() * others.length) | 0]);
-      return { target, letters: shuffle(letters), moving: cfgs[i].moving, speed: cfgs[i].speed };
+    LETTERS = MG.group(MG.currentLevel(profileId));
+    const cfgs = [{ moving: false, speed: 0, count: 3 }, { moving: true, speed: 0.4, count: 3 }, { moving: true, speed: 0.65, count: 4 }];
+    return shuffle(LETTERS).map((target, i) => {
+      const cfg = cfgs[Math.min(i, 2)];
+      const others = shuffle(LETTERS.filter((l) => l !== target));
+      const letters = [target, others[0], others[1]];
+      if (cfg.count === 4) letters.push(others[2] || others[0]);
+      return { target, letters: shuffle(letters), moving: cfg.moving, speed: cfg.speed };
     });
   }
 
@@ -207,44 +209,42 @@
       mission: missionIdx + 1, moving: m.moving, responseTimeMs: Math.round(performance.now() - missionStart), timestamp: Date.now(),
     });
     busy = true;
+    const field = $("slField");
     if (isTarget) {
       solved.push({ target: m.target, helped, wrong: wrongThisMission });
       updateDots();
       scene.celebrateHit();
+      MG.sfx("ok");
+      MG.banner(field, { ok: true, letter });
       const finished = missionIdx + 1 >= missions.length;
-      const chain = finished
-        ? window.AudioManager.playRandomCorrectFeedback().then(() => letterAudio(letter))
-        : letterAudio(letter);
-      chain.then(() => {
-        if (!active) return;
-        if (finished) complete(); else { missionIdx++; startMission(); }
-      });
+      // Jingle, dan "goed gedaan" in de gekozen taal, dan de letter uitspreken, dan even rust.
+      MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback())
+        .then(() => letterAudio(letter)).then(() => MG.wait(1100)).then(() => {
+          MG.hideBanner(field);
+          if (!active) return;
+          if (finished) complete(); else { missionIdx++; startMission(); }
+        });
     } else {
       wrongThisMission++;
       scene.wrongHit();
-      window.AudioManager.playRandomRetryFeedback().then(() => {
+      MG.sfx("no");
+      MG.banner(field, { ok: false, letter });
+      MG.wait(900).then(() => window.AudioManager.playRandomRetryFeedback()).then(() => MG.wait(500)).then(() => {
+        MG.hideBanner(field);
         if (!active) return;
         busy = false;
         scene.returnStone();
+        playMissionAudio(); // de gevraagde letter nog eens horen
       });
     }
   }
 
   function complete() {
-    const tt = tx();
-    const stars = solved.filter((s) => !s.helped).length;
-    const ov = $("slOverlay");
-    ov.hidden = false;
-    ov.innerHTML = `
-      <div class="chase-card">
-        <h2>${tt.good}</h2>
-        <span class="chase-card-letter" lang="ar" dir="rtl">${LETTERS.join(" ")}</span>
-        <p class="chase-card-score">${"⭐".repeat(Math.max(1, stars))}</p>
-        <button id="slAgain" class="chase-cta chase-cta-primary">${tt.again}</button>
-        <button id="slToWorld" class="chase-cta chase-cta-ghost">${tt.back}</button>
-      </div>`;
-    $("slAgain").onclick = () => { ov.hidden = true; missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); };
-    $("slToWorld").onclick = () => { location.hash = RETURN_HASH; };
+    MG.finish($("slOverlay"), {
+      pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
+      onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
+      onBack: () => { location.hash = RETURN_HASH; },
+    });
   }
 
   function onKey(e) {
@@ -552,7 +552,7 @@
       }
 
       stepShot(delta) {
-        const sh = this.shot, speed = 1900, time = (this.time.now - this.t0) / 1000;
+        const sh = this.shot, speed = 1100, time = (this.time.now - this.t0) / 1000;
         let remaining = speed * (delta / 1000);
         while (remaining > 0 && sh.dist < sh.range) {
           const step = Math.min(remaining, 6);
