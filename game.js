@@ -724,6 +724,7 @@
           <span>${t.levelsProgress(doneCount, levels.length)}</span>
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
+        ${world.id === "letter_oasis" ? `<a href="#/gamestage/games" class="g-icon-btn" aria-label="Minigames">🎯</a>` : ""}
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">

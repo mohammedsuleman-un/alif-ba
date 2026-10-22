@@ -19,7 +19,7 @@
   const $ = (id) => document.getElementById(id);
   const D = window.ChaseData;
   const { store, dir, lang, recordAttempt } = D;
-  const RETURN_HASH = D.RETURN_HASH;
+  const RETURN_HASH = "#/gamestage/games";
 
   const TXT = {
     nl: { find: "Vind", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
