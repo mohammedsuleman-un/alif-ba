@@ -149,7 +149,7 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .fb-banner.is-ok { background: linear-gradient(180deg, #62d33a, #3fa51c); }
 .fb-banner.is-no { background: linear-gradient(180deg, #ffb347, #f08a1c); }
 .fb-icon { font-size: 54px; font-weight: 900; line-height: 1; }
-.fb-letter { font-family: "Amiri", serif; font-weight: 700; font-size: 64px; line-height: 1.05; }
+.fb-letter { font-family: "Amiri", serif; font-weight: 700; font-size: 60px; line-height: 1.6; padding: 0 6px; }
 .fb-text { font-weight: 800; font-size: 20px; }
 @keyframes fbPop { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
