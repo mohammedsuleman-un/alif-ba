@@ -117,8 +117,17 @@
     ar: { good: "أحسنت", again: "مرة أخرى", back: "رجوع" },
     tr: { good: "Aferin", again: "Tekrar oyna", back: "Geri" },
   };
+  const SHOP = {
+    nl: "Nieuw in de kledingkast!", en: "New in the wardrobe!", ar: "جديد في الخزانة!", tr: "Dolapta yeni ürünler!",
+  };
   function finish(ov, { pid, level, stars, onAgain, onBack }) {
+    const first = !doneLevels(pid).includes(level);
     completeLevel(pid, level);
+    // Munten: volledig bij een nieuw niveau (10 + 2 per ster), klein bedrag bij herhalen.
+    const earned = first ? 10 + 2 * Math.max(1, stars) : 3;
+    const Ch = window.Character;
+    if (Ch) Ch.addCoins(pid, earned);
+    const fresh = Ch ? Ch.checkNewUnlocks(pid) : [];
     const e = END[lang()] || END.nl;
     const hasNext = currentLevel(pid) !== level; // het volgende niveau is nu vrijgespeeld
     ov.hidden = false;
@@ -128,6 +137,8 @@
         <p class="chase-card-level">${say("level")} ${level + 1}</p>
         <span class="chase-card-letter" lang="ar" dir="rtl">${GROUPS[level].join(" ")}</span>
         <p class="chase-card-score">${"⭐".repeat(Math.max(1, stars))}</p>
+        <p class="chase-card-coins">+${earned} 🪙</p>
+        ${fresh.length ? `<a class="chase-card-shop" href="#/spel/kledingkast">👕 ${SHOP[lang()] || SHOP.nl}</a>` : ""}
         ${hasNext ? `<button id="mgNext" class="chase-cta chase-cta-primary">${say("next")} →</button>` : ""}
         <button id="mgAgain" class="chase-cta ${hasNext ? "chase-cta-ghost" : "chase-cta-primary"}">${e.again}</button>
         <button id="mgBack" class="chase-cta chase-cta-ghost">${e.back}</button>

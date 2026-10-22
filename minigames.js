@@ -44,6 +44,7 @@
         <header class="chase-head">
           <a href="${D.RETURN_HASH}" class="g-icon-btn" aria-label="${BACK[l]}"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
           <div class="chase-instr"><span class="chase-instr-text">${HEAD[l]}</span></div>
+          <div class="games-top"><span class="games-coins" id="gamesCoins">🪙 0</span><a href="#/spel/kledingkast" class="g-icon-btn" aria-label="Kledingkast">👕</a></div>
         </header>
         <div class="games-hub">
           <div class="games-levels-wrap">
@@ -61,6 +62,8 @@
         </div>
       </div>`;
     renderLevels();
+    const pid = store.get("gp_active", null), coins = $("gamesCoins");
+    if (coins && pid && window.Character) coins.textContent = "🪙 " + window.Character.coins(pid);
   }
 
   // Vaste route: niveaus komen na elkaar vrij; elk niveau voegt letters toe en herhaalt de eerdere.

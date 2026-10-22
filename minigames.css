@@ -166,3 +166,7 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .route-node.is-current .route-num { background: var(--color-secondary); color: #fff; }
 .route-node.is-locked { opacity: .55; background: #f4efe3; border-style: dashed; cursor: not-allowed; }
 @media (max-width: 640px) { .route-node { min-width: 74px; padding: 6px 9px 7px; } .route-letters { font-size: 20px; } .route-now { font-size: 14px; } }
+.chase-card-coins { margin: -6px 0 10px; font-weight: 900; color: #7a5410; font-size: 18px; }
+.chase-card-shop { display: block; margin: 0 0 12px; padding: 9px 12px; border-radius: 14px; background: #eef7ff; border: 2px solid #b9dcf7; color: #2d5f8f; font-weight: 800; font-size: 14px; text-decoration: none; }
+.games-top { display: flex; align-items: center; gap: 8px; }
+.games-coins { background: #fff3c2; border: 2px solid #f0cf6a; color: #7a5410; font-weight: 900; border-radius: 999px; padding: 5px 11px; font-size: 14px; }

@@ -1,0 +1,87 @@
+/* Personage (character.js): gekleurde illustratie + getekende lagen + emotie-bewegingen.
+   .char-render vult het vak van de aanroeper; .char-stage is de passende "container" met de juiste verhouding. */
+.char-render { display: block; width: 100%; height: 100%; position: relative; container-type: size; }
+.char-stage {
+  position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto;
+  width: min(100cqw, calc(100cqh * var(--ar))); height: min(100cqh, calc(100cqw / var(--ar)));
+  transform-origin: 50% 100%;
+}
+.char-render .char-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .18s; filter: drop-shadow(0 6px 8px rgba(60, 35, 10, .22)); }
+.char-render .char-base.ready { opacity: 1; }
+.char-layer { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.char-fx { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+
+/* ---------- Bewegingen per emotie ---------- */
+.m-idle { animation: chBreathe 3.6s ease-in-out infinite; }
+.m-happy { animation: chBounce .9s ease-in-out infinite; }
+.m-celebrate { animation: chJump .72s ease-in-out infinite; }
+.m-thinking { animation: chTilt 2.6s ease-in-out infinite; }
+.m-encouraging { animation: chNod 1.3s ease-in-out infinite; }
+.m-surprised { animation: chPop .55s cubic-bezier(.2, 1.6, .4, 1) 1, chBreathe 3.2s ease-in-out .55s infinite; }
+.m-proud { animation: chProud 2.6s ease-in-out infinite; }
+.m-listening { animation: chLean 2.2s ease-in-out infinite; }
+.m-wave { animation: chSway 1.2s ease-in-out infinite; }
+.m-sad { animation: chDroop 2.8s ease-in-out infinite; }
+@keyframes chBreathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.012, .988); } }
+@keyframes chBounce { 0%, 100% { transform: translateY(0) scale(1, 1); } 40% { transform: translateY(-5%) scale(.98, 1.03); } 70% { transform: translateY(0) scale(1.03, .96); } }
+@keyframes chJump { 0%, 100% { transform: translateY(0) rotate(0) scale(1.02, .97); } 45% { transform: translateY(-9%) rotate(-3deg) scale(.97, 1.04); } 75% { transform: translateY(0) rotate(2deg); } }
+@keyframes chTilt { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-4.5deg) translateX(-1%); } }
+@keyframes chNod { 0%, 100% { transform: scale(1); } 30% { transform: scale(1.02, .975) translateY(1%); } 60% { transform: scale(.99, 1.015); } }
+@keyframes chPop { 0% { transform: scale(.85, .85); } 60% { transform: scale(1.1, 1.12); } 100% { transform: scale(1); } }
+@keyframes chProud { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035, 1.045); } }
+@keyframes chLean { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(2.5deg) translateX(1%); } }
+@keyframes chSway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes chDroop { 0%, 100% { transform: scale(1, .985) translateY(.8%); } 50% { transform: scale(1, .97) translateY(1.6%); } }
+
+/* ---------- Effecten rond het hoofd / de hand ---------- */
+.char-fx > * { position: absolute; font-style: normal; line-height: 1; }
+.fx-heart { left: calc(var(--hx) + var(--x, 0px)); top: calc(var(--hy) - 6%); font-size: 9cqw; color: #ff4f73; opacity: 0; animation: fxHeart 1.9s ease-out infinite var(--d, 0s); }
+@keyframes fxHeart { 0% { opacity: 0; transform: translate(-50%, 6cqh) scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -16cqh) scale(1.1); } }
+.fx-conf { left: calc(var(--hx) + var(--x, 0px)); top: -4%; width: 3cqw; height: 5cqw; background: var(--c, #ffd23f); border-radius: 1px; opacity: 0; animation: fxFall 1.7s linear infinite var(--d, 0s); }
+@keyframes fxFall { 0% { opacity: 0; transform: translateY(0) rotate(0); } 12% { opacity: 1; } 100% { opacity: 0; transform: translateY(46cqh) rotate(300deg); } }
+.fx-spark { left: calc(var(--hx) - 22%); top: calc(var(--hy) - 12%); font-size: 11cqw; opacity: 0; animation: fxSpark 1.5s ease-in-out infinite var(--d, 0s); }
+@keyframes fxSpark { 0%, 100% { opacity: 0; transform: scale(.4) rotate(0); } 50% { opacity: 1; transform: scale(1.1) rotate(20deg); } }
+.fx-think { left: calc(var(--hx) + 18%); top: calc(var(--hy) - 17%); font-size: 20cqw; animation: chBreathe 2.4s ease-in-out infinite; }
+.fx-q { left: calc(var(--hx) + 26%); top: calc(var(--hy) - 13%); font-size: 10cqw; font-weight: 900; color: #5b3a8a; font-family: "Nunito", sans-serif; }
+.fx-pop { left: calc(var(--hx) + 20%); top: calc(var(--hy) - 6%); font-size: 15cqw; animation: chPop .6s cubic-bezier(.2, 1.6, .4, 1) infinite alternate; }
+.fx-bang { left: calc(var(--hx) + 18%); top: calc(var(--hy) - 17%); font-size: 20cqw; font-weight: 900; color: #e5304a; font-family: "Nunito", sans-serif; animation: fxShake .5s ease-in-out infinite; }
+@keyframes fxShake { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+.fx-wave { left: calc(var(--hx) + 20%); top: calc(var(--hy) - 6%); width: 16cqw; height: 16cqw; opacity: .9; animation: fxWave 1.3s ease-in-out infinite; }
+@keyframes fxWave { 0%, 100% { opacity: .35; transform: translateX(0); } 50% { opacity: 1; transform: translateX(4%); } }
+.fx-hand { left: calc(var(--rx) - 8%); top: calc(var(--ry) - 14%); font-size: 15cqw; transform-origin: 70% 90%; animation: fxHand .55s ease-in-out infinite alternate; }
+@keyframes fxHand { from { transform: rotate(-18deg); } to { transform: rotate(22deg); } }
+.fx-drop { left: calc(var(--hx) + 16%); top: calc(var(--hy) + 2%); font-size: 9cqw; opacity: 0; animation: fxDrop 1.8s ease-in infinite; }
+@keyframes fxDrop { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(14cqh); } }
+
+@media (prefers-reduced-motion: reduce) { .char-stage, .char-fx > * { animation: none !important; } .fx-heart, .fx-conf, .fx-drop { display: none; } }
+
+/* Kleine avatars (kop van het home-scherm, profielkaarten): alleen het hoofd, zonder beweging. */
+.ahc-avatar-mini .char-stage, .pcb-character .char-stage { animation: none; transform: scale(2.5); transform-origin: 50% 9%; }
+.ahc-avatar-mini .char-fx, .pcb-character .char-fx { display: none; }
+.ahc-avatar-mini, .pcb-character { overflow: hidden; }
+
+/* ---------- Personagemaker + kledingkast/winkel ---------- */
+.cc-preview-big { width: 190px; height: 300px; }
+.cc-preview-wardrobe.wd-preview { width: 190px; height: 290px; margin: 6px auto 8px; }
+.cc-swatch.sel, .cc-pick.sel { outline: 4px solid var(--gold, #c9973a); outline-offset: 2px; }
+.wd-coins { justify-self: end; background: #fff3c2; border: 2px solid #f0cf6a; color: #7a5410; font-weight: 900; border-radius: 999px; padding: 6px 12px; font-size: 15px; }
+.wardrobe-tab span { font-size: 16px; }
+.wd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; padding-bottom: 90px; }
+.wd-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 6px 10px; border: 3px solid transparent; border-radius: 18px; background: var(--card, #fff); box-shadow: 0 4px 0 var(--gold-light, #f0d9a0), 0 8px 14px rgba(120, 80, 20, .1); font-family: inherit; color: var(--ink, #3a2410); min-height: 118px; }
+.wd-item.equipped { border-color: var(--gold, #c9973a); background: #fff8e4; }
+.wd-item.trying { border-color: #3a8fd9; background: #eef7ff; }
+.wd-item.later { opacity: .6; }
+.wd-dot { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(0, 0, 0, .12), inset 0 -6px 10px rgba(0, 0, 0, .1); }
+.wd-icon { font-size: 40px; line-height: 46px; height: 46px; }
+.wd-label { font-size: 12px; font-weight: 800; text-align: center; line-height: 1.2; }
+.wd-price { background: #fff3c2; border: 2px solid #f0cf6a; color: #7a5410; font-weight: 900; font-size: 12px; border-radius: 999px; padding: 2px 9px; }
+.wd-price.poor { background: #f1ece0; border-color: #ddd3bd; color: #9a8f78; }
+.wd-later { font-size: 10px; color: var(--muted, #8a7a60); font-weight: 700; text-align: center; }
+.wd-tag.on { position: absolute; top: 6px; right: 6px; background: var(--color-success, #58cc02); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; }
+.wd-item.shake { animation: wdShake .4s; }
+@keyframes wdShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.wd-bar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; margin: 0 0 10px; padding: 10px 12px; background: #eef7ff; border: 2px solid #b9dcf7; border-radius: 16px; }
+.wd-bar-txt { font-weight: 800; font-size: 13px; color: #2d5f8f; text-align: center; flex: 1 1 100%; }
+.wd-buy { width: auto; padding: 10px 22px; margin: 0; }
+.wd-buy:disabled { opacity: .5; }
+.wd-poor { font-size: 12px; font-weight: 800; color: #9a6a2a; }

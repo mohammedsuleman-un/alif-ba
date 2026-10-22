@@ -357,58 +357,60 @@
   }
 
   // ---------- Personage maken (onboarding-wizard) ----------
-  // Draait volledig lokaal binnen dit scherm (geen sub-routes nodig): een klein
-  // stappenplan met live preview. Wordt getoond zodra een profiel nog geen
-  // avatarConfigured heeft (nieuw profiel, of een bestaand profiel van vóór
-  // deze functie — zie gameRoute()).
+  // Een klein stappenplan met live preview: jongen/meisje → huidskleur (3) → kleur van je kleding →
+  // (meisje) hijabkleur. Alles verder (accessoires, meer kleuren) koop je later in de kledingkast.
+  const WT = {
+    nl: { coins: "munten", buy: "Koop", none: "Geen", soon: (n) => `Over ${n} ${n === 1 ? "niveau" : "niveaus"}`, poor: (n) => `Nog ${n} munten nodig`, bought: "Gekocht!", tryHint: "Je past dit nu. Koop het om het te houden.", free: "Gratis" },
+    en: { coins: "coins", buy: "Buy", none: "None", soon: (n) => `In ${n} ${n === 1 ? "level" : "levels"}`, poor: (n) => `${n} more coins needed`, bought: "Bought!", tryHint: "You're trying this on. Buy it to keep it.", free: "Free" },
+    ar: { coins: "قطع", buy: "اشترِ", none: "بدون", soon: (n) => `بعد ${n} ${n === 1 ? "مستوى" : "مستويات"}`, poor: (n) => `تحتاج ${n} قطعة أخرى`, bought: "تم الشراء!", tryHint: "تجرّب هذا الآن. اشتره لتحتفظ به.", free: "مجاني" },
+    tr: { coins: "jeton", buy: "Al", none: "Yok", soon: (n) => `${n} seviye sonra`, poor: (n) => `${n} jeton daha gerek`, bought: "Alındı!", tryHint: "Şimdi deniyorsun. Sahip olmak için satın al.", free: "Ücretsiz" },
+  };
+  const WTx = () => WT[glang()] || WT.nl;
+  const swatchOf = (id) => (Character.itemById(id) || {}).swatch || "#ddd";
+
   function renderCharacterCreator() {
     const t = GT();
     document.documentElement.dir = t.dir;
     let step = 0;
-    const choice = { type: null, skinTone: window.CHARACTER.skinTones[1], outfit: null, hijab: null };
-    // Jongens slaan de hijab-stap over: hun laatste stap (voor de bevestiging) is outfit (2), meisjes hijab (3).
+    const tones = window.CHARACTER.skinTones;
+    const choice = { type: null, skin: "medium", outfit: null, hijab: null };
     const confirmStep = () => (choice.type === "girl" ? 4 : 3);
     const isLastStep = () => step === confirmStep();
+    const starterOf = (type, cat) => Character.itemsByCategory(type, cat).filter((i) => i.price === 0);
 
-    const previewCfg = () => ({
-      type: choice.type || "boy",
-      skinTone: choice.skinTone,
-      outfit: choice.outfit || (choice.type === "girl" ? "outfit_girl_starter" : "outfit_boy_starter"),
-      hijab: choice.hijab || "hijab_rose",
-      shoes: "shoes_brown",
-      accessory: "acc_none",
-    });
+    const previewCfg = () => {
+      const type = choice.type || "boy";
+      return { type, skin: choice.skin, outfit: choice.outfit || (type === "girl" ? "dress_cream" : "thobe_cream"), hijab: choice.hijab || "hijab_pink" };
+    };
 
     function renderStep() {
-      const preview = `<div class="cc-preview">${Character.svg(previewCfg(), "wave")}</div>`;
+      const preview = `<div class="cc-preview cc-preview-big">${Character.svg(previewCfg(), step === 0 ? "wave" : "happy")}</div>`;
       let body = "";
       if (step === 0) {
         body = `
           <h2>${t.chooseGender}</h2>
           <div class="cc-choices cc-choices-2">
-            <button type="button" class="cc-pick" data-v="boy">🧑</button>
-            <button type="button" class="cc-pick" data-v="girl">👧</button>
+            <button type="button" class="cc-pick ${choice.type === "boy" ? "sel" : ""}" data-v="boy">🧑</button>
+            <button type="button" class="cc-pick ${choice.type === "girl" ? "sel" : ""}" data-v="girl">👧</button>
           </div>
           <div class="cc-labels"><span>${t.boy}</span><span>${t.girl}</span></div>`;
       } else if (step === 1) {
         body = `
           <h2>${t.chooseSkin}</h2>
           <div class="cc-choices cc-swatches">
-            ${window.CHARACTER.skinTones.map((c) => `<button type="button" class="cc-swatch ${c === choice.skinTone ? "sel" : ""}" data-v="${c}" style="background:${c}"></button>`).join("")}
+            ${tones.map((s) => `<button type="button" class="cc-swatch ${s.id === choice.skin ? "sel" : ""}" data-v="${s.id}" style="background:${s.swatch}"></button>`).join("")}
           </div>`;
       } else if (step === 2) {
-        const outfits = Character.itemsByCategory(choice.type, "outfit").filter((i) => i.unlockType === "starter");
         body = `
           <h2>${t.chooseOutfit}</h2>
           <div class="cc-choices cc-outfits">
-            ${outfits.map((i) => `<button type="button" class="cc-pick cc-outfit-pick ${i.id === choice.outfit ? "sel" : ""}" data-v="${i.id}" style="background:${i.color}"></button>`).join("")}
+            ${starterOf(choice.type, "outfit").map((i) => `<button type="button" class="cc-swatch ${i.id === choice.outfit ? "sel" : ""}" data-v="${i.id}" style="background:${i.swatch}"></button>`).join("")}
           </div>`;
       } else if (step === 3 && choice.type === "girl") {
-        const hijabs = Character.itemsByCategory("girl", "hijab").filter((i) => i.unlockType === "starter");
         body = `
           <h2>${t.chooseHijab}</h2>
           <div class="cc-choices cc-outfits">
-            ${hijabs.map((i) => `<button type="button" class="cc-pick cc-outfit-pick ${i.id === choice.hijab ? "sel" : ""}" data-v="${i.id}" style="background:${i.color}"></button>`).join("")}
+            ${starterOf("girl", "hijab").map((i) => `<button type="button" class="cc-swatch ${i.id === choice.hijab ? "sel" : ""}" data-v="${i.id}" style="background:${i.swatch}"></button>`).join("")}
           </div>`;
       } else {
         body = `<h2>${t.meetCharacter}</h2>`;
@@ -421,8 +423,8 @@
         </div>`;
       scr.charCreate.querySelectorAll(".cc-pick, .cc-swatch").forEach((b) => (b.onclick = () => {
         const v = b.dataset.v;
-        if (step === 0) choice.type = v;
-        else if (step === 1) choice.skinTone = v;
+        if (step === 0) { choice.type = v; choice.outfit = null; choice.hijab = null; }
+        else if (step === 1) choice.skin = v;
         else if (step === 2) choice.outfit = v;
         else if (step === 3) choice.hijab = v;
         renderStep();
@@ -432,14 +434,13 @@
         sfx.tap();
         if (isLastStep()) return finish();
         step++;
+        if (step === 2 && !choice.outfit) choice.outfit = starterOf(choice.type, "outfit")[0].id;
+        if (step === 3 && choice.type === "girl" && !choice.hijab) choice.hijab = starterOf("girl", "hijab")[0].id;
         renderStep();
       };
     }
     function canAdvance() {
       if (step === 0) return !!choice.type;
-      if (step === 1) return !!choice.skinTone;
-      if (step === 2) return !!choice.outfit;
-      if (step === 3) return choice.type !== "girl" || !!choice.hijab;
       return true;
     }
     function finish() {
@@ -449,58 +450,78 @@
     renderStep();
   }
 
-  // ---------- Kledingkast ----------
+  // ---------- Kledingkast + winkel ----------
+  // Items gratis aan (startkleuren) of gekocht met munten. Nieuwe voorraad komt elke ~3 voltooide niveaus
+  // in de winkel (item.shelf). Een item dat nog niet van jou is kun je eerst "passen" (preview) en daarna kopen.
   function renderWardrobe() {
-    const t = GT();
+    const t = GT(), w = WTx(), pid = activeProfile.id;
     document.documentElement.dir = t.dir;
-    let cfg = Character.getConfig(activeProfile.id);
-    const CATS = ["outfit", "hijab", "shoes", "accessory"];
-    const catLabel = { outfit: t.categoryOutfit, hijab: t.categoryHijab, shoes: t.categoryShoes, accessory: t.categoryAccessory };
+    let cfg = Character.getConfig(pid);
+    const cats = Character.categoriesFor(cfg.type);
     let activeCat = "outfit";
+    let tryItem = null;           // item dat je past maar nog niet bezit
+    let mood = "wave", moodTimer = null;
+    const REMOVABLE = ["head", "face", "neck", "hand", "back", "pet"];
 
-    function unlockHint(item) {
-      if (item.unlockType === "level") return t.unlockAtLevel(item.unlockValue);
-      if (item.unlockType === "stars") return t.unlockAtStars(item.unlockValue);
-      if (item.unlockType === "world") return t.unlockAtWorld;
-      return "";
+    function setMood(m, ms) {
+      mood = m; clearTimeout(moodTimer);
+      if (ms) moodTimer = setTimeout(() => { mood = "wave"; if (active()) render(); }, ms);
+    }
+    const active = () => !scr.wardrobe.hidden;
+
+    function cardFor(i, owned, equipped) {
+      const onShelf = Character.onShelf(pid, i);
+      const state = owned ? "owned" : onShelf ? "shop" : "later";
+      const coins = Character.coins(pid);
+      const visual = i.icon ? `<span class="wd-icon">${i.icon}</span>` : `<span class="wd-dot" style="background:${i.swatch}"></span>`;
+      const foot = owned ? (equipped ? `<span class="wd-tag on">✓</span>` : "")
+        : onShelf ? `<span class="wd-price ${coins >= i.price ? "" : "poor"}">🪙 ${i.price}</span>`
+        : `<span class="wd-later">🔒 ${w.soon(Character.levelsUntil(pid, i))}</span>`;
+      return `<button type="button" class="wd-item ${state} ${equipped ? "equipped" : ""} ${tryItem && tryItem.id === i.id ? "trying" : ""}" data-id="${i.id}" data-s="${state}">
+        ${visual}<span class="wd-label">${gsub(i.label)}</span>${foot}</button>`;
     }
 
     function render() {
-      const cats = CATS.filter((c) => c !== "hijab" || cfg.type === "girl");
-      const items = Character.itemsByCategory(cfg.type, activeCat);
-      const unlocked = Character.getUnlocked(activeProfile.id);
+      const owned = Character.getUnlocked(pid), coins = Character.coins(pid);
+      const prevCfg = tryItem ? { ...cfg, [tryItem.category]: tryItem.id } : cfg;
+      const tabs = cats.map((c) => `<button type="button" class="wardrobe-tab ${c.id === activeCat ? "sel" : ""}" data-c="${c.id}"><span>${c.icon}</span> ${gsub(c.label)}</button>`).join("");
+      let grid = "";
+      if (activeCat === "skin") {
+        grid = window.CHARACTER.skinTones.map((s) => `<button type="button" class="wd-item owned ${cfg.skin === s.id ? "equipped" : ""}" data-skin="${s.id}"><span class="wd-dot" style="background:${s.swatch}"></span>${cfg.skin === s.id ? `<span class="wd-tag on">✓</span>` : ""}</button>`).join("");
+      } else {
+        const items = Character.itemsByCategory(cfg.type, activeCat).slice().sort((a, b) => (owned.includes(a.id) || a.price === 0 ? 0 : 1) - (owned.includes(b.id) || b.price === 0 ? 0 : 1) || a.shelf - b.shelf);
+        const none = REMOVABLE.includes(activeCat) ? `<button type="button" class="wd-item owned ${cfg[activeCat] ? "" : "equipped"}" data-none="1"><span class="wd-icon">✕</span><span class="wd-label">${w.none}</span>${cfg[activeCat] ? "" : `<span class="wd-tag on">✓</span>`}</button>` : "";
+        grid = none + items.map((i) => cardFor(i, owned.includes(i.id) || i.price === 0, cfg[activeCat] === i.id)).join("");
+      }
+      const bar = tryItem ? `<div class="wd-bar"><span class="wd-bar-txt">${gsub(tryItem.label)} · ${w.tryHint}</span>
+        <button type="button" id="wdBuy" class="g-cta wd-buy" ${coins >= tryItem.price ? "" : "disabled"}>${w.buy} · 🪙 ${tryItem.price}</button>
+        ${coins >= tryItem.price ? "" : `<span class="wd-poor">${w.poor(tryItem.price - coins)}</span>`}</div>` : "";
       scr.wardrobe.innerHTML = `
         <div class="g-profile-head">
           <a href="#/spel/wereld/letter_oasis" class="g-back-book">←</a>
           <h2 class="g-who" style="margin:0;font-size:18px;">${t.wardrobeTitle}</h2>
-          <span></span>
+          <span class="wd-coins">🪙 ${coins}</span>
         </div>
-        <div class="cc-preview cc-preview-wardrobe">${Character.svg(cfg, "happy")}</div>
-        <div class="wardrobe-tabs">${cats.map((c) => `<button type="button" class="wardrobe-tab ${c === activeCat ? "sel" : ""}" data-c="${c}">${catLabel[c]}</button>`).join("")}</div>
-        <div class="wardrobe-grid">
-          ${items.map((i) => {
-            const isUnlocked = unlocked.includes(i.id);
-            const isEquipped = cfg[i.category] === i.id;
-            // Illustratie-thumbnail i.p.v. vlakke kleurcirkel zodra het item een
-            // aangeleverde asset heeft (welke mood dan ook — puur als voorbeeld-
-            // beeld); anders blijft de kleurcirkel de nette placeholder.
-            const thumbSrc = i.assets && Object.values(i.assets)[0];
-            const swatch = thumbSrc
-              ? `<span class="wardrobe-swatch wardrobe-swatch-img" style="background:${i.color || "#ddd"}"><img src="${thumbSrc}" alt="" onerror="this.remove()" />${isUnlocked ? "" : "🔒"}</span>`
-              : `<span class="wardrobe-swatch" style="background:${i.color || "#ddd"}">${isUnlocked ? "" : "🔒"}</span>`;
-            return `<button type="button" class="wardrobe-item ${isEquipped ? "equipped" : ""} ${isUnlocked ? "" : "locked"}" data-id="${i.id}" ${isUnlocked ? "" : "disabled"}>
-              ${swatch}
-              <span class="wardrobe-label">${gsub(i.label)}</span>
-              ${!isUnlocked ? `<span class="wardrobe-hint">${unlockHint(i)}</span>` : ""}
-            </button>`;
-          }).join("")}
-        </div>`;
-      scr.wardrobe.querySelectorAll(".wardrobe-tab").forEach((b) => (b.onclick = () => { activeCat = b.dataset.c; render(); }));
-      scr.wardrobe.querySelectorAll(".wardrobe-item:not(.locked)").forEach((b) => (b.onclick = () => {
-        cfg = Character.saveConfig(activeProfile.id, { [activeCat]: b.dataset.id });
-        sfx.tap();
-        render();
+        <div class="cc-preview cc-preview-wardrobe wd-preview">${Character.svg(prevCfg, mood)}</div>
+        ${bar}
+        <div class="wardrobe-tabs">${tabs}</div>
+        <div class="wd-grid">${grid}</div>`;
+      scr.wardrobe.querySelectorAll(".wardrobe-tab").forEach((b) => (b.onclick = () => { activeCat = b.dataset.c; tryItem = null; render(); }));
+      scr.wardrobe.querySelectorAll("[data-skin]").forEach((b) => (b.onclick = () => { cfg = Character.saveConfig(pid, { skin: b.dataset.skin }); tryItem = null; sfx.tap(); setMood("happy", 1600); render(); }));
+      scr.wardrobe.querySelectorAll("[data-none]").forEach((b) => (b.onclick = () => { cfg = Character.saveConfig(pid, { [activeCat]: null }); tryItem = null; sfx.tap(); render(); }));
+      scr.wardrobe.querySelectorAll(".wd-item[data-id]").forEach((b) => (b.onclick = () => {
+        const it = Character.itemById(b.dataset.id), st = b.dataset.s;
+        if (st === "owned") { cfg = Character.saveConfig(pid, { [it.category]: it.id }); tryItem = null; sfx.tap(); setMood("happy", 1600); render(); }
+        else if (st === "shop") { tryItem = it; sfx.tap(); setMood("happy", 1600); render(); }
+        else { b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); }
       }));
+      const buy = $("wdBuy");
+      if (buy) buy.onclick = () => {
+        const r = Character.buy(pid, tryItem.id);
+        if (!r.ok) return;
+        cfg = Character.saveConfig(pid, { [tryItem.category]: tryItem.id });
+        tryItem = null; sfx.fireworks(); setMood("celebrate", 2200); render();
+      };
     }
     render();
   }
