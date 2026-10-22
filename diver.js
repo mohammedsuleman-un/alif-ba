@@ -28,10 +28,11 @@
   };
   const tx = () => TXT[lang()] || TXT.nl;
 
-  let LETTERS = MG.group(0);
+  let curLevel = 0;
   function buildMissions() {
-    LETTERS = MG.group(MG.currentLevel(profileId));
-    return shuffle(LETTERS).map((target, i) => ({ target, need: [1, 2, 3, 3][Math.min(i, 3)] }));
+    // Alle nieuwe letters van het niveau + herhaling; afleiders komen uit de hele pool van het niveau.
+    curLevel = MG.currentLevel(profileId);
+    return MG.missionTargets(curLevel).map((target, i) => ({ target, need: [1, 2, 3, 3, 3][Math.min(i, 4)] }));
   }
 
   // ---------- Illustraties (SVG, 2x resolutie) ----------
@@ -472,7 +473,7 @@
       buildShells() {
         (this.shells || []).forEach((s) => s.c.destroy());
         const { W, H, r } = this.L, m = this.mission;
-        const others = LETTERS.filter((l) => l !== m.target);
+        const others = MG.distractors(curLevel, m.target, 4);
         const letters = shuffle([...Array(m.need + 1).fill(m.target), ...Array.from({ length: 4 }, (_, i) => others[i % others.length])]);
         const pts = [], minD = r * 4.7;
         letters.forEach((letter) => {

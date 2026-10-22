@@ -36,17 +36,15 @@
   // ---------- Missies ----------
   const MG = window.MiniGames;
   const shuffle = MG.shuffle;
-  let LETTERS = MG.group(0);
-
-  // Elke letter van de huidige groep is een missie; de andere letters zijn afleiders.
+  // Missies van het huidige niveau: alle nieuwe letters + herhaal-letters; afleiders komen uit de hele pool.
   function buildMissions() {
-    LETTERS = MG.group(MG.currentLevel(profileId));
+    const lvl = MG.currentLevel(profileId);
     const cfgs = [{ moving: false, speed: 0, count: 3 }, { moving: true, speed: 0.4, count: 3 }, { moving: true, speed: 0.65, count: 4 }];
-    return shuffle(LETTERS).map((target, i) => {
+    return MG.missionTargets(lvl).map((target, i) => {
       const cfg = cfgs[Math.min(i, 2)];
-      const others = shuffle(LETTERS.filter((l) => l !== target));
-      const letters = [target, others[0], others[1]];
-      if (cfg.count === 4) letters.push(others[2] || others[0]);
+      const d = MG.distractors(lvl, target, 3);
+      const letters = [target, d[0], d[1]];
+      if (cfg.count === 4) letters.push(d[2]);
       return { target, letters: shuffle(letters), moving: cfg.moving, speed: cfg.speed };
     });
   }

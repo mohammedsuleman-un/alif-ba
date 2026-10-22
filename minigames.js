@@ -21,7 +21,7 @@
       sub: { nl: "Maak de alfabetrij af en steek over", en: "Complete the alphabet row and cross", ar: "أكمل صف الحروف واعبر", tr: "Alfabe sırasını tamamla ve geç" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
-  const GROUP_LABEL = { nl: "Kies de letters", en: "Pick the letters", ar: "اختر الحروف", tr: "Harfleri seç" };
+  const GROUP_LABEL = { nl: "Jouw route", en: "Your path", ar: "مسارك", tr: "Yolun" };
   const BACK = { nl: "Terug", en: "Back", ar: "رجوع", tr: "Geri" };
 
   let active = false;
@@ -63,13 +63,27 @@
     renderLevels();
   }
 
-  // Letter-groepen (heel het alfabet): kies waarmee je oefent; voltooide groepen krijgen een vinkje.
+  // Vaste route: niveaus komen na elkaar vrij; elk niveau voegt letters toe en herhaalt de eerdere.
+  // Gedaan = vinkje (opnieuw te spelen), huidig = gemarkeerd, rest = op slot.
+  const ROUTE_TXT = {
+    nl: { title: "Jouw route", level: "Niveau", of: "van", fresh: "Nieuw", review: "+ herhaling", locked: "Nog op slot" },
+    en: { title: "Your path", level: "Level", of: "of", fresh: "New", review: "+ review", locked: "Locked" },
+    ar: { title: "مسارك", level: "المستوى", of: "من", fresh: "جديد", review: "+ مراجعة", locked: "مغلق" },
+    tr: { title: "Yolun", level: "Seviye", of: "/", fresh: "Yeni", review: "+ tekrar", locked: "Kilitli" },
+  };
   function renderLevels() {
     const MG = window.MiniGames, el = $("gamesLevels"), pid = store.get("gp_active", null);
     if (!MG || !el || !pid) return;
-    const cur = MG.currentLevel(pid), done = MG.doneLevels(pid);
-    el.innerHTML = MG.GROUPS.map((g, i) => `<button class="games-level ${i === cur ? "is-current" : ""} ${done.includes(i) ? "is-done" : ""}" data-i="${i}"><span lang="ar" dir="rtl">${g.join(" ")}</span>${done.includes(i) ? "<i>✓</i>" : ""}</button>`).join("");
-    el.querySelectorAll(".games-level").forEach((b) => { b.onclick = () => { MG.setLevel(pid, +b.dataset.i); renderLevels(); }; });
+    const t = ROUTE_TXT[lang()] || ROUTE_TXT.nl;
+    const cur = MG.currentLevel(pid), unlocked = MG.unlockedLevel(pid), done = MG.doneLevels(pid), total = MG.GROUPS.length;
+    const nodes = MG.GROUPS.map((g, i) => {
+      const state = i === cur ? "is-current" : done.includes(i) ? "is-done" : i <= unlocked ? "is-open" : "is-locked";
+      const mark = state === "is-locked" ? "🔒" : done.includes(i) ? "✓" : "";
+      return `<button class="route-node ${state}" data-i="${i}" ${i > unlocked ? "disabled" : ""} aria-label="${t.level} ${i + 1}">
+        <span class="route-num">${i + 1}</span><span class="route-letters" lang="ar" dir="rtl">${g.join(" ")}</span>${mark ? `<i>${mark}</i>` : ""}</button>`;
+    }).join("");
+    el.innerHTML = `<p class="route-now">${t.level} ${cur + 1} ${t.of} ${total} · ${t.fresh}: <b lang="ar" dir="rtl">${MG.GROUPS[cur].join(" ")}</b>${cur > 0 ? " " + t.review : ""}</p><div class="route-path">${nodes}</div>`;
+    el.querySelectorAll(".route-node:not([disabled])").forEach((b) => { b.onclick = () => { MG.setPlay(pid, +b.dataset.i); renderLevels(); }; });
   }
 
   function route() {

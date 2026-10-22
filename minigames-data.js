@@ -19,25 +19,63 @@
 
   const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [r[i], r[j]] = [r[j], r[i]]; } return r; };
 
+  // ---------- Levels: vaste route, elk niveau voegt letters toe en herhaalt de eerdere ----------
+  // Niveau n = nieuwe letters GROUPS[n]; de oefenpool is alle letters t/m dat niveau.
+  const pool = (level) => GROUPS.slice(0, level + 1).flat();
+
+  // Doelletters van een niveau: alle nieuwe letters + een paar herhaal-letters (max 5 missies).
+  function missionTargets(level) {
+    const fresh = shuffle(GROUPS[level]);
+    let review = [];
+    if (level > 0) {
+      const prev = shuffle(pool(level - 1));
+      review = prev.slice(0, Math.max(1, Math.min(2, 5 - fresh.length, prev.length)));
+    }
+    const all = [...fresh, ...review].slice(0, 5);
+    const out = shuffle(all);
+    if (!GROUPS[level].includes(out[0])) { const i = out.findIndex((l) => GROUPS[level].includes(l)); [out[0], out[i]] = [out[i], out[0]]; } // eerste missie = een nieuwe letter
+    return out;
+  }
+
+  // Afleiders voor een doelletter: eerst lijkende letters uit dezelfde groep, daarna de rest van de pool.
+  function distractors(level, target, n) {
+    const own = GROUPS.find((g) => g.includes(target)) || [];
+    const cand = pool(level).filter((l) => l !== target);
+    const list = [...shuffle(cand.filter((l) => own.includes(l))), ...shuffle(cand.filter((l) => !own.includes(l)))];
+    if (!list.length) return [];
+    return Array.from({ length: n }, (_, i) => list[i % list.length]);
+  }
+
   // ---------- Voortgang ----------
+  // unlocked = hoogste vrijgespeelde niveau; play = niveau dat nu gespeeld wordt (standaard = unlocked,
+  // of een eerder behaald niveau dat het kind opnieuw speelt).
   const key = (pid) => `gp_mini_${pid}`;
-  function load(pid) { return store.get(key(pid), { level: 0, done: [] }); }
-  function currentLevel(pid) { return Math.min(load(pid).level || 0, GROUPS.length - 1); }
-  function setLevel(pid, n) { const d = load(pid); d.level = Math.max(0, Math.min(GROUPS.length - 1, n)); store.set(key(pid), d); }
+  const LAST = GROUPS.length - 1;
+  function load(pid) {
+    const d = store.get(key(pid), null) || {};
+    const done = Array.isArray(d.done) ? d.done : [];
+    const unlocked = Math.min(LAST, Math.max(d.unlocked || 0, d.level || 0)); // 'level' = oude opslag
+    return { unlocked, play: Math.min(d.play == null ? unlocked : d.play, unlocked), done };
+  }
+  const save = (pid, d) => store.set(key(pid), d);
+  const currentLevel = (pid) => load(pid).play;
+  const unlockedLevel = (pid) => load(pid).unlocked;
+  const doneLevels = (pid) => load(pid).done;
+  function setPlay(pid, n) { const d = load(pid); if (n >= 0 && n <= d.unlocked) { d.play = n; save(pid, d); } }
   function completeLevel(pid, n) {
     const d = load(pid);
     if (!d.done.includes(n)) d.done.push(n);
-    d.level = Math.min(n + 1, GROUPS.length - 1);
-    store.set(key(pid), d);
+    if (n >= d.unlocked) d.unlocked = Math.min(LAST, n + 1);
+    d.play = d.unlocked; // door naar het volgende niveau
+    save(pid, d);
   }
-  function doneLevels(pid) { return load(pid).done; }
 
   // ---------- Teksten ----------
   const SAY = {
-    nl: { ok: "Goed zo!", no: "Probeer nog eens", next: "Volgende groep", group: "Groep" },
-    en: { ok: "Well done!", no: "Try again", next: "Next group", group: "Group" },
-    ar: { ok: "أحسنت!", no: "حاول مرة أخرى", next: "المجموعة التالية", group: "المجموعة" },
-    tr: { ok: "Aferin!", no: "Tekrar dene", next: "Sonraki grup", group: "Grup" },
+    nl: { ok: "Goed zo!", no: "Probeer nog eens", next: "Volgend niveau", level: "Niveau" },
+    en: { ok: "Well done!", no: "Try again", next: "Next level", level: "Level" },
+    ar: { ok: "أحسنت!", no: "حاول مرة أخرى", next: "المستوى التالي", level: "المستوى" },
+    tr: { ok: "Aferin!", no: "Tekrar dene", next: "Sonraki seviye", level: "Seviye" },
   };
   const say = (k) => (SAY[lang()] || SAY.nl)[k];
 
@@ -82,11 +120,12 @@
   function finish(ov, { pid, level, stars, onAgain, onBack }) {
     completeLevel(pid, level);
     const e = END[lang()] || END.nl;
-    const hasNext = level + 1 < GROUPS.length;
+    const hasNext = currentLevel(pid) !== level; // het volgende niveau is nu vrijgespeeld
     ov.hidden = false;
     ov.innerHTML = `
       <div class="chase-card">
         <h2>${e.good}</h2>
+        <p class="chase-card-level">${say("level")} ${level + 1}</p>
         <span class="chase-card-letter" lang="ar" dir="rtl">${GROUPS[level].join(" ")}</span>
         <p class="chase-card-score">${"⭐".repeat(Math.max(1, stars))}</p>
         ${hasNext ? `<button id="mgNext" class="chase-cta chase-cta-primary">${say("next")} →</button>` : ""}
@@ -94,9 +133,8 @@
         <button id="mgBack" class="chase-cta chase-cta-ghost">${e.back}</button>
       </div>`;
     const go = () => { ov.hidden = true; onAgain(); };
-    if (hasNext) ov.querySelector("#mgNext").onclick = go; // voortgang staat al op de volgende groep
-    if (!hasNext) setLevel(pid, level);
-    ov.querySelector("#mgAgain").onclick = () => { setLevel(pid, level); go(); };
+    if (hasNext) ov.querySelector("#mgNext").onclick = go; // voortgang staat al op het volgende niveau
+    ov.querySelector("#mgAgain").onclick = () => { setPlay(pid, level); go(); };
     ov.querySelector("#mgBack").onclick = onBack;
   }
 
@@ -111,7 +149,7 @@
 
   window.MiniGames = {
     GROUPS, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
-    currentLevel, setLevel, completeLevel, doneLevels,
+    currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => GROUPS[n] || GROUPS[0],
   };
 })();

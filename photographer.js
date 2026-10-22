@@ -35,19 +35,20 @@
 
   const MG = window.MiniGames;
   const shuffle = MG.shuffle;
-  let LETTERS = MG.group(0);
   const WORLD = { w: 1700, h: 1000 };
   const ZOOMS = [0.9, 1.6, 2.6];
 
+  let curLevel = 0;
+
   function buildMissions() {
-    // Elke letter van de groep is een missie; meer tegels naarmate het spel vordert.
-    LETTERS = MG.group(MG.currentLevel(profileId));
-    return shuffle(LETTERS).map((target, i) => ({ target, count: [10, 13, 16, 16][Math.min(i, 3)] }));
+    // Alle nieuwe letters van het niveau + herhaling; meer tegels naarmate het spel vordert.
+    curLevel = MG.currentLevel(profileId);
+    return MG.missionTargets(curLevel).map((target, i) => ({ target, count: [10, 13, 16, 16, 16][Math.min(i, 4)] }));
   }
 
   // Tegels verspreid over de wereld met minimale onderlinge afstand; doel komt 2-3x voor.
   function layoutSigns(m) {
-    const others = LETTERS.filter((l) => l !== m.target);
+    const others = MG.distractors(curLevel, m.target, 4);
     const targets = 2 + (Math.random() < 0.5 ? 1 : 0);
     const letters = shuffle([...Array(targets).fill(m.target), ...Array.from({ length: m.count - targets }, (_, i) => others[i % others.length])]);
     const pts = [];
