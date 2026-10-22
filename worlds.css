@@ -35,3 +35,8 @@
 .lh-card b { font-size: 16px; }
 .lh-card small { font-weight: 700; font-size: 12px; opacity: .8; }
 .lh-card.is-locked { filter: grayscale(.8); opacity: .65; cursor: default; box-shadow: none; }
+@media (max-width: 640px) {
+  .ov-scene { min-width: 620px; }
+  .ov-soon-t { display: none; }
+  .ov-badge { min-width: 28px; height: 28px; font-size: 14px; }
+}

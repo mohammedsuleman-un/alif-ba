@@ -1280,7 +1280,7 @@
     const cur = infos.findIndex((c) => c.status === "open");
     const here = cur >= 0 ? cur : Math.max(0, infos.map((c) => c.status).lastIndexOf("done"));
     const nodes = infos.map((c, i) => {
-      const mark = c.status === "done" ? "<i class=\"ov-badge ok\">✓</i>" : c.status === "locked" ? "<i class=\"ov-badge\">🔒</i>" : c.status === "soon" ? `<i class="ov-badge soon">🚧 ${o.soon}</i>` : `<i class="ov-badge prog">${c.done}/${c.total}</i>`;
+      const mark = c.status === "done" ? "<i class=\"ov-badge ok\">✓</i>" : c.status === "locked" ? "<i class=\"ov-badge\">🔒</i>" : c.status === "soon" ? `<i class="ov-badge soon">🚧<span class="ov-soon-t"> ${o.soon}</span></i>` : `<i class="ov-badge prog">${c.done}/${c.total}</i>`;
       return `<button type="button" class="ov-node st-${c.status} ${i === here ? "is-here" : ""}" data-i="${i}" style="left:${c.ch.pos.x * 100}%;top:${c.ch.pos.y * 100}%" aria-label="${c.ch.n}. ${gsub(c.ch.title)}">${mark}</button>`;
     }).join("");
     const target = infos.find((c) => c.status === "open") || infos[0];
