@@ -93,12 +93,6 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .photo-btns { display: flex; align-items: center; gap: 18px; direction: ltr; }
 .photo-shutter { width: 76px; height: 76px; border-radius: 50%; font-size: 30px; background: linear-gradient(180deg, #7fd3e3, #3a8fd9); box-shadow: 0 4px 0 #2a6fb0, 0 8px 16px rgba(30, 80, 140, .3); }
 @media (min-width: 1024px) { .photo-shutter { width: 60px; height: 60px; font-size: 24px; } }
-.games-hub { flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; padding: 20px; align-content: start; overflow: auto; }
-.games-card { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 26px 16px; border-radius: 24px; background: #fff; text-decoration: none; color: var(--color-text); box-shadow: 0 4px 0 var(--gold-light), 0 10px 20px rgba(120, 80, 20, .14); }
-.games-card:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-light); }
-.games-icon { font-size: 48px; }
-.games-title { font-weight: 800; font-size: 20px; }
-.games-sub { font-size: 14px; color: var(--color-text-muted); }
 
 /* Feedbackbord (goed/fout), letter-groepen, Pearl Diver en Letter Bridge */
 .fb-banner { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 16px 30px; border-radius: 28px; pointer-events: none; color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .25); animation: fbPop .35s cubic-bezier(.2, 1.4, .4, 1); }
@@ -109,12 +103,6 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .fb-text { font-weight: 800; font-size: 20px; }
 @keyframes fbPop { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 0; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
-.games-levels-wrap { grid-column: 1 / -1; }
-.games-levels-title { margin: 0 0 8px; font-weight: 800; color: var(--color-text-muted); font-size: 14px; }
-.games-levels { display: flex; flex-wrap: wrap; gap: 8px; }
-.games-level { border: 2px solid var(--gold-light); background: #fff; border-radius: 14px; padding: 8px 12px; font-family: "Amiri", serif; font-weight: 700; font-size: 22px; color: var(--color-text); position: relative; }
-.games-level.is-current { border-color: var(--color-secondary); box-shadow: 0 0 0 3px rgba(58, 143, 217, .25); }
-.games-level i { position: absolute; top: -8px; right: -6px; background: var(--color-success); color: #fff; font-style: normal; font-size: 12px; font-weight: 900; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-family: inherit; }
 
 .dv-need { font-weight: 900; font-size: 22px; color: var(--color-success-strong); }
 
@@ -138,3 +126,30 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .br-explorer.is-slip { animation: brSlip .9s ease-in forwards; }
 @keyframes brSlip { 0% { transform: translate(-50%, -100%) rotate(0); } 100% { transform: translate(-50%, 20%) rotate(40deg); opacity: .5; } }
 @media (min-width: 1024px) { .chase-btn { width: 40px; height: 40px; border-radius: 12px; } .chase-btn svg { width: 18px; height: 18px; } }
+
+/* Keuze-pagina van de minigames: oase-achtergrond, gecentreerde inhoud, grote kaarten */
+.games-screen { position: relative; background: #f6e7bf url("assets/worlds/oasis/background.jpg") center / cover no-repeat; }
+.games-screen::before { content: ""; position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(255, 248, 228, .82) 0%, rgba(255, 246, 222, .62) 55%, rgba(255, 240, 205, .72) 100%); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.games-screen > * { position: relative; z-index: 1; }
+.games-screen .chase-head { background: rgba(255, 248, 228, .8); }
+.games-hub { flex: 1; width: 100%; max-width: 1040px; margin: 0 auto; padding: 22px 20px 34px; display: flex; flex-direction: column; gap: 22px; overflow: auto; touch-action: pan-y; }
+.games-levels-wrap { background: rgba(255, 255, 255, .72); border: 2px solid rgba(233, 195, 105, .8); border-radius: 24px; padding: 16px 18px 18px; box-shadow: 0 8px 22px rgba(120, 80, 20, .12); }
+.games-levels-title { margin: 0 0 12px; font-weight: 800; color: var(--color-text); font-size: 16px; text-align: center; }
+.games-levels { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.games-level { border: 2px solid var(--gold-light); background: #fff; border-radius: 16px; padding: 8px 16px; font-family: "Amiri", serif; font-weight: 700; font-size: 26px; line-height: 1.5; color: var(--color-text); position: relative; transition: transform .12s, box-shadow .12s; }
+.games-level:hover { transform: translateY(-2px); }
+.games-level.is-current { border-color: var(--color-secondary); background: #eef7ff; box-shadow: 0 0 0 4px rgba(58, 143, 217, .25); }
+.games-level i { position: absolute; top: -9px; right: -7px; background: var(--color-success); color: #fff; font-style: normal; font-size: 13px; font-weight: 900; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-family: inherit; }
+.games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 18px; }
+.games-card { --accent: #f0a63a; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; min-height: 210px; padding: 28px 18px 24px; border-radius: 28px; background: rgba(255, 255, 255, .9); text-decoration: none; color: var(--color-text); border: 3px solid #fff; box-shadow: 0 6px 0 var(--accent), 0 16px 30px rgba(90, 60, 10, .2); overflow: hidden; transition: transform .15s, box-shadow .15s; }
+.games-card::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 8px; background: var(--accent); }
+.games-card:hover { transform: translateY(-5px); box-shadow: 0 10px 0 var(--accent), 0 22px 34px rgba(90, 60, 10, .24); }
+.games-card:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--accent); }
+.games-card:nth-child(1) { --accent: #f08a3a; }
+.games-card:nth-child(2) { --accent: #4a9be8; }
+.games-card:nth-child(3) { --accent: #2fb5a5; }
+.games-card:nth-child(4) { --accent: #9a6ad8; }
+.games-icon { font-size: 62px; line-height: 1.1; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .15)); }
+.games-title { font-weight: 800; font-size: 23px; }
+.games-sub { font-size: 15px; line-height: 1.4; color: var(--color-text-muted); max-width: 22ch; }
+@media (max-width: 640px) { .games-hub { padding: 14px 14px 26px; gap: 16px; } .games-grid { grid-template-columns: 1fr 1fr; gap: 12px; } .games-card { min-height: 170px; padding: 20px 10px 16px; } .games-icon { font-size: 48px; } .games-title { font-size: 18px; } .games-sub { font-size: 13px; } .games-level { font-size: 22px; padding: 6px 12px; } }

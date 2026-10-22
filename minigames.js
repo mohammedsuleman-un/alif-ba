@@ -40,7 +40,7 @@
     document.documentElement.classList.add("gamestage-active");
     document.documentElement.dir = dir();
     section.innerHTML = `
-      <div class="chase-screen">
+      <div class="chase-screen games-screen">
         <header class="chase-head">
           <a href="${D.RETURN_HASH}" class="g-icon-btn" aria-label="${BACK[l]}"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
           <div class="chase-instr"><span class="chase-instr-text">${HEAD[l]}</span></div>
@@ -50,12 +50,14 @@
             <p class="games-levels-title">${GROUP_LABEL[l]}</p>
             <div class="games-levels" id="gamesLevels"></div>
           </div>
-          ${GAMES.map((g) => `
-            <a class="games-card" href="${g.hash}">
-              <span class="games-icon">${g.icon}</span>
-              <span class="games-title">${g.title[l]}</span>
-              <span class="games-sub">${g.sub[l]}</span>
-            </a>`).join("")}
+          <div class="games-grid">
+            ${GAMES.map((g) => `
+              <a class="games-card" href="${g.hash}">
+                <span class="games-icon">${g.icon}</span>
+                <span class="games-title">${g.title[l]}</span>
+                <span class="games-sub">${g.sub[l]}</span>
+              </a>`).join("")}
+          </div>
         </div>
       </div>`;
     renderLevels();
