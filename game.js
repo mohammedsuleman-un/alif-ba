@@ -570,15 +570,15 @@
   // De knoop-posities volgen het geschilderde pad in elke illustratie
   // (opgemeten); de eventuele ingebakken letters/sloten in de illustraties
   // zelf zijn alleen sfeerbeeld, nooit de echte interactieve elementen.
-  const WIDE_MAP_W = 1672, WIDE_MAP_H = 941;
+  const WIDE_MAP_W = 1672, WIDE_MAP_H = 941; // standaard; per kaart te overschrijven met w/h
   const WIDE_MAPS = {
     letter_oasis: {
       bg: "assets/worlds/oasis/map-wide.jpg",
+      w: 1619, h: 971,
       path: [
-        { x: 0.6071, y: 0.9192 }, { x: 0.6163, y: 0.8702 }, { x: 0.6222, y: 0.8127 },
-        { x: 0.6247, y: 0.7468 }, { x: 0.6237, y: 0.6726 }, { x: 0.6194, y: 0.5899 },
-        { x: 0.6117, y: 0.4989 }, { x: 0.6006, y: 0.3994 }, { x: 0.5861, y: 0.2916 },
-        { x: 0.5682, y: 0.1753 },
+        { x: 0.0927, y: 0.7137 }, { x: 0.1606, y: 0.5952 }, { x: 0.2421, y: 0.4923 },
+        { x: 0.3243, y: 0.4243 }, { x: 0.5961, y: 0.5170 }, { x: 0.7214, y: 0.4490 },
+        { x: 0.8141, y: 0.3913 }, { x: 0.8876, y: 0.3470 }, { x: 0.9302, y: 0.2472 },
       ],
     },
     letter_garden: {
@@ -883,9 +883,10 @@
       const vw = vp.clientWidth, vh = vp.clientHeight;
       if (!vw || !vh) return;
       const zoomBoost = vw < 600 ? 2.1 : vw < 1024 ? 1.5 : 1.08;
-      const coverZoom = Math.max(vw / WIDE_MAP_W, vh / WIDE_MAP_H);
+      const mw = map.w || WIDE_MAP_W, mh = map.h || WIDE_MAP_H;
+      const coverZoom = Math.max(vw / mw, vh / mh);
       const zoom = coverZoom * zoomBoost;
-      const stageW = WIDE_MAP_W * zoom, stageH = WIDE_MAP_H * zoom;
+      const stageW = mw * zoom, stageH = mh * zoom;
       stage.style.width = stageW + "px";
       stage.style.height = stageH + "px";
       let tx = vw / 2 - cur.x * stageW;
@@ -1283,31 +1284,22 @@
     const cur = infos.findIndex((c) => c.status === "open");
     const here = cur >= 0 ? cur : Math.max(0, infos.map((c) => c.status).lastIndexOf("done"));
     const nodes = infos.map((c, i) => {
-      const mark = c.status === "done" ? "<i class=\"ov-badge ok\">✓</i>" : c.status === "locked" ? "<i class=\"ov-badge\">🔒</i>" : c.status === "soon" ? "<i class=\"ov-badge soon\">🚧</i>" : "";
-      const prog = c.total ? `<span class="ov-prog">${c.done}/${c.total}</span>` : `<span class="ov-prog">${o.soon}</span>`;
-      return `<button type="button" class="ov-node st-${c.status} ${i === here ? "is-here" : ""}" data-i="${i}" style="left:${c.ch.pos.x * 100}%;top:${c.ch.pos.y * 100}%;--c1:${c.ch.c[0]};--c2:${c.ch.c[1]}" aria-label="${gsub(c.ch.title)}">
-        <span class="ov-disc"><b class="ov-n">${c.ch.n}</b><span class="ov-icon">${c.ch.icon}</span>${mark}</span>
-        <span class="ov-label">${gsub(c.ch.land)}</span><span class="ov-sub">${gsub(c.ch.title)}</span>${prog}</button>`;
+      const mark = c.status === "done" ? "<i class=\"ov-badge ok\">✓</i>" : c.status === "locked" ? "<i class=\"ov-badge\">🔒</i>" : c.status === "soon" ? `<i class="ov-badge soon">🚧 ${o.soon}</i>` : `<i class="ov-badge prog">${c.done}/${c.total}</i>`;
+      return `<button type="button" class="ov-node st-${c.status} ${i === here ? "is-here" : ""}" data-i="${i}" style="left:${c.ch.pos.x * 100}%;top:${c.ch.pos.y * 100}%" aria-label="${c.ch.n}. ${gsub(c.ch.title)}">${mark}</button>`;
     }).join("");
-    const regions = infos.map((c) => `<div class="ov-region st-${c.status}" style="left:${c.ch.pos.x * 100}%;top:${c.ch.pos.y * 100}%;--c1:${c.ch.c[0]}"></div>`).join("");
-    const pts = infos.map((c) => ({ x: c.ch.pos.x * 100, y: c.ch.pos.y * 150 }));
-    const me = infos[here];
-    const meHtml = `<div class="ov-me" style="left:${me.ch.pos.x * 100}%;top:${me.ch.pos.y * 100}%">${Character.svg(Character.getConfig(activeProfile.id), "wave")}</div>`;
     const target = infos.find((c) => c.status === "open") || infos[0];
     scr.overview.innerHTML = `
       <div class="ov-wrap">
         <div class="g-profile-head">
           <a href="#/spel/wereld/${chapterTarget(target)}" class="g-back-book">←</a>
           <h2 class="g-who" style="margin:0;font-size:18px;">${o.title}</h2>
-        <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
+          <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
         </div>
-        <div class="ov-scene">
+        <div class="ov-scroll" id="ovScroll"><div class="ov-scene">
           <img class="ov-bg" src="assets/worlds/overview/map.jpg" alt="" onerror="this.remove()">
-          <div class="ov-art" aria-hidden="true">${regions}</div>
-          <svg class="ov-path" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true"><path d="${smoothPath(pts)}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.6" stroke-dasharray="3 2.4" stroke-linecap="round"/></svg>
-          ${nodes}${meHtml}
+          ${nodes}
           <div class="ov-toast" id="ovToast" hidden></div>
-        </div>
+        </div></div>
       </div>`;
     let toastT;
     const toast = (msg) => { const el = $("ovToast"); el.textContent = msg; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 1800); };
@@ -1319,7 +1311,7 @@
       gohash(`#/spel/wereld/${chapterTarget(info)}`);
     }));
     const hereEl = scr.overview.querySelector(".ov-node.is-here");
-    if (hereEl) setTimeout(() => hereEl.scrollIntoView({ block: "center", behavior: "smooth" }), 60);
+    const sc = $("ovScroll"); if (hereEl && sc) setTimeout(() => { sc.scrollLeft = hereEl.offsetLeft - sc.clientWidth / 2; }, 30);
   }
 
   // ---------- Routing ----------

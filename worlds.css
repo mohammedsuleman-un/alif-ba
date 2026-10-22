@@ -1,35 +1,20 @@
-/* Totale kaart (alle hoofdstukken/werelden). Staand landschap (2:3), hoofdstuk 1 onderaan, 9 bovenaan.
-   Zonder tekening (assets/worlds/overview/map.jpg) staat er een thema-gekleurd landschap van gekleurde gebieden. */
-.ov-wrap { max-width: 620px; margin: 0 auto; padding: 0 0 90px; }
-.ov-scene { position: relative; aspect-ratio: 2 / 3; width: 100%; overflow: hidden; border-radius: 26px; margin-top: 8px;
-  background: linear-gradient(180deg, #bfe4f5 0%, #e3f1da 26%, #f0e6b6 62%, #e9d08f 100%); box-shadow: 0 10px 26px rgba(90, 60, 10, .2); }
+/* Totale kaart (alle hoofdstukken). Liggende tekening (assets/worlds/overview/map.jpg, 1672x941) met de
+   nummers en namen al in de tekening; hier komen alleen onzichtbare tikvlakken + statusbadges overheen.
+   Op een smal scherm kan de kaart zijwaarts schuiven. */
+.ov-wrap { max-width: 1180px; margin: 0 auto; padding: 0 0 90px; }
+.ov-scroll { overflow-x: auto; margin-top: 8px; border-radius: 22px; -webkit-overflow-scrolling: touch; }
+.ov-scene { position: relative; aspect-ratio: 1672 / 941; width: 100%; min-width: 760px; overflow: hidden; border-radius: 22px;
+  background: #11164a; box-shadow: 0 10px 26px rgba(20, 20, 70, .3); }
 .ov-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.ov-art { position: absolute; inset: 0; }
-.ov-region { position: absolute; width: 58%; aspect-ratio: 1.15; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(closest-side, var(--c1) 0%, transparent 100%); opacity: .42; }
-.ov-region.st-soon, .ov-region.st-locked { opacity: .22; filter: grayscale(.5); }
-.ov-path { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.ov-node { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 1px; border: 0; background: none; padding: 0; width: 38%; font-family: inherit; color: #3a2410; }
-.ov-disc { position: relative; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(160deg, var(--c1), var(--c2)); border: 4px solid #fff; box-shadow: 0 5px 0 rgba(0, 0, 0, .18), 0 10px 18px rgba(0, 0, 0, .22); }
-.ov-icon { font-size: 30px; line-height: 1; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25)); }
-.ov-n { position: absolute; top: -8px; left: -8px; width: 24px; height: 24px; border-radius: 50%; background: #fff; color: #7a5410; font-size: 13px; font-weight: 900; display: grid; place-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, .2); }
-.ov-badge { position: absolute; right: -8px; bottom: -6px; width: 26px; height: 26px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-style: normal; font-size: 14px; font-weight: 900; box-shadow: 0 2px 4px rgba(0, 0, 0, .25); }
-.ov-badge.ok { background: var(--color-success, #58cc02); color: #fff; }
-.ov-label { margin-top: 5px; font-weight: 900; font-size: 14px; text-shadow: 0 1px 0 rgba(255, 255, 255, .9), 0 0 8px rgba(255, 255, 255, .9); text-align: center; line-height: 1.1; }
-.ov-sub { font-size: 11px; font-weight: 700; color: #5a4020; text-shadow: 0 0 6px rgba(255, 255, 255, .95); text-align: center; line-height: 1.15; }
-.ov-prog { font-size: 11px; font-weight: 800; color: #fff; background: rgba(60, 40, 10, .55); border-radius: 999px; padding: 1px 8px; margin-top: 2px; }
-.ov-node.st-soon .ov-disc, .ov-node.st-locked .ov-disc { filter: grayscale(.75) brightness(1.05); opacity: .8; }
-.ov-node.st-soon .ov-label, .ov-node.st-locked .ov-label { opacity: .75; }
-.ov-node.is-here .ov-disc { box-shadow: 0 0 0 6px rgba(58, 143, 217, .35), 0 5px 0 rgba(0, 0, 0, .18), 0 10px 18px rgba(0, 0, 0, .22); animation: ovPulse 1.8s ease-in-out infinite; }
-@keyframes ovPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.07); } }
-.ov-node:active .ov-disc { transform: translateY(3px); }
-.ov-me { position: absolute; width: 14%; aspect-ratio: .5; transform: translate(34%, -92%); pointer-events: none; z-index: 4; }
-.ov-toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(60, 39, 18, .9); color: #fff; font-weight: 800; padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: 90%; text-align: center; z-index: 6; }
-@media (prefers-reduced-motion: reduce) { .ov-node.is-here .ov-disc { animation: none; } }
-@media (max-width: 640px) {
-  .ov-scene { aspect-ratio: 1 / 2.25; border-radius: 20px; }
-  .ov-sub { display: none; }
-  .ov-node { width: 44%; }
-  .ov-disc { width: 58px; height: 58px; }
-  .ov-icon { font-size: 27px; }
-  .ov-me { width: 21%; }
-}
+.ov-node { position: absolute; transform: translate(-50%, -50%); width: 22%; aspect-ratio: 1.35; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 50%; font-family: inherit; }
+.ov-node.st-soon, .ov-node.st-locked { cursor: default; }
+.ov-node.st-soon::before, .ov-node.st-locked::before { content: ""; position: absolute; inset: 6%; border-radius: 50%; background: rgba(12, 16, 60, .38); }
+.ov-node.st-open:hover::before, .ov-node.st-done:hover::before { content: ""; position: absolute; inset: 6%; border-radius: 50%; background: rgba(255, 255, 255, .14); }
+.ov-node.is-here::after { content: ""; position: absolute; inset: 4%; border-radius: 50%; border: 5px solid #ffe27a; box-shadow: 0 0 22px 6px rgba(255, 226, 122, .7); animation: ovPulse 1.8s ease-in-out infinite; }
+.ov-badge { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); min-width: 34px; height: 34px; padding: 0 10px; border-radius: 999px; background: #fff; display: grid; place-items: center; font-style: normal; font-size: 16px; font-weight: 900; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); color: #5a3d10; white-space: nowrap; z-index: 2; }
+.ov-badge.ok { background: #58cc02; color: #fff; }
+.ov-badge.soon { background: #ffe9a8; font-size: 13px; }
+.ov-badge.prog { background: rgba(60, 40, 10, .8); color: #fff; font-size: 13px; }
+@keyframes ovPulse { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
+.ov-toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(60, 39, 18, .92); color: #fff; font-weight: 800; padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: 90%; text-align: center; z-index: 6; }
+@media (prefers-reduced-motion: reduce) { .ov-node.is-here::after { animation: none; } }
