@@ -513,7 +513,7 @@
   function chaseRoute() {
     const h = location.hash;
     const m = h.match(/^#\/gamestage\/chase\/(\w+)/);
-    if (!h.startsWith("#/gamestage")) { teardown(); return; }
+    if (!h.startsWith("#/gamestage/chase")) { teardown(); return; }
     const id = m ? m[1] : "1";
     if (active && id === chaseId) return;
     teardown();

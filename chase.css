@@ -112,3 +112,11 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
    de fysieke betekenis van de bewegingsknoppen — .chase-dpad/.chase-btn
    krijgen daarom bewust GEEN RTL-regel. */
 html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
+
+/* Letter Slingshot (slingshot.js) — hergebruikt de chase-klassen hierboven. */
+.sling-hint {
+  flex: none; text-align: center; font-weight: 700; font-size: 14px; color: var(--color-text-muted);
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); background: var(--gold-soft); border-top: 3px solid var(--gold-light);
+}
+.sling-help.is-used { background: #fff3c2; box-shadow: 0 0 0 4px rgba(255, 213, 74, .6); }
+#slMount canvas { touch-action: none; }
