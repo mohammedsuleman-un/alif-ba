@@ -12,7 +12,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="chase.css">
+  <link rel="stylesheet" href="minigames.css">
 </head>
 <body>
   <!-- App-startscherm: begroeting, voortgang, "verder leren"-CTA. Geen inhoudsopgave. -->
@@ -140,9 +140,8 @@
     <div id="gComplete" class="g-overlay" hidden></div>
   </section>
 
-  <!-- Letter Chase Prototype (V2): geïsoleerde experimentele minigame, eigen route (#/gamestage/...).
-       Wereld/character/letters worden door Phaser getekend (lazy geladen vanaf
-       cdnjs door game-stage.js, zie dat bestand) zodra deze sectie opent. -->
+  <!-- Letter-minigames (#/gamestage/games, slingshot, photographer, diver, bridge): tekenen in deze sectie;
+       Phaser wordt pas geladen (cdnjs) zodra een Phaser-spel opent. -->
   <section id="gamestage" class="screen" hidden></section>
 
   <script src="book-data.js"></script>
@@ -154,9 +153,7 @@
   <script src="character.js"></script>
   <script src="game.js"></script>
   <script src="shell.js"></script>
-  <script src="chase-data.js"></script>
-  <script src="game-assets-manifest.js"></script>
-  <script src="game-stage.js"></script>
+  <script src="minigame-core.js"></script>
   <script src="minigames-data.js"></script>
   <script src="slingshot.js"></script>
   <script src="photographer.js"></script>

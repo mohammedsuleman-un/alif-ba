@@ -1,9 +1,6 @@
-/* Letter Chase Prototype (V2) — volledig eigen stylesheet, raakt style.css niet aan.
-   Hergebruikt alleen bestaande design tokens (var(--...)) uit style.css en de
-   globale .g-icon-btn-klasse die daar al gedefinieerd staat. De speelwereld
-   zelf (character/letters/scenery) wordt sinds V2 door Phaser getekend in
-   #chasePhaserMount — de DOM-chrome hieronder (header/controls/overlay/tap-
-   marker) blijft bewust gewoon HTML/CSS, zie sectie 10 van de V2-opdracht. */
+/* Stijl voor de letter-minigames (keuze-pagina, Katapult, Fotograaf, Parelduiker, Letterbrug).
+   Hergebruikt de design tokens (var(--...)) en .g-icon-btn uit style.css. De klassenamen
+   chase-* zijn historisch (gedeelde spelchrome: kop, veld, knoppen, eindkaart). */
 
 #gamestage.screen { position: fixed; inset: 0; z-index: 50; background: var(--cream); }
 html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 100%; }
@@ -44,31 +41,6 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
 .chase-phaser-mount { position: absolute; inset: 0; }
 .chase-phaser-mount canvas { display: block; touch-action: none; }
 
-.chase-tap-marker {
-  position: absolute; left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px;
-  border-radius: 50%; border: 3px solid var(--color-secondary); opacity: 0; pointer-events: none; z-index: 2;
-}
-.chase-tap-marker.is-active { animation: chaseTapPulse .65s ease-out; }
-@keyframes chaseTapPulse { 0% { opacity: .9; transform: scale(.4); } 70% { opacity: .5; } 100% { opacity: 0; transform: scale(1.15); } }
-
-.chase-controls {
-  position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 10px 16px calc(14px + env(safe-area-inset-bottom));
-  background: var(--gold-soft); border-top: 3px solid var(--gold-light);
-  touch-action: none; min-height: 150px; justify-content: center;
-}
-.chase-mode-toggle {
-  position: absolute; top: 8px; right: 12px; border: none; border-radius: 999px;
-  background: #fff; color: var(--color-text-muted); font-size: 12px; font-weight: 700;
-  padding: 6px 12px; box-shadow: 0 2px 0 var(--gold-light);
-}
-.chase-tap-hint { margin: 0; font-size: 14px; font-weight: 700; color: var(--color-text-muted); text-align: center; }
-/* direction:ltr is bewust hardcoded: de fysieke betekenis van de bewegings-
-   knoppen mag NOOIT meedraaien met de interfacetaal (RTL mag alleen tekst/UI
-   spiegelen) — zonder dit zou flexbox de knopvolgorde onder dir="rtl" omkeren
-   en "links" en "rechts" laten wisselen. */
-.chase-dpad { display: flex; flex-direction: column; align-items: center; gap: 10px; direction: ltr; }
-.chase-btn-row { display: flex; align-items: center; gap: 16px; }
 .chase-btn {
   width: 64px; height: 64px; border-radius: 20px; border: none; flex: none;
   background: linear-gradient(180deg, #fff, #fdf6e6); color: var(--gold);
@@ -78,20 +50,6 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
 .chase-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--gold-light); }
 .chase-btn svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
 
-/* Desktop: toetsenbord is hier de primaire besturing (zie onKeyDown in
-   game-chase.js — WASD/pijltjes werken ongeacht of de D-pad zichtbaar is).
-   De D-pad blijft beschikbaar maar mag het grote, ruime gamebeeld niet
-   domineren: compacter, kleiner en naar de zijkant geschoven i.p.v. een
-   brede knoppenbalk in het midden. */
-@media (min-width: 1024px) {
-  .chase-controls { flex-direction: row; justify-content: flex-start; align-items: center; gap: 18px; min-height: 74px; padding-left: 28px; }
-  .chase-mode-toggle { position: static; }
-  .chase-dpad { gap: 5px; }
-  .chase-dpad .chase-btn-row { gap: 5px; }
-  .chase-btn { width: 40px; height: 40px; border-radius: 12px; }
-  .chase-btn svg { width: 18px; height: 18px; }
-  .chase-tap-hint { margin: 0; }
-}
 
 .chase-overlay {
   position: absolute; inset: 0; z-index: 10; display: grid; place-items: center;
@@ -108,9 +66,7 @@ html.gamestage-active, html.gamestage-active body { overflow: hidden; height: 10
 .chase-cta-primary { background: var(--color-success); color: #fff; box-shadow: 0 4px 0 var(--color-success-strong); }
 .chase-cta-ghost { background: transparent; color: var(--color-text-muted); }
 
-/* RTL mag uitsluitend tekst/UI-iconen spiegelen (bv. de terug-pijl), nooit
-   de fysieke betekenis van de bewegingsknoppen — .chase-dpad/.chase-btn
-   krijgen daarom bewust GEEN RTL-regel. */
+/* RTL spiegelt alleen tekst/UI-iconen (de terug-pijl); spelrichting en alfabetvolgorde blijven fysiek. */
 html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 
 /* Letter Slingshot (slingshot.js) — hergebruikt de chase-klassen hierboven. */
@@ -181,3 +137,4 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .br-explorer { position: absolute; font-size: 38px; transform: translate(-50%, -100%); transition: left .6s ease-in-out, top .3s; opacity: 0; pointer-events: none; z-index: 5; }
 .br-explorer.is-slip { animation: brSlip .9s ease-in forwards; }
 @keyframes brSlip { 0% { transform: translate(-50%, -100%) rotate(0); } 100% { transform: translate(-50%, 20%) rotate(40deg); opacity: .5; } }
+@media (min-width: 1024px) { .chase-btn { width: 40px; height: 40px; border-radius: 12px; } .chase-btn svg { width: 18px; height: 18px; } }

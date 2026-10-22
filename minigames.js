@@ -3,7 +3,7 @@
 (() => {
   "use strict";
   const $ = (id) => document.getElementById(id);
-  const D = window.ChaseData;
+  const D = window.MiniCore;
   const { lang, dir, store } = D;
 
   const GAMES = [

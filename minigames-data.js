@@ -2,7 +2,7 @@
 // (heel het alfabet), voortgang per profiel, duidelijke feedback (bord + geluidje).
 (() => {
   "use strict";
-  const D = window.ChaseData;
+  const D = window.MiniCore;
   const { store, lang } = D;
 
   // Heel het alfabet, in groepen van op elkaar lijkende letters (onderscheiden is de kern).

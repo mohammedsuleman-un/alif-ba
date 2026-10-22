@@ -17,7 +17,7 @@
   const DEBUG = location.hostname === "localhost";
 
   const $ = (id) => document.getElementById(id);
-  const D = window.ChaseData;
+  const D = window.MiniCore;
   const { store, dir, lang, recordAttempt } = D;
   const RETURN_HASH = "#/gamestage/games";
 
@@ -138,7 +138,7 @@
     if (DEBUG) window.Slingshot = { get scene() { return scene; }, get game() { return game; }, get missions() { return missions; } };
   }
 
-  // ---------- DOM-chrome (hergebruikt chase.css-klassen) ----------
+  // ---------- DOM-chrome (hergebruikt de chase-klassen uit minigames.css) ----------
   function renderChrome() {
     const tt = tx();
     $("gamestage").innerHTML = `

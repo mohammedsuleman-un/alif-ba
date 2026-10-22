@@ -13,7 +13,7 @@
   const DEBUG = location.hostname === "localhost";
 
   const $ = (id) => document.getElementById(id);
-  const D = window.ChaseData;
+  const D = window.MiniCore;
   const { store, dir, lang, recordAttempt } = D;
   const RETURN_HASH = D.RETURN_HASH;
 

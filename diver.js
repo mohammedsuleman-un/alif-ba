@@ -14,7 +14,7 @@
   const DEBUG = location.hostname === "localhost";
 
   const $ = (id) => document.getElementById(id);
-  const D = window.ChaseData;
+  const D = window.MiniCore;
   const MG = window.MiniGames;
   const { store, dir, lang, recordAttempt } = D;
   const RETURN_HASH = "#/gamestage/games";
@@ -339,7 +339,9 @@
       layout() {
         const W = this.scale.width, H = this.scale.height;
         const r = clamp(Math.min(W, H) * 0.058, 22, 34);
-        return { W, H, r, clam: { x: W * 0.14, y: H * 0.79 }, chest: { x: W * 0.86, y: H * 0.8 }, start: { x: W * 0.5, y: H * 0.2 } };
+        // Mossel (breed r*5.4) en kist (r*4.4) blijven op smalle schermen helemaal in beeld.
+        const clamX = Math.max(W * 0.14, r * 2.8 + 6), chestX = Math.min(W * 0.86, W - r * 2.3 - 6);
+        return { W, H, r, clam: { x: clamX, y: H * 0.79 }, chest: { x: chestX, y: H * 0.8 }, start: { x: W * 0.5, y: H * 0.2 } };
       }
 
       build(first) {
@@ -352,19 +354,27 @@
         gr.addColorStop(0, "#9fe3f5"); gr.addColorStop(0.45, "#43b8dc"); gr.addColorStop(1, "#1d6aa5");
         g.fillStyle = gr; g.fillRect(0, 0, 4, 256); c.refresh();
         this.add.image(0, 0, "dv-sea").setOrigin(0).setDisplaySize(W, H).setDepth(0);
-        // Lichtstralen
-        this.rays = [];
-        for (let i = 0; i < 5; i++) {
-          const x0 = W * (0.1 + i * 0.2), ray = this.add.graphics().setDepth(1);
-          ray.fillStyle(0xffffff, 0.09); ray.beginPath(); ray.moveTo(x0, 0); ray.lineTo(x0 + W * 0.09, 0); ray.lineTo(x0 + W * 0.3, H * 0.9); ray.lineTo(x0 + W * 0.12, H * 0.9); ray.closePath(); ray.fillPath();
-          this.tweens.add({ targets: ray, alpha: { from: 0.4, to: 1 }, duration: 2400 + i * 400, yoyo: true, repeat: -1, ease: "Sine.InOut" });
-        }
-        // Zandbodem
-        const sand = this.add.graphics().setDepth(2);
-        sand.fillStyle(0xe6cf94, 1); sand.fillEllipse(W * 0.5, H * 1.0, W * 1.7, H * 0.34);
-        sand.fillStyle(0xf1deaa, 1); sand.fillEllipse(W * 0.45, H * 1.02, W * 1.4, H * 0.26);
-        sand.fillStyle(0xcdb57a, 0.5);
-        for (let i = 0; i < 24; i++) sand.fillCircle(Math.random() * W, H * (0.9 + Math.random() * 0.09), 2 + Math.random() * 3);
+        // Lichtstralen en zandbodem: eenmalig naar een afbeelding "bakken" (Graphics tekent anders elk frame opnieuw: traag op telefoons)
+        this.bakeSeq = (this.bakeSeq || 0) + 1;
+        const bake = (w, h, draw) => {
+          const key = `dv-bake-${this.bakeSeq}-${Math.random().toString(36).slice(2, 7)}`;
+          const g = this.make.graphics({ x: 0, y: 0, add: false }); draw(g);
+          g.generateTexture(key, Math.ceil(w), Math.ceil(h)); g.destroy();
+          return key;
+        };
+        const raysKey = bake(W, H, (g) => {
+          g.fillStyle(0xffffff, 0.09);
+          for (let i = 0; i < 5; i++) { const x0 = W * (0.1 + i * 0.2); g.beginPath(); g.moveTo(x0, 0); g.lineTo(x0 + W * 0.09, 0); g.lineTo(x0 + W * 0.3, H * 0.9); g.lineTo(x0 + W * 0.12, H * 0.9); g.closePath(); g.fillPath(); }
+        });
+        const rays = this.add.image(0, 0, raysKey).setOrigin(0).setDepth(1);
+        this.tweens.add({ targets: rays, alpha: { from: 0.45, to: 1 }, duration: 3200, yoyo: true, repeat: -1, ease: "Sine.InOut" });
+        const sandKey = bake(W, H, (g) => {
+          g.fillStyle(0xe6cf94, 1); g.fillEllipse(W * 0.5, H * 1.0, W * 1.7, H * 0.34);
+          g.fillStyle(0xf1deaa, 1); g.fillEllipse(W * 0.45, H * 1.02, W * 1.4, H * 0.26);
+          g.fillStyle(0xcdb57a, 0.5);
+          for (let i = 0; i < 24; i++) g.fillCircle(Math.random() * W, H * (0.9 + Math.random() * 0.09), 2 + Math.random() * 3);
+        });
+        this.add.image(0, 0, sandKey).setOrigin(0).setDepth(2);
         // Koraal, wier, rotsen (achtergrond)
         const place = (key, x, y, w, depth, sway) => {
           const im = this.add.image(x, y, key).setOrigin(0.5, 1).setDepth(depth);
