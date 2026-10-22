@@ -18,3 +18,20 @@
 @keyframes ovPulse { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.04); } }
 .ov-toast { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); background: rgba(60, 39, 18, .92); color: #fff; font-weight: 800; padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: 90%; text-align: center; z-index: 6; }
 @media (prefers-reduced-motion: reduce) { .ov-node.is-here::after { animation: none; } }
+
+/* Niveau-keuze: leerquizje + spellen per niveau */
+.lh-wrap { max-width: 640px; margin: 0 auto; padding: 0 16px 90px; }
+.lh-letters { text-align: center; font-family: "Amiri", serif; font-size: 54px; line-height: 1.5; margin: 14px 0; color: #3a2410; }
+.lh-quiz { width: 100%; display: flex; align-items: center; gap: 14px; text-align: start; padding: 16px 18px; border: 3px solid #fff; border-radius: 22px; background: linear-gradient(180deg, #ffe08a, #f2b84a); box-shadow: 0 6px 0 #c48a1c, 0 14px 24px rgba(90, 60, 10, .2); font-family: inherit; color: #4a2f08; cursor: pointer; }
+.lh-quiz:active { transform: translateY(3px); box-shadow: 0 2px 0 #c48a1c; }
+.lh-quiz b { display: block; font-size: 19px; }
+.lh-quiz small { display: block; font-weight: 700; opacity: .8; }
+.lh-quiz .lh-icon { font-size: 38px; }
+.lh-stars { margin-inline-start: auto; color: #fff; font-size: 20px; text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+.lh-title { margin: 22px 0 10px; font-weight: 900; color: #5a4020; text-align: center; }
+.lh-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.lh-card { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 10px; border-radius: 20px; border: 3px solid #fff; background: rgba(255, 255, 255, .92); box-shadow: 0 5px 0 #d9b25a, 0 12px 20px rgba(90, 60, 10, .15); font-family: inherit; color: #3a2410; cursor: pointer; }
+.lh-card .lh-icon { font-size: 36px; }
+.lh-card b { font-size: 16px; }
+.lh-card small { font-weight: 700; font-size: 12px; opacity: .8; }
+.lh-card.is-locked { filter: grayscale(.8); opacity: .65; cursor: default; box-shadow: none; }

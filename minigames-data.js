@@ -62,6 +62,8 @@
   const unlockedLevel = (pid) => load(pid).unlocked;
   const doneLevels = (pid) => load(pid).done;
   function setPlay(pid, n) { const d = load(pid); if (n >= 0 && n <= d.unlocked) { d.play = n; save(pid, d); } }
+  // Vanuit de wereldkaart: speel precies de letters van dit wereld-niveau (ook als de spelroute nog niet zover was).
+  function focusLevel(pid, n) { const d = load(pid); n = Math.max(0, Math.min(LAST, n)); d.unlocked = Math.max(d.unlocked, n); d.play = n; save(pid, d); }
   function completeLevel(pid, n) {
     const d = load(pid);
     if (!d.done.includes(n)) d.done.push(n);
@@ -164,7 +166,7 @@
   const gameOpen = (pid, key) => oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
     GROUPS, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
-    UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
+    focusLevel, UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => GROUPS[n] || GROUPS[0],
   };
 })();

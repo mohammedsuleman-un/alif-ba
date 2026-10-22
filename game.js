@@ -791,7 +791,7 @@
 
     $("gSwitchProfile").onclick = () => gohash("#/spel");
     scr.map.querySelectorAll(".g-node-btn2.on").forEach((b) => {
-      b.onclick = () => gohash(`#/spel/level/${world.id}/${b.dataset.n}`);
+      b.onclick = () => gohash(`#/spel/niveau/${world.id}/${b.dataset.n}`);
     });
     const cpBtn = $("gCheckpoint");
     if (cpBtn) cpBtn.onclick = () => {
@@ -857,7 +857,7 @@
 
     $("gSwitchProfile").onclick = () => gohash("#/spel");
     scr.map.querySelectorAll(".g-node-btn2.on").forEach((b) => {
-      b.onclick = () => gohash(`#/spel/level/${world.id}/${b.dataset.n}`);
+      b.onclick = () => gohash(`#/spel/niveau/${world.id}/${b.dataset.n}`);
     });
 
     // Camera: de "wereld" (stage) wordt geschaald zodat ze de viewport in
@@ -1228,7 +1228,7 @@
     if (nextLevel) {
       nextBtn.hidden = false;
       nextBtn.querySelector("span").textContent = t.next;
-      nextBtn.onclick = () => gohash(`#/spel/level/${world.id}/${nextLevel.n}`);
+      nextBtn.onclick = () => gohash(`#/spel/niveau/${world.id}/${nextLevel.n}`);
     } else if (nextWorld) {
       nextBtn.hidden = false;
       nextBtn.querySelector("span").textContent = gsub(nextWorld.title);
@@ -1310,6 +1310,50 @@
     const sc = $("ovScroll"); if (hereEl && sc) setTimeout(() => { sc.scrollLeft = hereEl.offsetLeft - sc.clientWidth / 2; }, 30);
   }
 
+  // ---------- Niveau-keuze: per wereld-niveau het leerquizje + de spellen met precies deze letters ----------
+  const LHT = {
+    nl: { quiz: "Leer de letters", quizSub: "Luister en kies de goede letter", games: "Spelletjes met deze letters", lock: (n) => `Na niveau ${n}`, done: "Klaar", lvl: "Niveau" },
+    en: { quiz: "Learn the letters", quizSub: "Listen and pick the right letter", games: "Games with these letters", lock: (n) => `After level ${n}`, done: "Done", lvl: "Level" },
+    ar: { quiz: "تعلّم الحروف", quizSub: "استمع واختر الحرف الصحيح", games: "ألعاب بهذه الحروف", lock: (n) => `بعد المستوى ${n}`, done: "تم", lvl: "المستوى" },
+    tr: { quiz: "Harfleri öğren", quizSub: "Dinle ve doğru harfi seç", games: "Bu harflerle oyunlar", lock: (n) => `${n}. seviyeden sonra`, done: "Bitti", lvl: "Seviye" },
+  };
+  const LH_GAMES = [
+    ["slingshot", "🎯", { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" }],
+    ["photographer", "📷", { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" }],
+    ["diver", "🤿", { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" }],
+    ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }],
+  ];
+  function renderLevelHub(worldId, n) {
+    const t = GT(), L = LHT[glang()] || LHT.nl, l = LHT[glang()] ? glang() : "nl";
+    document.documentElement.dir = t.dir;
+    const world = G.worlds.find((w) => w.id === worldId), level = world && world.levels.find((lv) => lv.n === +n);
+    if (!level) return gohash(`#/spel/wereld/${worldId}`);
+    const MG = window.MiniGames, pid = activeProfile.id;
+    const stars = levelStars(world, level), letters = level.letters.length ? level.letters : world.letters;
+    const games = LH_GAMES.map(([key, icon, name]) => {
+      const open = !MG || MG.gameOpen(pid, key);
+      return open ? `<button type="button" class="lh-card" data-game="${key}"><span class="lh-icon">${icon}</span><b>${name[l]}</b></button>`
+        : `<div class="lh-card is-locked"><span class="lh-icon">🔒</span><b>${name[l]}</b><small>${L.lock(MG.UNLOCKS[key])}</small></div>`;
+    }).join("");
+    scr.overview.innerHTML = `
+      <div class="lh-wrap">
+        <div class="g-profile-head">
+          <a href="#/spel/wereld/${worldId}" class="g-back-book">←</a>
+          <h2 class="g-who" style="margin:0;font-size:18px;">${L.lvl} ${level.n}</h2>
+          <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
+        </div>
+        <div class="lh-letters" lang="ar" dir="rtl">${letters.join(" ")}</div>
+        <button type="button" class="lh-quiz" id="lhQuiz"><span class="lh-icon">🌟</span><span><b>${L.quiz}</b><small>${L.quizSub}</small></span><span class="lh-stars">${stars ? "★".repeat(stars) + "☆".repeat(3 - stars) : ""}</span></button>
+        <p class="lh-title">${L.games}</p>
+        <div class="lh-grid">${games}</div>
+      </div>`;
+    $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
+    scr.overview.querySelectorAll(".lh-card[data-game]").forEach((b) => (b.onclick = () => {
+      if (MG) MG.focusLevel(pid, level.n - 1);
+      gohash(`#/gamestage/${b.dataset.game}/1`);
+    }));
+  }
+
   // ---------- Routing ----------
   function gohash(h) { location.hash = h; }
 
@@ -1334,7 +1378,8 @@
     const mPersonage = h.startsWith("#/spel/personage");
     const mWardrobe = h.startsWith("#/spel/kledingkast");
     const mOverview = h.startsWith("#/spel/kaart");
-    if (!activeProfile && (mWorld || mLevel || mWardrobe || mOverview)) return gohash("#/spel");
+    const mHub = h.match(/^#\/spel\/niveau\/([\w-]+)\/(\d+)/);
+    if (!activeProfile && (mWorld || mLevel || mHub || mWardrobe || mOverview)) return gohash("#/spel");
     // Elk kindprofiel heeft een eigen leermaatje nodig vóórdat het verder mag —
     // ook bestaande profielen van vóór dit systeem (zie spec §27).
     if (activeProfile && !Character.isConfigured(activeProfile.id) && !mPersonage) return gohash("#/spel/personage");
@@ -1342,6 +1387,7 @@
     if (activeProfile && Character.isConfigured(activeProfile.id)) Character.setStage(activeProfile.id, currentStage()); // het personage groeit mee
     if (mWardrobe) { showScreen("wardrobe"); renderWardrobe(); return; }
     if (mOverview) { showScreen("overview"); renderOverview(); return; }
+    if (mHub) { showScreen("overview"); renderLevelHub(mHub[1], mHub[2]); return; }
     if (mLevel) {
       const w = G.worlds.find((x) => x.id === mLevel[1]);
       if (w && !worldUnlocked(w)) return gohash("#/spel");
