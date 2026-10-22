@@ -377,7 +377,7 @@
           g.fillStyle(0xfff6dc, 1); g.lineStyle(5, 0xc9973a, 1);
           g.fillRoundedRect(-SZ / 2, -SZ / 2, SZ, SZ, 16); g.strokeRoundedRect(-SZ / 2, -SZ / 2, SZ, SZ, 16);
           const glow = this.add.circle(0, 0, SZ * 0.68, 0xffd54a, 0).setStrokeStyle(6, 0xffd54a, 0);
-          const t = this.add.text(0, 3, p.letter, { fontFamily: "Amiri, serif", fontStyle: "bold", fontSize: "64px", color: "#3a2410" }).setOrigin(0.5);
+          const t = MG.letterText(this, 0, 0, p.letter, 50);
           c.add([glow, g, t]);
           return { c, glow, x: p.x, y: p.y, size: SZ, letter: p.letter };
         });

@@ -100,8 +100,17 @@
     ov.querySelector("#mgBack").onclick = onBack;
   }
 
+  // Arabische letter in een Phaser-tekst. De extra padding voorkomt dat de canvas van de tekst
+  // boven- of onderkant van hoge/diepe letters (ا ل ج ح ع ق) afsnijdt.
+  function letterText(scene, x, y, letter, px, color) {
+    return scene.add.text(x, y - px * 0.14, letter, { // Arabische glyphs liggen optisch onder het tekstmidden: iets omhoog
+      fontFamily: '"Amiri", serif', fontStyle: "bold", fontSize: Math.round(px) + "px", color: color || "#3a2410",
+      padding: { top: Math.round(px * 0.4), bottom: Math.round(px * 0.5), left: 6, right: 6 },
+    }).setOrigin(0.5);
+  }
+
   window.MiniGames = {
-    GROUPS, shuffle, say, banner, hideBanner, sfx, wait, finish,
+    GROUPS, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
     currentLevel, setLevel, completeLevel, doneLevels,
     group: (n) => GROUPS[n] || GROUPS[0],
   };

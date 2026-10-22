@@ -366,7 +366,7 @@
           body.fillStyle(0xfff6dc, 1); body.lineStyle(4, 0xc9973a, 1);
           body.fillRoundedRect(-size / 2, -size / 2, size, size, size * 0.2); body.strokeRoundedRect(-size / 2, -size / 2, size, size, size * 0.2);
           const glow = this.add.circle(0, 0, size * 0.62, 0xffd54a, 0).setStrokeStyle(6, 0xffd54a, 0);
-          const txt = this.add.text(0, size * 0.04, letter, { fontFamily: "Amiri, serif", fontStyle: "bold", fontSize: fs + "px", color: "#3a2410" }).setOrigin(0.5);
+          const txt = MG.letterText(this, 0, 0, letter, size * 0.58);
           c.add([glow, body, txt]);
           if (animateIn) { c.setScale(0.2); c.setAlpha(0); this.tweens.add({ targets: c, scale: 1, alpha: 1, duration: 320, delay: i * 70, ease: "Back.Out" }); }
           return { c, glow, letter, isTarget: letter === m.target, baseX: x0 + spacing * i, amp, phase: i * 1.7, hit: false };

@@ -435,7 +435,7 @@
         const g = this.add.graphics();
         g.fillStyle(0xffffff, 0.96); g.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 18); g.lineStyle(4, 0x7e3fb6, 1); g.strokeRoundedRect(-bw / 2, -bh / 2, bw, bh, 18);
         g.fillStyle(0xffffff, 0.96); g.fillTriangle(-r * 0.6, bh / 2 - 2, r * 0.6, bh / 2 - 2, -r * 1.3, bh / 2 + r * 0.7);
-        const t = this.add.text(-bw * 0.2, 0, m.target, { fontFamily: "Amiri, serif", fontStyle: "bold", fontSize: Math.round(r * 2) + "px", color: "#3a2410" }).setOrigin(0.5);
+        const t = MG.letterText(this, -bw * 0.2, 0, m.target, r * 1.6);
         this.bubble.add([g, t]);
         for (let i = 0; i < m.need; i++) {
           const p = this.add.image(bw * 0.2 + (i - (m.need - 1) / 2) * r * 0.62 * (m.need > 1 ? 1 : 0), (i - (m.need - 1) / 2) * 0, "dv-pearl").setDisplaySize(r * 0.7, r * 0.7);
@@ -493,7 +493,7 @@
           const glow = this.add.circle(0, -sw * 0.04, r * 1.35, 0xffd54a, 0).setStrokeStyle(5, 0xffd54a, 0);
           const pearl = this.add.container(0, -sw * 0.06);
           pearl.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(r * 1.9, r * 1.9),
-            this.add.text(0, 2, p.letter, { fontFamily: "Amiri, serif", fontStyle: "bold", fontSize: Math.round(r * 1.35) + "px", color: "#3a2410" }).setOrigin(0.5)]);
+            MG.letterText(this, 0, 0, p.letter, r * 1.05)]);
           const lid = this.add.image(-sw / 2 + sw * 0.05, -sw * 0.06, "dv-shell-top").setOrigin(0.05, 0.96); lid.setScale(sw / lid.width);
           c.add([bot, glow, pearl, lid]);
           return { c, lid, glow, pearl, x: p.x, y: p.y, letter: p.letter, taken: false, armed: true, lidAngle: 0 };
@@ -533,14 +533,14 @@
           const hit = this.add.circle(0, 0, r * 1.05, 0xffffff, 0.001).setInteractive({ useHandCursor: true });
           hit.on("pointerdown", (pt, lx, ly, ev) => { if (ev) ev.stopPropagation(); this.putBack(i); });
           pc.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(r * 1.7, r * 1.7),
-            this.add.text(0, 2, b.letter, { fontFamily: "Amiri, serif", fontStyle: "bold", fontSize: Math.round(r * 1.2) + "px", color: "#3a2410" }).setOrigin(0.5), hit]);
+            MG.letterText(this, 0, 0, b.letter, r * 0.95), hit]);
           this.bagG.add(pc);
         });
       }
       flyPearl(letter, from, to, dur, delay, done) {
         const { r } = this.L;
         const c = this.add.container(from.x, from.y).setDepth(25);
-        c.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(r * 1.7, r * 1.7), this.add.text(0, 2, letter, { fontFamily: "Amiri, serif", fontStyle: "bold", fontSize: Math.round(r * 1.2) + "px", color: "#3a2410" }).setOrigin(0.5)]);
+        c.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(r * 1.7, r * 1.7), MG.letterText(this, 0, 0, letter, r * 0.95)]);
         this.tweens.add({ targets: c, x: to.x, duration: dur, delay, ease: "Sine.InOut" });
         this.tweens.add({ targets: c, y: to.y, duration: dur, delay, ease: "Back.In", onComplete: () => { c.destroy(); if (done) done(); } });
         this.tweens.add({ targets: c, scale: { from: 1, to: 0.85 }, duration: dur, delay });
