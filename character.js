@@ -52,6 +52,12 @@
   ART.girl.ar = (ART.girl.bb[2] - ART.girl.bb[0]) / (ART.girl.bb[3] - ART.girl.bb[1]);
   ART.boy.ar = (ART.boy.bb[2] - ART.boy.bb[0]) / (ART.boy.bb[3] - ART.boy.bb[1]);
 
+  // Leeftijdsfasen: per fase een eigen officiële tekening per type. Ontbreekt de tekening van een fase, dan
+  // valt het personage terug op fase 1 (zie CHARACTER_ASSET_REQUIREMENTS.md voor wat er aangeleverd kan worden).
+  const STAGES = { girl: { 1: ART.girl }, boy: { 1: ART.boy } };
+  const artStage = (cfg) => (STAGES[cfg.type] && STAGES[cfg.type][cfg.stage] ? cfg.stage : 1);
+  const artOf = (cfg) => STAGES[cfg.type][artStage(cfg)];
+
   const TONES = { light: { kl: 1.1, ks: 0.72, dh: 2 }, medium: null, dark: { kl: 0.52, ks: 0.9, dh: -4 } };
 
   // ---------- Kleur-helpers ----------
@@ -82,7 +88,7 @@
   function normalize(cfg) {
     if (!cfg) cfg = {};
     const type = cfg.type === "girl" ? "girl" : "boy";
-    const out = { v: 2, type, skin: hexTone(cfg.skin || cfg.skinTone || "medium") };
+    const out = { v: 2, type, skin: hexTone(cfg.skin || cfg.skinTone || "medium"), stage: [1, 2, 3].includes(cfg.stage) ? cfg.stage : 1 };
     SLOTS.forEach((s) => {
       const it = cfg[s] ? itemById(cfg[s]) : null;
       if (it && it.category === s && forType(it, type)) out[s] = it.id;
@@ -119,6 +125,16 @@
       const cfg = normalize({ ...cur, ...patch });
       store.set(cfgKey(pid), cfg);
       return cfg;
+    },
+
+    // ---------- Leeftijdsfase (het personage groeit mee met de werelden) ----------
+    stageOf(pid) { const c = this.getConfig(pid); return c ? c.stage || 1 : 1; },
+    setStage(pid, n) { const c = this.getConfig(pid); if (!c || (c.stage || 1) === n) return c; return this.saveConfig(pid, { stage: n }); },
+    // Items die in de winkel/kast getoond worden: gratis starters, wat je al bezit, en wat bij de huidige fase past.
+    shopItems(pid, category) {
+      const cfg = this.getConfig(pid); if (!cfg) return [];
+      const owned = this.getUnlocked(pid), st = cfg.stage || 1;
+      return C.items.filter((i) => i.category === category && forType(i, cfg.type) && (i.price === 0 || owned.includes(i.id) || (i.stages || [1, 2, 3]).includes(st)));
     },
 
     // ---------- Winkel ----------
@@ -169,7 +185,7 @@
     render(cfg, mood) {
       cfg = normalize(cfg || { type: "boy" });
       mood = this.MOODS.includes(mood) ? mood : "idle";
-      const A = ART[cfg.type], u = "ch" + (uid++);
+      const A = artOf(cfg), u = "ch" + (uid++);
       const cached = imageCache.get(baseKey(cfg)) || lastUrl.get(cfg.type); // geen flits: tot de nieuwe kleur klaar is blijft de vorige staan
       const fx = A.fx;
       return `<span class="char-render" data-cfg='${JSON.stringify(cfg)}' style="--ar:${A.ar};--hx:${fx.hx}%;--hy:${fx.hy}%;--rx:${fx.rx}%;--ry:${fx.ry}%">` +
@@ -191,7 +207,7 @@
 
   // ---------- Gekleurde basisafbeelding ----------
   const imageCache = new Map(), pending = new Map(), srcCache = new Map(), lastUrl = new Map();
-  const baseKey = (cfg) => [cfg.type, cfg.skin, cfg.hijab, cfg.outfit, cfg.shoes, cfg.kufi].join("|");
+  const baseKey = (cfg) => [cfg.type, artStage(cfg), cfg.skin, cfg.hijab, cfg.outfit, cfg.shoes, cfg.kufi].join("|");
   function loadImg(src) {
     if (!srcCache.has(src)) srcCache.set(src, new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = src; }));
     return srcCache.get(src);
@@ -204,8 +220,8 @@
     const key = baseKey(cfg);
     if (imageCache.has(key)) return Promise.resolve(imageCache.get(key));
     if (pending.has(key)) return pending.get(key);
-    const p = loadImg(ART[cfg.type].src).then((img) => {
-      const A = ART[cfg.type], [x0, y0, x1, y1] = A.bb, w = x1 - x0, h = y1 - y0;
+    const p = loadImg(artOf(cfg).src).then((img) => {
+      const A = artOf(cfg), [x0, y0, x1, y1] = A.bb, w = x1 - x0, h = y1 - y0;
       const OH = 720, OW = Math.round(OH * w / h), sc = OW / w;
       const cv = document.createElement("canvas"); cv.width = OW; cv.height = OH;
       const cx = cv.getContext("2d", { willReadFrequently: true });
@@ -283,7 +299,7 @@
     el.dataset.h = "1";
     let cfg; try { cfg = JSON.parse(el.dataset.cfg); } catch { return; }
     const img = el.querySelector(".char-base"); if (!img) return;
-    buildBase(cfg).then((url) => { img.src = url; img.classList.add("ready"); }).catch(() => { img.src = ART[cfg.type].src; img.classList.add("ready"); });
+    buildBase(cfg).then((url) => { img.src = url; img.classList.add("ready"); }).catch(() => { img.src = artOf(cfg).src; img.classList.add("ready"); });
   }
   function hydrateIn(root) {
     if (!root || root.nodeType !== 1) return;
@@ -397,6 +413,45 @@
         <circle cx="250" cy="-130" r="48" fill="#fff" opacity=".55"/><circle cx="170" cy="-215" r="26" fill="#fff" opacity=".5"/><circle cx="215" cy="150" r="34" fill="#fff" opacity=".5"/></g>`;
       return `<defs>${grad(u + "a", "#ff9bd0", "#b06af0", 1)}${grad(u + "b", "#9ad0ff", "#b06af0", 1)}</defs>${wing(1)}${wing(-1)}`;
     },
+    cap(A, u) {
+      const [x, y] = A.hat, w = A.hatW * 0.62;
+      return `<defs>${grad(u + "c", "#5a9cf0", "#2b5fb8")}</defs><g transform="translate(${x} ${y + 165}) rotate(${A.tilt * 0.8})">
+        <path d="M${-w / 2} 0 Q${-w / 2} ${-w * 0.6} 0 ${-w * 0.6} Q${w / 2} ${-w * 0.6} ${w / 2} 0Z" fill="url(#${u}c)" stroke="#1d4585" stroke-width="7" stroke-linejoin="round"/>
+        <path d="M${-w * 0.45} -6 L${w * 0.5} -6 Q${w * 0.98} 6 ${w * 0.84} 36 Q${w * 0.15} 26 ${-w * 0.45} 8Z" fill="#2b5fb8" stroke="#1d4585" stroke-width="7" stroke-linejoin="round"/>
+        <circle cx="0" cy="${-w * 0.6}" r="14" fill="#2b5fb8" stroke="#1d4585" stroke-width="5"/>
+        <path d="M${-w * 0.3} ${-w * 0.32} Q0 ${-w * 0.52} ${w * 0.3} ${-w * 0.32}" stroke="#fff" stroke-width="9" fill="none" opacity=".35" stroke-linecap="round"/></g>`;
+    },
+    headphones(A) {
+      const [x, y] = A.hat, ex = (A.eyeL[0] + A.eyeR[0]) / 2, ey = (A.eyeL[1] + A.eyeR[1]) / 2, dx = A.hatW * 0.5, cy = ey + 10;
+      const cup = (cx) => `<rect x="${cx - 36}" y="${cy - 74}" width="72" height="148" rx="32" fill="#e5304a" stroke="#2a2a34" stroke-width="9"/><rect x="${cx - 18}" y="${cy - 40}" width="36" height="80" rx="16" fill="#ff7a8a" opacity=".7"/>`;
+      return `<g transform="rotate(${A.tilt * 0.5} ${ex} ${ey})"><path d="M${ex - dx} ${cy} Q${ex - dx} ${y + 30} ${ex} ${y + 14} Q${ex + dx} ${y + 30} ${ex + dx} ${cy}" fill="none" stroke="#2a2a34" stroke-width="30" stroke-linecap="round"/>
+        <path d="M${ex - dx + 4} ${cy - 40} Q${ex - dx + 8} ${y + 50} ${ex} ${y + 34}" fill="none" stroke="#6a6a7a" stroke-width="8" stroke-linecap="round" opacity=".7"/>${cup(ex - dx)}${cup(ex + dx)}</g>`;
+    },
+    watch(A) {
+      const [x, y] = A.handL;
+      return `<g transform="translate(${x + 78} ${y - 38}) rotate(-28)"><rect x="-34" y="-58" width="68" height="116" rx="16" fill="#3a4a6a" stroke="#1e2a44" stroke-width="7"/>
+        <circle r="46" fill="#fff" stroke="#1e2a44" stroke-width="8"/><circle r="38" fill="#eaf4ff"/><path d="M0 0 L0 -26M0 0 L18 8" stroke="#1e2a44" stroke-width="7" stroke-linecap="round"/><circle r="5" fill="#e5304a"/></g>`;
+    },
+    tasbih(A, u) {
+      const [x, y] = A.handR;
+      const beads = Array.from({ length: 17 }, (_, i) => { const t = i / 16; return `<circle cx="${(x - 30 - 70 * Math.sin(Math.PI * t)).toFixed(1)}" cy="${(y + 10 + 200 * t).toFixed(1)}" r="16" fill="url(#${u}t)" stroke="#146a58" stroke-width="3"/>`; }).join("");
+      return `<defs><radialGradient id="${u}t" cx=".35" cy=".3"><stop offset="0" stop-color="#8ff0d0"/><stop offset="1" stop-color="#1f9e80"/></radialGradient></defs>${beads}
+        <path d="M${x - 30} ${y + 215} L${x - 30} ${y + 285}" stroke="#146a58" stroke-width="9" stroke-linecap="round"/><ellipse cx="${x - 30}" cy="${y + 292}" rx="14" ry="22" fill="#1f9e80" stroke="#146a58" stroke-width="3"/>`;
+    },
+    quran(A, u) {
+      const [x, y] = A.handR;
+      return `<defs>${grad(u + "q", "#2fae7c", "#17795a")}</defs><g transform="translate(${x - 92} ${y - 120}) rotate(12) scale(1.3)">
+        <rect x="-62" y="-80" width="124" height="164" rx="12" fill="url(#${u}q)" stroke="#0f5a40" stroke-width="7"/><rect x="-48" y="-66" width="96" height="136" rx="8" fill="none" stroke="#f2c14e" stroke-width="5"/>
+        <circle cx="0" cy="-8" r="26" fill="none" stroke="#f2c14e" stroke-width="5"/>${star(0, -8, 16, "#f2c14e", "#b8861e")}<rect x="-30" y="34" width="60" height="7" rx="3" fill="#f2c14e"/></g>`;
+    },
+    backpack(A, u) {
+      const [nx, ny] = A.neck, [cx, cy] = A.chest, [bx, by] = A.back;
+      const strap = (s) => `<path d="M${nx + s * 100} ${ny - 40} Q${nx + s * 170} ${cy - 40} ${cx + s * 130} ${cy + 250}" fill="none" stroke="#2a62b8" stroke-width="44" stroke-linecap="round"/><path d="M${nx + s * 100} ${ny - 40} Q${nx + s * 170} ${cy - 40} ${cx + s * 130} ${cy + 250}" fill="none" stroke="#5a96e8" stroke-width="14" stroke-linecap="round" opacity=".6"/><rect x="${cx + s * 130 - 20}" y="${cy + 120}" width="40" height="30" rx="6" fill="#e8c34a" stroke="#a8841a" stroke-width="4"/>`;
+      return {
+        back: `<defs>${grad(u + "k", "#4a86e0", "#2a56a8")}</defs><rect x="${bx - 300}" y="${ny - 70}" width="600" height="560" rx="110" fill="url(#${u}k)" stroke="#1d3f80" stroke-width="10"/><rect x="${bx - 130}" y="${ny + 230}" width="260" height="170" rx="54" fill="#3a70c8" stroke="#1d3f80" stroke-width="8"/>`,
+        front: strap(-1) + strap(1),
+      };
+    },
     duck(A) {
       const x = A.petX, y = A.H - 95;
       return `<g transform="translate(${x - 20} ${y - 40}) scale(1.55)"><ellipse cx="0" cy="62" rx="88" ry="14" fill="#000" opacity=".12"/>
@@ -419,14 +474,16 @@
   const BACK_ART = new Set(["butterfly"]);
 
   function layer(cfg, which, u) {
-    const A = ART[cfg.type].a;
+    const A = artOf(cfg).a;
     const parts = [];
     ["back", "pet", "hand", "neck", "face", "head"].forEach((slot) => {
       const it = cfg[slot] ? itemById(cfg[slot]) : null;
       if (!it || !ART_FN[it.art]) return;
+      const out = ART_FN[it.art](A, u + slot);
+      if (typeof out === "object") { if (out[which]) parts.push(out[which]); return; } // tekening met een achter- en voorkant
       const isBack = BACK_ART.has(it.art);
       if ((which === "back") !== isBack) return;
-      parts.push(ART_FN[it.art](A, u + slot));
+      parts.push(out);
     });
     if (!parts.length) return "";
     return `<svg class="char-layer char-layer-${which}" viewBox="0 0 1000 ${A.H}" preserveAspectRatio="none" aria-hidden="true">${parts.join("")}</svg>`;

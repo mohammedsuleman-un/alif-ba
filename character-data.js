@@ -106,21 +106,29 @@ window.CHARACTER = {
   add("kufi", "boy", NOUN.kufi, "kufi", [["cream", 0, 0], ["sky", 20, 0], ["mint", 20, 1], ["rose", 25, 3], ["butter", 25, 4], ["emerald", 40, 6], ["royal", 40, 8], ["black", 45, 10]], C.cloths);
 
   // ---- Accessoires (getekende lagen; `art` = naam van de tekenfunctie in character.js) ----
-  const acc = (id, category, art, icon, price, shelf, label, type) => C.items.push({ id, category, art, icon, characterType: type || "both", price, shelf, label });
-  acc("head_star",    "head", "starband",  "⭐", 40, 1,  L("حزام نجمة", "Sterrenband", "Star headband", "Yıldız bandı"));
-  acc("head_party",   "head", "party",     "🎉", 60, 3,  L("قبعة حفلة", "Feesthoedje", "Party hat", "Parti şapkası"));
-  acc("head_flowers", "head", "flowers",   "🌸", 80, 5,  L("إكليل زهور", "Bloemenkrans", "Flower crown", "Çiçek tacı"));
+  // Leeftijdsfasen (1 = klein, 2 = middel, 3 = groot): `stages` bepaalt in welke fase een item in de winkel staat.
+  // Wat je al bezit blijft altijd van jou en te dragen. Default = alle fasen.
+  const acc = (id, category, art, icon, price, shelf, label, type, stages) => C.items.push({ id, category, art, icon, characterType: type || "both", price, shelf, label, stages: stages || [1, 2, 3] });
+  acc("head_star",    "head", "starband",  "⭐", 40, 1,  L("حزام نجمة", "Sterrenband", "Star headband", "Yıldız bandı"), "both", [1, 2]);
+  acc("head_party",   "head", "party",     "🎉", 60, 3,  L("قبعة حفلة", "Feesthoedje", "Party hat", "Parti şapkası"), "both", [1]);
+  acc("head_flowers", "head", "flowers",   "🌸", 80, 5,  L("إكليل زهور", "Bloemenkrans", "Flower crown", "Çiçek tacı"), "both", [1, 2]);
   acc("head_crown",   "head", "crown",     "👑", 160, 8, L("تاج ذهبي", "Gouden kroon", "Golden crown", "Altın taç"));
+  acc("head_cap",     "head", "cap",       "🧢", 60, 2,  L("قبعة رياضية", "Sportpet", "Sports cap", "Spor şapka"), "both", [2, 3]);
+  acc("head_phones",  "head", "headphones","🎧", 90, 5,  L("سماعات", "Koptelefoon", "Headphones", "Kulaklık"), "both", [2, 3]);
   acc("face_glasses", "face", "glasses",   "👓", 50, 2,  L("نظارة", "Ronde bril", "Round glasses", "Yuvarlak gözlük"));
   acc("face_sun",     "face", "sunglasses","🕶️", 80, 4, L("نظارة شمسية", "Zonnebril", "Sunglasses", "Güneş gözlüğü"));
-  acc("neck_bow",     "neck", "bowtie",    "🎀", 30, 1,  L("ربطة فراشة", "Strik", "Bow tie", "Papyon"));
+  acc("neck_bow",     "neck", "bowtie",    "🎀", 30, 1,  L("ربطة فراشة", "Strik", "Bow tie", "Papyon"), "both", [1, 2]);
   acc("neck_scarf",   "neck", "scarf",     "🧣", 50, 3,  L("وشاح", "Sjaal", "Scarf", "Atkı"));
   acc("neck_medal",   "neck", "medal",     "🏅", 90, 6,  L("ميدالية", "Gouden medaille", "Gold medal", "Altın madalya"));
-  acc("hand_balloon", "hand", "balloon",   "🎈", 40, 2,  L("بالون", "Ballon", "Balloon", "Balon"));
-  acc("hand_lantern", "hand", "lantern",   "🏮", 90, 5,  L("فانوس", "Lantaarn", "Lantern", "Fener"));
-  acc("back_wings",   "back", "butterfly", "🦋", 200, 9, L("أجنحة فراشة", "Vlindervleugels", "Butterfly wings", "Kelebek kanatları"));
-  acc("pet_duck",     "pet",  "duck",      "🦆", 100, 4, L("بطة صغيرة", "Eendje", "Little duck", "Ördek"));
-  acc("pet_cat",      "pet",  "cat",       "🐱", 150, 7, L("قطة", "Katje", "Kitten", "Kedi"));
+  acc("hand_balloon", "hand", "balloon",   "🎈", 40, 2,  L("بالون", "Ballon", "Balloon", "Balon"), "both", [1]);
+  acc("hand_lantern", "hand", "lantern",   "🏮", 90, 5,  L("فانوس", "Lantaarn", "Lantern", "Fener"), "both", [1, 2]);
+  acc("hand_watch",   "hand", "watch",     "⌚", 70, 4,  L("ساعة", "Horloge", "Watch", "Saat"), "both", [2, 3]);
+  acc("hand_tasbih",  "hand", "tasbih",    "📿", 80, 6,  L("سبحة", "Tasbih", "Prayer beads", "Tespih"), "both", [2, 3]);
+  acc("hand_quran",   "hand", "quran",     "📖", 120, 8, L("مصحف", "Koran", "Qur'an", "Kur'an"), "both", [2, 3]);
+  acc("back_wings",   "back", "butterfly", "🦋", 200, 9, L("أجنحة فراشة", "Vlindervleugels", "Butterfly wings", "Kelebek kanatları"), "both", [1, 2]);
+  acc("back_pack",    "back", "backpack",  "🎒", 100, 3, L("حقيبة مدرسية", "Schooltas", "School bag", "Okul çantası"), "both", [2, 3]);
+  acc("pet_duck",     "pet",  "duck",      "🦆", 100, 4, L("بطة صغيرة", "Eendje", "Little duck", "Ördek"), "both", [1]);
+  acc("pet_cat",      "pet",  "cat",       "🐱", 150, 7, L("قطة", "Katje", "Kitten", "Kedi"), "both", [1, 2, 3]);
 
   // Categorieën in de volgorde van de kledingkast; `types` = voor wie.
   C.categories = [

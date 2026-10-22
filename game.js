@@ -299,11 +299,11 @@
   // ---------- Scherm-elementen ----------
   const scr = {
     root: $("game"), profile: $("gProfile"), charCreate: $("gCharCreate"), map: $("gMap"),
-    level: $("gLevel"), wardrobe: $("gWardrobe"), complete: $("gComplete"),
+    level: $("gLevel"), wardrobe: $("gWardrobe"), overview: $("gOverview"), complete: $("gComplete"),
   };
 
   function showScreen(name) {
-    ["profile", "charCreate", "map", "level", "wardrobe"].forEach((k) => { scr[k].hidden = k !== name; });
+    ["profile", "charCreate", "map", "level", "wardrobe", "overview"].forEach((k) => { scr[k].hidden = k !== name; });
   }
 
   // ---------- Profielscherm ----------
@@ -489,7 +489,7 @@
       if (activeCat === "skin") {
         grid = window.CHARACTER.skinTones.map((s) => `<button type="button" class="wd-item owned ${cfg.skin === s.id ? "equipped" : ""}" data-skin="${s.id}"><span class="wd-dot" style="background:${s.swatch}"></span>${cfg.skin === s.id ? `<span class="wd-tag on">✓</span>` : ""}</button>`).join("");
       } else {
-        const items = Character.itemsByCategory(cfg.type, activeCat).slice().sort((a, b) => (owned.includes(a.id) || a.price === 0 ? 0 : 1) - (owned.includes(b.id) || b.price === 0 ? 0 : 1) || a.shelf - b.shelf);
+        const items = Character.shopItems(pid, activeCat).slice().sort((a, b) => (owned.includes(a.id) || a.price === 0 ? 0 : 1) - (owned.includes(b.id) || b.price === 0 ? 0 : 1) || a.shelf - b.shelf);
         const none = REMOVABLE.includes(activeCat) ? `<button type="button" class="wd-item owned ${cfg[activeCat] ? "" : "equipped"}" data-none="1"><span class="wd-icon">✕</span><span class="wd-label">${w.none}</span>${cfg[activeCat] ? "" : `<span class="wd-tag on">✓</span>`}</button>` : "";
         grid = none + items.map((i) => cardFor(i, owned.includes(i.id) || i.price === 0, cfg[activeCat] === i.id)).join("");
       }
@@ -746,6 +746,7 @@
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
         ${world.id === "letter_oasis" ? `<a href="#/gamestage/games" class="g-icon-btn" aria-label="Minigames">🎯</a>` : ""}
+        <a href="#/spel/kaart" class="g-icon-btn" aria-label="Kaart">🗺️</a>
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-scene-wrap" data-theme="${world.theme}">
@@ -836,6 +837,7 @@
           <span>${t.levelsProgress(doneCount, levels.length)}</span>
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
+        <a href="#/spel/kaart" class="g-icon-btn" aria-label="Kaart">🗺️</a>
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
       <div class="g-world-viewport" id="gWorldViewport">
@@ -1239,6 +1241,87 @@
     }
   }
 
+  // ---------- Totale kaart: alle hoofdstukken (werelden) op één kaart ----------
+  // Hoofdstuk 1 onderaan, 9 bovenaan. Per hoofdstuk: gedaan / huidig / open / op slot / binnenkort.
+  // Met een aangeleverde tekening (assets/worlds/overview/map.jpg) komt die achter de knopen; zonder tekening
+  // staat er een thema-gekleurd landschap (zie worlds.css), zodat de kaart altijd werkt.
+  const OVT = {
+    nl: { title: "Wereldkaart", soon: "Binnenkort", locked: "Eerst de vorige wereld afronden", level: "levels", stage: "Jij" },
+    en: { title: "World map", soon: "Coming soon", locked: "Finish the previous world first", level: "levels", stage: "You" },
+    ar: { title: "خريطة العالم", soon: "قريبًا", locked: "أكمل العالم السابق أولًا", level: "مستويات", stage: "أنت" },
+    tr: { title: "Dünya haritası", soon: "Çok yakında", locked: "Önce önceki dünyayı bitir", level: "seviye", stage: "Sen" },
+  };
+  const OVx = () => OVT[glang()] || OVT.nl;
+
+  function chapterInfo() {
+    const out = [];
+    G.chapters.forEach((ch, idx) => {
+      const areas = ch.areas.map((id) => G.worlds.find((w) => w.id === id)).filter(Boolean);
+      const total = areas.reduce((s, w) => s + w.levels.length, 0);
+      const done = areas.reduce((s, w) => s + w.levels.filter((lv) => state.levels[levelId(w, lv)]).length, 0);
+      let status;
+      if (!areas.length) status = "soon";
+      else if (done >= total) status = "done";
+      else { const prev = out[idx - 1]; status = !prev || prev.status === "done" ? "open" : "locked"; }
+      out.push({ ch, areas, total, done, status });
+    });
+    return out;
+  }
+  // Leeftijdsfase van het personage = hoogste fase van een hoofdstuk dat open of klaar is.
+  function currentStage() {
+    return chapterInfo().filter((c) => c.status === "open" || c.status === "done").reduce((m, c) => Math.max(m, c.ch.stage), 1);
+  }
+  function chapterTarget(info) {
+    const open = info.areas.find((w) => worldUnlocked(w) && w.levels.some((lv) => !state.levels[levelId(w, lv)]));
+    return (open || info.areas[0]).id;
+  }
+
+  function renderOverview() {
+    const t = GT(), o = OVx();
+    document.documentElement.dir = t.dir;
+    const infos = chapterInfo();
+    const cur = infos.findIndex((c) => c.status === "open");
+    const here = cur >= 0 ? cur : Math.max(0, infos.map((c) => c.status).lastIndexOf("done"));
+    const nodes = infos.map((c, i) => {
+      const mark = c.status === "done" ? "<i class=\"ov-badge ok\">✓</i>" : c.status === "locked" ? "<i class=\"ov-badge\">🔒</i>" : c.status === "soon" ? "<i class=\"ov-badge soon\">🚧</i>" : "";
+      const prog = c.total ? `<span class="ov-prog">${c.done}/${c.total}</span>` : `<span class="ov-prog">${o.soon}</span>`;
+      return `<button type="button" class="ov-node st-${c.status} ${i === here ? "is-here" : ""}" data-i="${i}" style="left:${c.ch.pos.x * 100}%;top:${c.ch.pos.y * 100}%;--c1:${c.ch.c[0]};--c2:${c.ch.c[1]}" aria-label="${gsub(c.ch.title)}">
+        <span class="ov-disc"><b class="ov-n">${c.ch.n}</b><span class="ov-icon">${c.ch.icon}</span>${mark}</span>
+        <span class="ov-label">${gsub(c.ch.land)}</span><span class="ov-sub">${gsub(c.ch.title)}</span>${prog}</button>`;
+    }).join("");
+    const regions = infos.map((c) => `<div class="ov-region st-${c.status}" style="left:${c.ch.pos.x * 100}%;top:${c.ch.pos.y * 100}%;--c1:${c.ch.c[0]}"></div>`).join("");
+    const pts = infos.map((c) => ({ x: c.ch.pos.x * 100, y: c.ch.pos.y * 150 }));
+    const me = infos[here];
+    const meHtml = `<div class="ov-me" style="left:${me.ch.pos.x * 100}%;top:${me.ch.pos.y * 100}%">${Character.svg(Character.getConfig(activeProfile.id), "wave")}</div>`;
+    const target = infos.find((c) => c.status === "open") || infos[0];
+    scr.overview.innerHTML = `
+      <div class="ov-wrap">
+        <div class="g-profile-head">
+          <a href="#/spel/wereld/${chapterTarget(target)}" class="g-back-book">←</a>
+          <h2 class="g-who" style="margin:0;font-size:18px;">${o.title}</h2>
+        <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
+        </div>
+        <div class="ov-scene">
+          <img class="ov-bg" src="assets/worlds/overview/map.jpg" alt="" onerror="this.remove()">
+          <div class="ov-art" aria-hidden="true">${regions}</div>
+          <svg class="ov-path" viewBox="0 0 100 150" preserveAspectRatio="none" aria-hidden="true"><path d="${smoothPath(pts)}" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="1.6" stroke-dasharray="3 2.4" stroke-linecap="round"/></svg>
+          ${nodes}${meHtml}
+          <div class="ov-toast" id="ovToast" hidden></div>
+        </div>
+      </div>`;
+    let toastT;
+    const toast = (msg) => { const el = $("ovToast"); el.textContent = msg; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 1800); };
+    scr.overview.querySelectorAll(".ov-node").forEach((b) => (b.onclick = () => {
+      const info = infos[+b.dataset.i];
+      sfx.tap();
+      if (info.status === "soon") return toast(`🚧 ${gsub(info.ch.land)} · ${o.soon}`);
+      if (info.status === "locked") return toast(`🔒 ${o.locked}`);
+      gohash(`#/spel/wereld/${chapterTarget(info)}`);
+    }));
+    const hereEl = scr.overview.querySelector(".ov-node.is-here");
+    if (hereEl) setTimeout(() => hereEl.scrollIntoView({ block: "center", behavior: "smooth" }), 60);
+  }
+
   // ---------- Routing ----------
   function gohash(h) { location.hash = h; }
 
@@ -1262,12 +1345,15 @@
     const mLevel = h.match(/^#\/spel\/level\/([\w-]+)\/(\d+)/);
     const mPersonage = h.startsWith("#/spel/personage");
     const mWardrobe = h.startsWith("#/spel/kledingkast");
-    if (!activeProfile && (mWorld || mLevel || mWardrobe)) return gohash("#/spel");
+    const mOverview = h.startsWith("#/spel/kaart");
+    if (!activeProfile && (mWorld || mLevel || mWardrobe || mOverview)) return gohash("#/spel");
     // Elk kindprofiel heeft een eigen leermaatje nodig vóórdat het verder mag —
     // ook bestaande profielen van vóór dit systeem (zie spec §27).
     if (activeProfile && !Character.isConfigured(activeProfile.id) && !mPersonage) return gohash("#/spel/personage");
     if (mPersonage) { showScreen("charCreate"); renderCharacterCreator(); return; }
+    if (activeProfile && Character.isConfigured(activeProfile.id)) Character.setStage(activeProfile.id, currentStage()); // het personage groeit mee
     if (mWardrobe) { showScreen("wardrobe"); renderWardrobe(); return; }
+    if (mOverview) { showScreen("overview"); renderOverview(); return; }
     if (mLevel) {
       const w = G.worlds.find((x) => x.id === mLevel[1]);
       if (w && !worldUnlocked(w)) return gohash("#/spel");
