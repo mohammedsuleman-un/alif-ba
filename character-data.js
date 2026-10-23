@@ -100,10 +100,10 @@ window.CHARACTER = {
   add("shoes", "girl", NOUN.shoes, "shoes_g", [["pink", 0, 0], ["white", 20, 0], ["blue", 25, 1], ["purple", 25, 3], ["yellow", 30, 4], ["red", 30, 5], ["green", 30, 6], ["black", 35, 8]], C.accents);
 
   // ---- Jongen ----
-  add("outfit", "boy", NOUN.thobe, "thobe", [["cream", 0, 0], ["mint", 0, 0], ["sky", 25, 1], ["lilac", 25, 2], ["butter", 30, 3], ["rose", 30, 4], ["peach", 35, 5],
+  add("outfit", "boy", NOUN.thobe, "thobe", [["cream", 0, 0], ["mint", 0, 0], ["sky", 25, 1], ["lilac", 25, 2], ["butter", 30, 3], ["peach", 35, 5],
     ["sage", 35, 6], ["grey", 35, 7], ["emerald", 55, 8], ["royal", 55, 9], ["plum", 55, 10], ["black", 60, 11]], C.cloths);
   add("shoes", "boy", NOUN.sandals, "sandals", [["brown", 0, 0], ["blue", 20, 0], ["green", 25, 1], ["red", 25, 3], ["yellow", 30, 4], ["purple", 30, 6], ["black", 35, 8]], C.sandals);
-  add("kufi", "boy", NOUN.kufi, "kufi", [["cream", 0, 0], ["sky", 20, 0], ["mint", 20, 1], ["rose", 25, 3], ["butter", 25, 4], ["emerald", 40, 6], ["royal", 40, 8], ["black", 45, 10]], C.cloths);
+  add("kufi", "boy", NOUN.kufi, "kufi", [["cream", 0, 0], ["sky", 20, 0], ["mint", 20, 1], ["butter", 25, 4], ["emerald", 40, 6], ["royal", 40, 8], ["black", 45, 10]], C.cloths);
 
   // ---- Accessoires (getekende lagen; `art` = naam van de tekenfunctie in character.js) ----
   // Leeftijdsfasen (1 = klein, 2 = middel, 3 = groot): `stages` bepaalt in welke fase een item in de winkel staat.
@@ -111,13 +111,13 @@ window.CHARACTER = {
   const acc = (id, category, art, icon, price, shelf, label, type, stages) => C.items.push({ id, category, art, icon, characterType: type || "both", price, shelf, label, stages: stages || [1, 2, 3] });
   acc("head_star",    "head", "starband",  "⭐", 40, 1,  L("حزام نجمة", "Sterrenband", "Star headband", "Yıldız bandı"), "both", [1, 2]);
   acc("head_party",   "head", "party",     "🎉", 60, 3,  L("قبعة حفلة", "Feesthoedje", "Party hat", "Parti şapkası"), "both", [1]);
-  acc("head_flowers", "head", "flowers",   "🌸", 80, 5,  L("إكليل زهور", "Bloemenkrans", "Flower crown", "Çiçek tacı"), "both", [1, 2]);
+  acc("head_flowers", "head", "flowers",   "🌸", 80, 5,  L("إكليل زهور", "Bloemenkrans", "Flower crown", "Çiçek tacı"), "girl", [1, 2]);
   acc("head_crown",   "head", "crown",     "👑", 160, 8, L("تاج ذهبي", "Gouden kroon", "Golden crown", "Altın taç"));
   acc("head_cap",     "head", "cap",       "🧢", 60, 2,  L("قبعة رياضية", "Sportpet", "Sports cap", "Spor şapka"), "both", [2, 3]);
   acc("head_phones",  "head", "headphones","🎧", 90, 5,  L("سماعات", "Koptelefoon", "Headphones", "Kulaklık"), "both", [2, 3]);
   acc("face_glasses", "face", "glasses",   "👓", 50, 2,  L("نظارة", "Ronde bril", "Round glasses", "Yuvarlak gözlük"));
   acc("face_sun",     "face", "sunglasses","🕶️", 80, 4, L("نظارة شمسية", "Zonnebril", "Sunglasses", "Güneş gözlüğü"));
-  acc("neck_bow",     "neck", "bowtie",    "🎀", 30, 1,  L("ربطة فراشة", "Strik", "Bow tie", "Papyon"), "both", [1, 2]);
+  acc("neck_bow",     "neck", "bowtie",    "🎀", 30, 1,  L("ربطة فراشة", "Strik", "Bow tie", "Papyon"), "girl", [1, 2]);
   acc("neck_scarf",   "neck", "scarf",     "🧣", 50, 3,  L("وشاح", "Sjaal", "Scarf", "Atkı"));
   acc("neck_medal",   "neck", "medal",     "🏅", 90, 6,  L("ميدالية", "Gouden medaille", "Gold medal", "Altın madalya"));
   acc("hand_balloon", "hand", "balloon",   "🎈", 40, 2,  L("بالون", "Ballon", "Balloon", "Balon"), "both", [1]);
@@ -125,23 +125,26 @@ window.CHARACTER = {
   acc("hand_watch",   "hand", "watch",     "⌚", 70, 4,  L("ساعة", "Horloge", "Watch", "Saat"), "both", [2, 3]);
   acc("hand_tasbih",  "hand", "tasbih",    "📿", 80, 6,  L("سبحة", "Tasbih", "Prayer beads", "Tespih"), "both", [2, 3]);
   acc("hand_quran",   "hand", "quran",     "📖", 120, 8, L("مصحف", "Koran", "Qur'an", "Kur'an"), "both", [2, 3]);
-  acc("back_wings",   "back", "butterfly", "🦋", 200, 9, L("أجنحة فراشة", "Vlindervleugels", "Butterfly wings", "Kelebek kanatları"), "both", [1, 2]);
-  acc("back_pack",    "back", "backpack",  "🎒", 100, 3, L("حقيبة مدرسية", "Schooltas", "School bag", "Okul çantası"), "both", [2, 3]);
+  acc("back_wings",   "back", "butterfly", "🦋", 200, 9, L("أجنحة فراشة", "Vlindervleugels", "Butterfly wings", "Kelebek kanatları"), "girl", [1, 2]);
+  acc("back_pack",    "back", "backpack",  "🎒", 100, 3, L("حقيبة مدرسية", "Schooltas", "School bag", "Okul çantası"), "both", [1, 2, 3]);
   acc("pet_duck",     "pet",  "duck",      "🦆", 100, 4, L("بطة صغيرة", "Eendje", "Little duck", "Ördek"), "both", [1]);
   acc("pet_cat",      "pet",  "cat",       "🐱", 150, 7, L("قطة", "Katje", "Kitten", "Kedi"), "both", [1, 2, 3]);
+
+  // Abaya-icoontje (lange wijde mantel met mouwen en een riem), want er is geen emoji voor.
+  const ABAYA = '<svg viewBox="0 0 24 24" width="1.15em" height="1.15em" aria-hidden="true" style="vertical-align:-0.2em"><path d="M9 2.5 12 4l3-1.5 3.2 2.6-1 4.2-1.2-.5L18.4 22H5.6l1.4-13.7-1.2.5-1-4.2z" fill="#8b5fd6"/><path d="M12 4v18" stroke="#6d44b8" stroke-width=".9" fill="none"/><path d="M7.2 11.5h9.6" stroke="#f2c542" stroke-width="1.3" stroke-linecap="round"/><path d="M10 2.8 12 5l2-2.2" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".9"/></svg>';
 
   // Categorieën in de volgorde van de kledingkast; `types` = voor wie.
   C.categories = [
     { id: "skin",   icon: "🎨", types: ["girl", "boy"], label: L("لون البشرة", "Huidskleur", "Skin tone", "Ten rengi") },
     { id: "hijab",  icon: "🧕", types: ["girl"],        label: L("الحجاب", "Hijab", "Hijab", "Başörtüsü") },
     { id: "kufi",   icon: "🧢", types: ["boy"],         label: L("الطاقية", "Kufi", "Kufi", "Takke") },
-    { id: "outfit", icon: "👗", types: ["girl", "boy"], label: L("الملابس", "Kleding", "Outfit", "Kıyafet") },
+    { id: "outfit", icon: "👗", icons: { girl: ABAYA, boy: "👕" }, types: ["girl", "boy"], label: L("الملابس", "Kleding", "Outfit", "Kıyafet") },
     { id: "shoes",  icon: "👟", types: ["girl", "boy"], label: L("الحذاء", "Schoenen", "Shoes", "Ayakkabı") },
     { id: "head",   icon: "👑", types: ["girl", "boy"], label: L("الرأس", "Hoofd", "Head", "Baş") },
     { id: "face",   icon: "👓", types: ["girl", "boy"], label: L("الوجه", "Gezicht", "Face", "Yüz") },
-    { id: "neck",   icon: "🎀", types: ["girl", "boy"], label: L("الرقبة", "Hals", "Neck", "Boyun") },
+    { id: "neck",   icon: "🎀", icons: { boy: "🧣" }, types: ["girl", "boy"], label: L("الرقبة", "Hals", "Neck", "Boyun") },
     { id: "hand",   icon: "🎈", types: ["girl", "boy"], label: L("اليد", "Hand", "Hand", "El") },
-    { id: "back",   icon: "🦋", types: ["girl", "boy"], label: L("الظهر", "Rug", "Back", "Sırt") },
+    { id: "back",   icon: "🦋", icons: { boy: "🎒" }, types: ["girl", "boy"], label: L("الظهر", "Rug", "Back", "Sırt") },
     { id: "pet",    icon: "🐱", types: ["girl", "boy"], label: L("رفيق", "Maatje", "Buddy", "Arkadaş") },
   ];
 })();

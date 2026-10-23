@@ -484,7 +484,7 @@
     function render() {
       const owned = Character.getUnlocked(pid), coins = Character.coins(pid);
       const prevCfg = tryItem ? { ...cfg, [tryItem.category]: tryItem.id } : cfg;
-      const tabs = cats.map((c) => `<button type="button" class="wardrobe-tab ${c.id === activeCat ? "sel" : ""}" data-c="${c.id}"><span>${c.icon}</span> ${gsub(c.label)}</button>`).join("");
+      const tabs = cats.map((c) => `<button type="button" class="wardrobe-tab ${c.id === activeCat ? "sel" : ""}" data-c="${c.id}"><span>${(c.icons && c.icons[cfg.type]) || c.icon}</span> ${gsub(c.label)}</button>`).join("");
       let grid = "";
       if (activeCat === "skin") {
         grid = window.CHARACTER.skinTones.map((s) => `<button type="button" class="wd-item owned ${cfg.skin === s.id ? "equipped" : ""}" data-skin="${s.id}"><span class="wd-dot" style="background:${s.swatch}"></span>${cfg.skin === s.id ? `<span class="wd-tag on">✓</span>` : ""}</button>`).join("");
