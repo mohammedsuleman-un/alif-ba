@@ -293,7 +293,7 @@
           W, H, size, anchor, forkH, forkW, rest,
           ropeY: H * 0.09, lanternY: H * 0.09 + size * 0.95 + H * 0.08,
           maxPull: clamp(H * 0.2, 70, 140), stoneR: size * 0.17,
-          maxRange: (rest.y - H * 0.2) * 1.15,
+          maxRange: Math.hypot(W, H), // genoeg om ook een schuin liggende lantaarn te bereiken; de steen stopt zelf bij de rand van het scherm
         };
       }
 
@@ -464,12 +464,25 @@
         const a = this.aimFromStone();
         this.guideG.clear();
         if (a.f < 0.12 || a.dir.y > -0.2) { this.returnStone(); return; } // te zwak/niet omhoog: geen schot, geen fout
-        this.fire(a.dir, this.L.maxRange);
+        this.fire(a.dir, this.L.maxRange, this.assistTarget(a.dir));
       }
 
-      fire(dir, range) {
+      // Richthulp: de lantaarn die het dichtst bij de richtlijn ligt (binnen ca. 1,2 lantaarnbreedte) wordt gevolgd, ook als hij ondertussen wegzweeft.
+      assistTarget(dir) {
+        const time = (this.time.now - this.t0) / 1000, { rest, size } = this.L;
+        let best = null, bestD = size * 0.6;
+        this.lanterns.forEach((l, i) => {
+          const p = this.lanternXY(l, time), vx = p.x - rest.x, vy = p.y - rest.y;
+          const along = vx * dir.x + vy * dir.y; if (along <= 0) return;
+          const perp = Math.abs(vx * dir.y - vy * dir.x);
+          if (perp < bestD) { bestD = perp; best = i; }
+        });
+        return best;
+      }
+
+      fire(dir, range, homing) {
         this.state = "flying";
-        this.shot = { x: this.stonePos.x, y: this.stonePos.y, dir, range, dist: 0 };
+        this.shot = { x: this.stonePos.x, y: this.stonePos.y, dir, range, dist: 0, homing: homing == null ? null : homing };
         // Steen springt vanaf de vorkpositie
         this.shot.x = this.L.rest.x; this.shot.y = this.L.rest.y;
         this.stonePos = { x: this.L.rest.x, y: this.L.rest.y };
@@ -555,6 +568,11 @@
         let remaining = speed * (delta / 1000);
         while (remaining > 0 && sh.dist < sh.range) {
           const step = Math.min(remaining, 6);
+          if (sh.homing != null) { // volg de gekozen lantaarn, ook als die beweegt
+            const hp = this.lanternXY(this.lanterns[sh.homing], time), hx = hp.x - sh.x, hy = hp.y - sh.y, hl = Math.hypot(hx, hy) || 1;
+            sh.dir = { x: hx / hl, y: hy / hl };
+            sh.range = Math.max(sh.range, sh.dist + hl + 10);
+          }
           sh.x += sh.dir.x * step; sh.y += sh.dir.y * step; sh.dist += step; remaining -= step;
           for (let i = 0; i < this.lanterns.length; i++) {
             const p = this.lanternXY(this.lanterns[i], time);
