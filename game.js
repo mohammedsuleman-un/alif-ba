@@ -1328,16 +1328,17 @@
       const dest = `#/spel/wereld/${chapterTarget(info)}`;
       const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduce) return location.replace(dest);
-      const S = 4, cw = sc.clientWidth, ch = sc.clientHeight;
+      const S = 2.4, cw = sc.clientWidth, ch = sc.clientHeight;
       const ix = info.ch.pos.x * scene.offsetWidth, iy = info.ch.pos.y * scene.offsetHeight;
       // het eiland komt in het midden van het scherm terecht, ook als het niet te centreren was met scrollen
       const tx = cw / 2 + sc.scrollLeft - S * ix, ty = ch / 2 + sc.scrollTop - S * iy;
       sc.style.overflow = "hidden";
       scene.style.transformOrigin = "0 0";
-      scene.style.transition = "transform 2.4s cubic-bezier(.45,0,.25,1), opacity .5s ease 2.1s";
+      scene.style.transition = "transform 1.8s cubic-bezier(.45,0,.25,1), opacity .4s ease 1.4s";
       scene.style.transform = `translate(${tx}px, ${ty}px) scale(${S})`;
       scene.style.opacity = "0.1";
-      setTimeout(() => location.replace(dest), 2600);
+      setTimeout(() => location.replace(dest), 1900);
+      setTimeout(() => { if (location.hash.indexOf("kaart") > -1) { zooming = false; location.href = dest; } }, 3500); // vangnet: nooit blijven hangen
     }
   }
 
