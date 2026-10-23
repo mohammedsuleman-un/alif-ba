@@ -1261,7 +1261,7 @@
 
   // ---------- Totale kaart: alle hoofdstukken (werelden) op één kaart ----------
   // Hoofdstuk 1 onderaan, 9 bovenaan. Per hoofdstuk: gedaan / huidig / open / op slot / binnenkort.
-  // Met een aangeleverde tekening (assets/worlds/overview/map.jpg) komt die achter de knopen; zonder tekening
+  // Met een aangeleverde tekening (assets/worlds/overview/map-v2.jpg) komt die achter de knopen; zonder tekening
   // staat er een thema-gekleurd landschap (zie worlds.css), zodat de kaart altijd werkt.
   const OVT = {
     nl: { title: "Wereldkaart", soon: "Binnenkort", locked: "Eerst de vorige wereld afronden", level: "levels", stage: "Jij" },
@@ -1312,8 +1312,8 @@
           <h2 class="g-who" style="margin:0;font-size:18px;">${o.title}</h2>
           <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
         </div>
-        <div class="ov-scroll" id="ovScroll"><img class="ov-backdrop" src="assets/worlds/overview/map.jpg" alt="" aria-hidden="true" onerror="this.remove()"><div class="ov-scene">
-          <img class="ov-bg" src="assets/worlds/overview/map.jpg" alt="" onerror="this.remove()">
+        <div class="ov-scroll" id="ovScroll"><div class="ov-scene">
+          <img class="ov-bg" src="assets/worlds/overview/map-v2.jpg" alt="" onerror="this.remove()">
           ${nodes}
           <div class="ov-toast" id="ovToast" hidden></div>
         </div></div>
@@ -1339,7 +1339,7 @@
       const cw = sc.clientWidth, ch = sc.clientHeight; if (!cw || !ch) return;
       // vullend scherm (cover); liggend zijn alle eilanden tegelijk te zien
       const cover = Math.max(cw / MW, ch / MH);
-      const z = cw >= ch ? Math.min(cw / MW, ch / MH) : cover; // liggend: de hele kaart in één oogopslag; staand: vullen en schuiven
+      const z = cover; // vult het scherm; de eilanden staan in het midden van de tekening, dus liggend zijn ze allemaal te zien
       scene.style.width = MW * z + "px"; scene.style.height = MH * z + "px";
     };
     const centerOn = (info) => {
