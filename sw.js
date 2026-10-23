@@ -1,4 +1,4 @@
-const VERSION = "v91";
+﻿const VERSION = "v92";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
@@ -51,7 +51,7 @@ const CORE = [
 
 // Strategie:
 // - App-bestanden (html/js/css/data): eerst het netwerk, zodat updates meteen zichtbaar zijn; offline uit de cache.
-// - Pagina-afbeeldingen en audio: eerst de cache (snel en offline); audio wordt bewaard na één keer afspelen.
+// - Pagina-afbeeldingen en audio: eerst de cache (snel en offline); audio wordt bewaard na Ã©Ã©n keer afspelen.
 self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(VERSION)

@@ -142,7 +142,8 @@
 
   function loadActive() {
     const id = profiles.active();
-    activeProfile = id ? profiles.get(id) : null;
+    const p = id ? profiles.get(id) : null;
+    activeProfile = p && p.account ? p : null; // alleen schoolaccounts: zelf profielen aanmaken staat uit
     state = activeProfile ? gstate.load(activeProfile.id) : null;
   }
 
@@ -320,7 +321,7 @@
     const t = GT();
     document.documentElement.dir = t.dir;
     if (!welcomedThisSession) { welcomedThisSession = true; AudioManager.playInstruction("welcome"); }
-    const list = profiles.all();
+    const list = profiles.all().filter((p) => p.account);
     scr.profile.innerHTML = `
       <div class="g-profile-head">
         <a href="#/" class="g-back-book">🏠</a>
@@ -333,22 +334,15 @@
       </div>
       <h2 class="g-who">${t.who}</h2>
       <div class="g-profiles" id="gProfileList"></div>
-      <button id="gAddProfile" class="g-add">+ ${t.newProfile}</button>
-      ${window.Account ? `<button id="gLoginBtn" class="g-add">🔑 ${window.Account.t().login}</button>
-      <form id="gLoginForm" class="g-new-form g-login-form" hidden autocomplete="on">
+      ${window.Account ? `<form id="gLoginForm" class="g-new-form g-login-form" autocomplete="on">
         <div class="g-login-head"><span class="g-login-ico" aria-hidden="true">🔑</span><div><b>${window.Account.t().login}</b><small>${window.Account.t().hint}</small></div></div>
         <input id="gLoginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="${window.Account.t().user}">
         <input id="gLoginPass" type="password" autocomplete="current-password" placeholder="${window.Account.t().pass}">
         <div id="gLoginMsg" class="g-login-msg" role="alert"></div>
         <button type="submit" class="g-cta">${window.Account.t().go}</button>
-        <button type="button" class="g-login-cancel" id="gLoginCancel">${window.Account.t().cancel}</button>
       </form>
       ${window.Account.isLoggedIn() ? `<button id="gLogout" class="g-add">⎋ ${window.Account.t().logout} (${String(window.Account.current().name).replace(/[<>&"]/g, "")})</button>${window.Account.current().expired ? `<p class="g-login-msg">${window.Account.t().expired}</p>` : ""}` : ""}` : ""}
-      <div id="gNewProfileForm" class="g-new-form" hidden>
-        <div class="g-avatars">${AVATARS.map((a) => `<button type="button" class="g-avatar-pick" data-a="${a}">${a}</button>`).join("")}</div>
-        <input id="gNewName" maxlength="16" placeholder="${t.namePlaceholder}">
-        <button id="gCreateProfile" class="g-cta">${t.create}</button>
-      </div>`;
+      <p class="g-admin-link"><a href="/beheer/">${window.Account.t().admin}</a></p>`;
     const listEl = $("gProfileList");
     list.forEach((p) => {
       const b = el("button", "g-profile-card", `<span class="g-avatar">${p.avatar}</span><span class="g-pname">${p.name}</span>`);
@@ -360,9 +354,7 @@
       renderProfile();
     }));
     if (window.Account) {
-      const lf = $("gLoginForm"), lb = $("gLoginBtn");
-      lb.onclick = () => { lf.hidden = false; lb.hidden = true; $("gLoginUser").focus({ preventScroll: true }); setTimeout(() => lf.scrollIntoView({ block: "center", behavior: "smooth" }), 60); };
-      $("gLoginCancel").onclick = () => { lf.hidden = true; lb.hidden = false; $("gLoginMsg").textContent = ""; };
+      const lf = $("gLoginForm");
       lf.onsubmit = async (e) => {
         e.preventDefault();
         const msg = $("gLoginMsg"), btn = lf.querySelector("button[type=submit]");
@@ -379,19 +371,6 @@
         await window.Account.logout(); loadActive(); renderProfile();
       };
     }
-    let chosenAvatar = AVATARS[0];
-    $("gAddProfile").onclick = () => { $("gNewProfileForm").hidden = false; $("gAddProfile").hidden = true; };
-    scr.profile.querySelectorAll(".g-avatar-pick").forEach((b) => (b.onclick = () => {
-      scr.profile.querySelectorAll(".g-avatar-pick").forEach((x) => x.classList.remove("sel"));
-      b.classList.add("sel"); chosenAvatar = b.dataset.a;
-    }));
-    $("gCreateProfile").onclick = () => {
-      const name = $("gNewName").value.trim();
-      if (!name) { $("gNewName").focus(); return; }
-      profiles.create(name, chosenAvatar);
-      loadActive();
-      gohash("#/spel/kaart?intro");
-    };
   }
 
   // ---------- Personage maken (onboarding-wizard) ----------
