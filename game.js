@@ -1418,10 +1418,10 @@
 
   // ---------- Niveau-keuze: per wereld-niveau het leerquizje + de spellen met precies deze letters ----------
   const LHT = {
-    nl: { quiz: "Leer de letters", quizSub: "Luister en kies de goede letter", games: "Spelletjes met deze letters", lock: (n) => `Na niveau ${n}`, done: "Klaar", lvl: "Niveau" },
-    en: { quiz: "Learn the letters", quizSub: "Listen and pick the right letter", games: "Games with these letters", lock: (n) => `After level ${n}`, done: "Done", lvl: "Level" },
-    ar: { quiz: "تعلّم الحروف", quizSub: "استمع واختر الحرف الصحيح", games: "ألعاب بهذه الحروف", lock: (n) => `بعد المستوى ${n}`, done: "تم", lvl: "المستوى" },
-    tr: { quiz: "Harfleri öğren", quizSub: "Dinle ve doğru harfi seç", games: "Bu harflerle oyunlar", lock: (n) => `${n}. seviyeden sonra`, done: "Bitti", lvl: "Seviye" },
+    nl: { inLevel: "In dit niveau:", quiz: "Leer de letters", quizSub: "Luister en kies de goede letter", games: "Spelletjes met deze letters", lock: (n) => `Na niveau ${n}`, done: "Klaar", lvl: "Niveau" },
+    en: { inLevel: "In this level:", quiz: "Learn the letters", quizSub: "Listen and pick the right letter", games: "Games with these letters", lock: (n) => `After level ${n}`, done: "Done", lvl: "Level" },
+    ar: { inLevel: "في هذا المستوى:", quiz: "تعلّم الحروف", quizSub: "استمع واختر الحرف الصحيح", games: "ألعاب بهذه الحروف", lock: (n) => `بعد المستوى ${n}`, done: "تم", lvl: "المستوى" },
+    tr: { inLevel: "Bu seviyede:", quiz: "Harfleri öğren", quizSub: "Dinle ve doğru harfi seç", games: "Bu harflerle oyunlar", lock: (n) => `${n}. seviyeden sonra`, done: "Bitti", lvl: "Seviye" },
   };
   const LH_GAMES = [
     ["slingshot", "🎯", { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" }],
@@ -1448,10 +1448,10 @@
           <h2 class="g-who" style="margin:0;font-size:18px;">${L.lvl} ${level.n}</h2>
           <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
         </div>
-        <div class="lh-letters" lang="ar" dir="rtl">${letters.join(" ")}</div>
         <button type="button" class="lh-quiz" id="lhQuiz"><span class="lh-icon">🌟</span><span><b>${L.quiz}</b><small>${L.quizSub}</small></span><span class="lh-stars">${stars ? "★".repeat(stars) + "☆".repeat(3 - stars) : ""}</span></button>
         <p class="lh-title">${L.games}</p>
         <div class="lh-grid">${games}</div>
+        <p class="lh-content">${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${letters.join(" ")}</span></p>
       </div>`;
     sayOnceWhenFree("level-choose");
     $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
