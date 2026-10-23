@@ -212,7 +212,7 @@
             </div>
           </div>
           <a href="${href}" class="app-cta app-cta-full">${t.continueLearning} <span class="cta-arrow">→</span></a>
-          ${charCfg ? `<a href="#/spel/kledingkast" class="app-home-wardrobe-link">👕 ${t.wardrobe}</a>` : ""}
+          ${charCfg ? `<a href="#/spel/kledingkast" class="app-home-wardrobe-link"><span style="font-size:24px;line-height:1">👕</span> ${t.wardrobe}</a>` : ""}
         </div>
         ${bookCardHtml(t)}
       </div>`;
