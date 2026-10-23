@@ -1311,6 +1311,8 @@
     const sc = $("ovScroll"), scene = scr.overview.querySelector(".ov-scene");
     const MW = 1672, MH = 941;
     const layout = () => {
+      const nav = document.querySelector(".bottom-nav"), navH = nav && getComputedStyle(nav).display !== "none" ? nav.offsetHeight : 0;
+      sc.style.height = Math.max(200, window.innerHeight - sc.getBoundingClientRect().top - navH) + "px";
       const cw = sc.clientWidth, ch = sc.clientHeight; if (!cw || !ch) return;
       const z = Math.max(cw / MW, ch / MH);
       scene.style.width = MW * z + "px"; scene.style.height = MH * z + "px";
@@ -1320,6 +1322,8 @@
       sc.scrollLeft = Math.max(0, px - sc.clientWidth / 2); sc.scrollTop = Math.max(0, py - sc.clientHeight / 2);
     };
     layout(); centerOn(infos[here]);
+    // andere schermen worden net na dit moment verborgen: daarna opnieuw uitmeten en centreren
+    setTimeout(() => { if (!zooming) { layout(); centerOn(infos[here]); } }, 150);
     window.addEventListener("resize", layout);
     // Pas als het kind op een wereld tikt: rustig inzoomen op precies die wereld, dan openen.
     let zooming = false;
