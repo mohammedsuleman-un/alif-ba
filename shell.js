@@ -97,7 +97,8 @@
       child: "Çocuk", levelsDone: "Tamamlanan seviyeler",
     },
   };
-  const ST = () => SHELL_I18N[curLang()];
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const ST = () => AF.deep(SHELL_I18N[curLang()]);
 
   // ---------- Gedeelde speldata (alleen lezen, zelfde localStorage-sleutels als game.js) ----------
   const defaultState = () => ({ xp: 0, coins: 0, mastery: {}, levels: {}, badges: [], lastActivity: null });

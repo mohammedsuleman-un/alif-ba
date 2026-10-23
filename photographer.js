@@ -31,7 +31,8 @@
       hint: "Sürükleyerek ara, yakınlaş ve fotoğrafı çek",
       empty: "Bir harfi çerçevenin içine al", far: "Biraz yaklaş", cut: "Çerçevede tek bir tam harf", zoomIn: "Yakınlaştır", zoomOut: "Uzaklaştır", shutter: "Fotoğraf çek" },
   };
-  const tx = () => TXT[lang()] || TXT.nl;
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const tx = () => AF.deep(TXT[lang()] || TXT.nl);
 
   const MG = window.MiniGames;
   const shuffle = MG.shuffle;

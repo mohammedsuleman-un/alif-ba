@@ -31,7 +31,8 @@
     tr: { find: "Bul", good: "Aferin", again: "Tekrar oyna", back: "Geri", listen: "Tekrar dinle", help: "Yardım et",
       pull: "Taşı geri çek ve bırak", keys: "Oklar nişan alır, boşluk atar" },
   };
-  const tx = () => TXT[lang()] || TXT.nl;
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const tx = () => AF.deep(TXT[lang()] || TXT.nl);
 
   // ---------- Missies ----------
   const MG = window.MiniGames;

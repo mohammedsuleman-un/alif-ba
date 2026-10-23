@@ -79,7 +79,8 @@
     ar: { ok: "أحسنت!", no: "حاول مرة أخرى", next: "المستوى التالي", level: "المستوى" },
     tr: { ok: "Aferin!", no: "Tekrar dene", next: "Sonraki seviye", level: "Seviye" },
   };
-  const say = (k) => (SAY[lang()] || SAY.nl)[k];
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const say = (k) => AF.fem((SAY[lang()] || SAY.nl)[k]);
 
   // ---------- Feedbackbord (groot, duidelijk goed/fout) ----------
   function banner(field, { ok, letter }) {

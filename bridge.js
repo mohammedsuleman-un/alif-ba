@@ -26,7 +26,8 @@
     ar: { instr: "أكمل الصف", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني", cross: "اعبر", hint: "ضع الحروف الناقصة على الجسر. الأبجدية تسير من اليمين إلى اليسار." },
     tr: { instr: "Sırayı tamamla", back: "Geri", listen: "Tekrar dinle", help: "Yardım et", cross: "Geç", hint: "Eksik harfleri köprüye koy. Alfabe sağdan sola gider." },
   };
-  const tx = () => TXT[lang()] || TXT.nl;
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const tx = () => AF.deep(TXT[lang()] || TXT.nl);
 
   // ---------- Missies ----------
   // Drie rijen rond de gekozen letter-groep; steeds meer gaten.

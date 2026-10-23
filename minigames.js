@@ -6,6 +6,7 @@
   const D = window.MiniCore;
   const { lang, dir, store } = D;
 
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
   const GAMES = [
     { key: "slingshot", hash: "#/gamestage/slingshot/1", icon: "🎯",
       title: { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" },
@@ -46,13 +47,13 @@
     section.innerHTML = `
       <div class="chase-screen games-screen">
         <header class="chase-head">
-          <a href="${D.RETURN_HASH}" class="g-icon-btn" aria-label="${BACK[l]}"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
-          <div class="chase-instr"><span class="chase-instr-text">${HEAD[l]}</span></div>
+          <a href="${D.RETURN_HASH}" class="g-icon-btn" aria-label="${AF.fem(BACK[l])}"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+          <div class="chase-instr"><span class="chase-instr-text">${AF.fem(HEAD[l])}</span></div>
           <div class="games-top"><span class="games-coins" id="gamesCoins">🪙 0</span><a href="#/spel/kledingkast" class="g-icon-btn" aria-label="Kledingkast">👕</a></div>
         </header>
         <div class="games-hub">
           <div class="games-levels-wrap">
-            <p class="games-levels-title">${GROUP_LABEL[l]}</p>
+            <p class="games-levels-title">${AF.fem(GROUP_LABEL[l])}</p>
             <div class="games-levels" id="gamesLevels"></div>
           </div>
           <div class="games-grid">
@@ -63,12 +64,12 @@
               <a class="games-card" href="${g.hash}">
                 <span class="games-icon">${g.icon}</span>
                 <span class="games-title">${g.title[l]}</span>
-                <span class="games-sub">${g.sub[l]}</span>
+                <span class="games-sub">${AF.fem(g.sub[l])}</span>
               </a>` : `
               <div class="games-card is-locked" aria-disabled="true">
                 <span class="games-icon">🔒</span>
                 <span class="games-title">${g.title[l]}</span>
-                <span class="games-sub">${LOCK_TXT[l](need)}</span>
+                <span class="games-sub">${AF.fem(LOCK_TXT[l](need))}</span>
               </div>`;
             }).join("")}
           </div>
@@ -90,7 +91,7 @@
   function renderLevels() {
     const MG = window.MiniGames, el = $("gamesLevels"), pid = store.get("gp_active", null);
     if (!MG || !el || !pid) return;
-    const t = ROUTE_TXT[lang()] || ROUTE_TXT.nl;
+    const t = AF.deep(ROUTE_TXT[lang()] || ROUTE_TXT.nl);
     const cur = MG.currentLevel(pid), unlocked = MG.unlockedLevel(pid), done = MG.doneLevels(pid), total = MG.GROUPS.length;
     const nodes = MG.GROUPS.map((g, i) => {
       const state = i === cur ? "is-current" : done.includes(i) ? "is-done" : i <= unlocked ? "is-open" : "is-locked";

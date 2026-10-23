@@ -26,7 +26,8 @@
     ar: { find: "اجمع", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني", hint: "اسبح إلى الأصداف، خذ اللآلئ الصحيحة وأعطها للمحارة" },
     tr: { find: "Topla", back: "Geri", listen: "Tekrar dinle", help: "Yardım et", hint: "Deniz kabuklarına yüz, doğru incileri al ve istiridyeye ver" },
   };
-  const tx = () => TXT[lang()] || TXT.nl;
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const tx = () => AF.deep(TXT[lang()] || TXT.nl);
 
   let curLevel = 0;
   function buildMissions() {
@@ -176,6 +177,7 @@
       scene = local.scene.add("DiverScene", SceneClass, true, { art });
       scene.events.on("diver-handover", onHandover);
       scene.events.on("diver-chest", onChest);
+      scene.events.on("diver-need", (n) => { const el = $("dvNeed"); if (el) el.textContent = "× " + n; });
       scene.events.on("diver-pearl", () => { if (active) window.AudioManager.playOnce("diver-hand"); });
       scene.events.once("diver-ready", () => { if (myEpoch === epoch) startMission(); });
     });
@@ -427,7 +429,8 @@
         this.clamTop.setScale(w / this.clamTop.width);
         this.clamTop.setAngle(-8);
         this.tweens.add({ targets: this.clamTop, angle: { from: -8, to: -3 }, duration: 1600, yoyo: true, repeat: -1, ease: "Sine.InOut" });
-        this.bubble = this.add.container(clam.x + w * 0.12, clam.y - r * 6.3).setDepth(6);
+        const B0 = this.bagBox(), bubbleY = Math.max(clam.y - r * 6.3, B0.y0 + B0.h + 8 + (r * 3) / 2); // onder de tas, niet erover
+        this.bubble = this.add.container(clam.x + w * 0.12, bubbleY).setDepth(6);
         this.drawBubble();
       }
       drawBubble() {
@@ -476,11 +479,13 @@
         (this.shells || []).forEach((s) => s.c.destroy());
         const { W, H, r } = this.L, m = this.mission;
         const others = MG.distractors(curLevel, m.target, 4);
-        const letters = shuffle([...Array(m.need + 1).fill(m.target), ...Array.from({ length: 4 }, (_, i) => others[i % others.length])]);
-        const pts = [], minD = r * 4.7;
+        // Doelparels eerst (die zijn het belangrijkst), daarna de afleiders.
+        const letters = [...Array(m.need + 1).fill(m.target), ...Array.from({ length: 4 }, (_, i) => others[i % others.length])];
+        const pts = [], TIERS = [4.7, 4.2, 3.7, 3.3];
         letters.forEach((letter) => {
           let p = null;
-          for (let t = 0; t < 500 && !p; t++) {
+          for (let t = 0; t < 1000 && !p; t++) {
+            const minD = r * TIERS[Math.min(TIERS.length - 1, Math.floor(t / 250))];
             const c = { x: W * 0.15 + Math.random() * W * 0.7, y: H * 0.3 + Math.random() * H * 0.36 };
             const okClam = Math.hypot(c.x - this.L.clam.x, c.y - this.L.clam.y) > r * 5;
             const okChest = Math.hypot(c.x - this.L.chest.x, c.y - this.L.chest.y) > r * 4.6;
@@ -489,6 +494,9 @@
           }
           if (p) pts.push({ ...p, letter });
         });
+        // Past er toch niet genoeg doelparels? Dan vraagt de opdracht alleen wat er echt ligt (nooit meer dan er zijn).
+        const placed = pts.filter((q) => q.letter === m.target).length;
+        if (placed < m.need) { m.need = Math.max(1, placed); this.events.emit("diver-need", m.need); this.drawBubble(); }
         const sw = r * 3.8;
         this.shells = pts.map((p) => {
           const c = this.add.container(p.x, p.y).setDepth(3);
@@ -521,22 +529,24 @@
       }
 
       // ----- Tas (toont opgepakte parels; tik = terugleggen) -----
-      slotXY(i) { const { r } = this.L; return { x: 14 + r * 1.2 + i * r * 2.3, y: 14 + r * 1.2 }; }
+      // Maten van de tas: marge rondom gelijk, cirkels exact in het midden van het kader
+      bagBox() { const { r: r0, H } = this.L, k = clamp((H * 0.2) / (2.5 * r0), 0.72, 1), r = r0 * k, pad = r * 0.3, sr = r * 0.95, step = r * 2.3, slots = 4; return { x0: 10, y0: 10, k, r, pad, sr, step, slots, w: pad * 2 + sr * 2 + (slots - 1) * step, h: pad * 2 + sr * 2 }; }
+      slotXY(i) { const b = this.bagBox(); return { x: b.x0 + b.pad + b.sr + i * b.step, y: b.y0 + b.pad + b.sr }; }
       drawBag() {
         const { r } = this.L;
         this.bagG.removeAll(true);
-        const slots = 4, w = r * 2.3 * slots + 12, h = r * 2.4;
+        const B = this.bagBox(), slots = B.slots, w = B.w, h = B.h;
         const bg = this.add.graphics();
-        bg.fillStyle(0x0d3b66, 0.55); bg.fillRoundedRect(8, 8, w, h, 16); bg.lineStyle(3, 0xffffff, 0.85); bg.strokeRoundedRect(8, 8, w, h, 16);
-        for (let i = 0; i < slots; i++) { const p = this.slotXY(i); bg.lineStyle(2, 0xffffff, 0.45); bg.strokeCircle(p.x, p.y, r * 0.95); }
+        bg.fillStyle(0x0d3b66, 0.55); bg.fillRoundedRect(B.x0, B.y0, w, h, 16); bg.lineStyle(3, 0xffffff, 0.85); bg.strokeRoundedRect(B.x0, B.y0, w, h, 16);
+        for (let i = 0; i < slots; i++) { const p = this.slotXY(i); bg.lineStyle(2, 0xffffff, 0.45); bg.strokeCircle(p.x, p.y, B.sr); }
         this.bagG.add(bg);
         this.bag.forEach((b, i) => {
           if (b.arriving) return;
           const p = this.slotXY(i), pc = this.add.container(p.x, p.y);
-          const hit = this.add.circle(0, 0, r * 1.05, 0xffffff, 0.001).setInteractive({ useHandCursor: true });
+          const hit = this.add.circle(0, 0, B.r * 1.05, 0xffffff, 0.001).setInteractive({ useHandCursor: true });
           hit.on("pointerdown", (pt, lx, ly, ev) => { if (ev) ev.stopPropagation(); this.putBack(i); });
-          pc.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(r * 1.7, r * 1.7),
-            MG.letterText(this, 0, 0, b.letter, r * 0.95), hit]);
+          pc.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(B.r * 1.7, B.r * 1.7),
+            MG.letterText(this, 0, 0, b.letter, B.r * 0.95), hit]);
           this.bagG.add(pc);
         });
       }
@@ -546,7 +556,7 @@
         c.add([this.add.image(0, 0, "dv-pearl").setDisplaySize(r * 1.7, r * 1.7), MG.letterText(this, 0, 0, letter, r * 0.95)]);
         this.tweens.add({ targets: c, x: to.x, duration: dur, delay, ease: "Sine.InOut" });
         this.tweens.add({ targets: c, y: to.y, duration: dur, delay, ease: "Back.In", onComplete: () => { c.destroy(); if (done) done(); } });
-        this.tweens.add({ targets: c, scale: { from: 1, to: 0.85 }, duration: dur, delay });
+        this.tweens.add({ targets: c, scale: { from: 1, to: 0.85 * this.bagBox().k }, duration: dur, delay });
       }
       putBack(i) {
         if (this.handing) return;

@@ -27,7 +27,7 @@
       bookMode: "الكتاب", gameMode: "اللعبة", challenge: "تحدٍّ",
       levelsProgress: (d, n) => `${d} من ${n} مستوى`, discover: (l) => `اكتشف ${l}`,
       checkpointTitle: "محطة استراحة", checkpointReward: (n) => `+${n} 🪙`, claim: "افتح",
-      worldDone: "أتممتِ الواحة!", nextWorldSoon: "عالم جديد قريبًا…",
+      worldDone: "أتممت الواحة!", nextWorldSoon: "عالم جديد قريبًا…",
       voiceOn: "إيقاف الإرشاد الصوتي", voiceOff: "تشغيل الإرشاد الصوتي",
       sfxOn: "إيقاف المؤثرات الصوتية", sfxOff: "تشغيل المؤثرات الصوتية",
       newOutfitEarned: "لباس جديد!", openWardrobe: "خزانة الملابس", makeCharacter: "اصنع رفيقك",
@@ -109,7 +109,8 @@
   const glang = () => (I18N_LANG_OK() ? store.get("lang", "nl") : "nl");
   // De boekmodus (app.js) beheert `lang` al; we lezen 'm alleen uit.
   function I18N_LANG_OK() { return !!GI18N[store.get("lang", "nl")]; }
-  const GT = () => GI18N[glang()] || GI18N.nl;
+  const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
+  const GT = () => AF.deep(GI18N[glang()] || GI18N.nl);
   const gsub = (obj) => (glang() === "ar" ? obj.ar : obj[glang()] || obj.ar);
 
   // ---------- Profielen ----------
@@ -402,7 +403,7 @@
     ar: { coins: "قطع", buy: "اشترِ", none: "بدون", soon: (n) => `بعد ${n} ${n === 1 ? "مستوى" : "مستويات"}`, poor: (n) => `تحتاج ${n} قطعة أخرى`, bought: "تم الشراء!", tryHint: "تجرّب هذا الآن. اشتره لتحتفظ به.", free: "مجاني" },
     tr: { coins: "jeton", buy: "Al", none: "Yok", soon: (n) => `${n} seviye sonra`, poor: (n) => `${n} jeton daha gerek`, bought: "Alındı!", tryHint: "Şimdi deniyorsun. Sahip olmak için satın al.", free: "Ücretsiz" },
   };
-  const WTx = () => WT[glang()] || WT.nl;
+  const WTx = () => AF.deep(WT[glang()] || WT.nl);
   const swatchOf = (id) => (Character.itemById(id) || {}).swatch || "#ddd";
 
   function renderCharacterCreator() {
@@ -1308,7 +1309,7 @@
     ar: { title: "خريطة العالم", soon: "قريبًا", locked: "أكمل العالم السابق أولًا", level: "مستويات", stage: "أنت" },
     tr: { title: "Dünya haritası", soon: "Çok yakında", locked: "Önce önceki dünyayı bitir", level: "seviye", stage: "Sen" },
   };
-  const OVx = () => OVT[glang()] || OVT.nl;
+  const OVx = () => AF.deep(OVT[glang()] || OVT.nl);
 
   function chapterInfo() {
     const out = [];
@@ -1429,7 +1430,7 @@
     ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }],
   ];
   function renderLevelHub(worldId, n) {
-    const t = GT(), L = LHT[glang()] || LHT.nl, l = LHT[glang()] ? glang() : "nl";
+    const t = GT(), L = AF.deep(LHT[glang()] || LHT.nl), l = LHT[glang()] ? glang() : "nl";
     document.documentElement.dir = t.dir;
     const world = G.worlds.find((w) => w.id === worldId), level = world && world.levels.find((lv) => lv.n === +n);
     if (!level) return gohash(`#/spel/wereld/${worldId}`);
