@@ -1,0 +1,43 @@
+:root { --cream: #fdf8ee; --ink: #3a2410; --muted: #7a6a52; --accent: #b8862b; --accent-d: #8f6718; --ok: #2f8f4e; --bad: #c0392b; --line: #e8dcc0; --card: #fff; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--cream); color: var(--ink); font: 16px/1.45 "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif; }
+#app { max-width: 1000px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 0 0 10px; } h3 { font-size: 16px; margin: 14px 0 6px; }
+.top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.top .grow { flex: 1; } .who { color: var(--muted); font-size: 14px; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+.tab { border: 2px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 800; color: var(--ink); cursor: pointer; }
+.tab.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(90, 60, 10, .06); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+label { display: block; font-weight: 800; font-size: 14px; margin: 8px 0 3px; }
+input, select, textarea { font: inherit; padding: 9px 11px; border: 2px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-width: 0; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+textarea { width: 100%; min-height: 130px; resize: vertical; }
+button { font: inherit; font-weight: 800; border: 0; border-radius: 10px; padding: 9px 16px; cursor: pointer; background: var(--accent); color: #fff; }
+button:hover { background: var(--accent-d); } button:disabled { opacity: .5; cursor: default; }
+button.ghost { background: #fff; color: var(--ink); border: 2px solid var(--line); } button.ghost:hover { background: #f7f0df; }
+button.danger { background: var(--bad); } button.small { padding: 5px 10px; font-size: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+td.actions { white-space: nowrap; text-align: right; } td.actions button { margin-left: 4px; }
+.mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+.msg { padding: 10px 12px; border-radius: 10px; margin: 10px 0; font-weight: 700; }
+.msg.err { background: #fdeceb; color: var(--bad); } .msg.ok { background: #e8f6ec; color: var(--ok); } .msg.warn { background: #fff4d6; color: #7a5a00; }
+.muted { color: var(--muted); } .tag { display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: #f1e7ce; }
+.tag.off { background: #fdeceb; color: var(--bad); }
+.login { max-width: 380px; margin: 8vh auto 0; }
+.login .card { padding: 22px; }
+.login input { width: 100%; }
+.right { margin-left: auto; }
+.secret { background: #fffbe8; border: 2px dashed var(--accent); }
+.slips { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-top: 10px; }
+.slip { border: 1px dashed #999; border-radius: 8px; padding: 10px 12px; background: #fff; break-inside: avoid; }
+.slip b { display: block; font-size: 17px; } .slip .k { color: var(--muted); font-size: 12px; margin-top: 4px; } .slip .v { font-size: 17px; font-weight: 800; }
+.slip .site { font-size: 12px; margin-top: 6px; color: var(--muted); }
+@media (max-width: 600px) { td.actions { white-space: normal; } th:nth-child(3), td:nth-child(3) { display: none; } }
+@media print {
+  body { background: #fff; } #app > :not(.printable), .printable .noprint { display: none !important; }
+  .printable { display: block !important; box-shadow: none; border: 0; } .slips { grid-template-columns: repeat(3, 1fr); }
+}

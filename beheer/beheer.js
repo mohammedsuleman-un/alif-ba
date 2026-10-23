@@ -1,0 +1,266 @@
+// Alif Ba beheer: inloggen en beheren van organisaties, docenten, klassen en leerlingen.
+// Alle tekst uit de server gaat door esc() voordat hij in de pagina komt. Wachtwoorden bestaan alleen in het geheugen.
+(() => {
+  "use strict";
+  const $app = document.getElementById("app");
+  const onDomain = location.hostname.endsWith("alifbakids.nl");
+  const API = onDomain ? "https://api.alifbakids.nl" : "https://alif-ba-api.alif-ba-api.workers.dev";
+  const APP_URL = onDomain ? "https://app.alifbakids.nl" : "https://mohammedsuleman-un.github.io/alif-ba/";
+  const MAX_BULK = 40;
+  const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
+
+  const S = { me: null, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", secret: null, msg: null, busy: false };
+
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  async function api(method, path, body) {
+    const res = await fetch(API + path, {
+      method, credentials: "include",
+      headers: body !== undefined ? { "content-type": "application/json" } : {},
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+    let data = null; try { data = await res.json(); } catch { /* leeg */ }
+    if (!res.ok) { const e = new Error((data && data.error) || `Er ging iets mis (${res.status}).`); e.status = res.status; throw e; }
+    return data;
+  }
+
+  const isSuper = () => S.me && S.me.role === "superadmin";
+  const orgQ = () => (isSuper() ? `?org_id=${encodeURIComponent(S.orgId)}` : "");
+  const flash = (text, kind = "ok") => { S.msg = text ? { text, kind } : null; };
+
+  // ---------- gegevens laden ----------
+  async function loadOrgs() { S.orgs = (await api("GET", "/orgs")).orgs; }
+  async function loadStaff() { S.staff = isSuper() && !S.orgId ? [] : (await api("GET", "/users" + orgQ())).users; }
+  async function loadClasses() {
+    S.classes = isSuper() && !S.orgId ? [] : (await api("GET", "/classes" + orgQ())).classes;
+    if (!S.classes.some((c) => c.id === S.classId)) S.classId = S.classes[0] ? S.classes[0].id : "";
+  }
+  async function loadStudents() {
+    if (isSuper() && !S.orgId) { S.students = []; return; }
+    const q = S.classId ? `?class_id=${encodeURIComponent(S.classId)}` : orgQ();
+    S.students = (await api("GET", "/students" + q)).students;
+  }
+  async function loadFor(tab) {
+    if (tab === "orgs") return loadOrgs();
+    if (tab === "staff") return Promise.all([loadStaff(), loadClasses()]);
+    if (tab === "classes") return Promise.all([loadClasses(), S.me.role === "teacher" ? Promise.resolve() : loadStaff()]);
+    if (tab === "students") { await loadClasses(); return loadStudents(); }
+  }
+
+  function tabsFor() {
+    const r = S.me.role, t = [];
+    if (r === "superadmin") { t.push(["orgs", "Organisaties"]); if (S.orgId) t.push(["staff", "Beheerders en docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]); }
+    else if (r === "org_admin") t.push(["staff", "Docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]);
+    else t.push(["classes", "Klassen"], ["students", "Leerlingen"]);
+    return t;
+  }
+
+  async function go(tab) {
+    S.tab = tab; flash(null);
+    try { await loadFor(tab); } catch (e) { flash(e.message, "err"); }
+    render();
+  }
+
+  // ---------- schermen ----------
+  function viewLogin(err) {
+    $app.innerHTML = `<div class="login"><h1>Alif Ba beheer</h1><p class="muted">Voor beheerders en docenten.</p>
+      <form class="card" data-form="login">
+        <label for="u">E-mailadres</label><input id="u" name="username" autocomplete="username" required>
+        <label for="p">Wachtwoord</label><input id="p" name="password" type="password" autocomplete="current-password" required>
+        ${err ? `<div class="msg err">${esc(err)}</div>` : ""}
+        <p><button type="submit">Inloggen</button></p>
+      </form></div>`;
+  }
+
+  function viewChangePassword(forced, err) {
+    $app.innerHTML = `<div class="login"><h1>${forced ? "Kies een eigen wachtwoord" : "Wachtwoord wijzigen"}</h1>
+      ${forced ? `<p class="muted">Je hebt een startwachtwoord gekregen. Kies nu een eigen wachtwoord (minstens 10 tekens).</p>` : ""}
+      <form class="card" data-form="password">
+        <label for="c">Huidig wachtwoord</label><input id="c" name="current" type="password" autocomplete="current-password" required>
+        <label for="n">Nieuw wachtwoord (minstens 10 tekens)</label><input id="n" name="next" type="password" autocomplete="new-password" minlength="10" required>
+        ${err ? `<div class="msg err">${esc(err)}</div>` : ""}
+        <p><button type="submit">Opslaan</button> ${forced ? "" : `<button type="button" class="ghost" data-act="back">Annuleren</button>`}</p>
+      </form></div>`;
+  }
+
+  const classOptions = () => S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.classId ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+
+  function panelOrgs() {
+    const rows = S.orgs.map((o) => `<tr><td>${esc(o.name)}</td><td class="mono">${esc(o.code)}</td><td>${Number(o.active) ? `<span class="tag">actief</span>` : `<span class="tag off">uit</span>`}</td>
+      <td class="actions"><button class="small" data-act="openorg" data-id="${esc(o.id)}" data-name="${esc(o.name)}">Openen</button></td></tr>`).join("");
+    return `<div class="card"><h2>Organisaties</h2>
+      <table><tr><th>Naam</th><th>Code</th><th>Status</th><th></th></tr>${rows || `<tr><td colspan="4" class="muted">Nog geen organisaties.</td></tr>`}</table></div>
+      <form class="card" data-form="org"><h2>Nieuwe organisatie</h2><div class="row">
+        <div><label>Naam</label><input name="name" required maxlength="120"></div>
+        <div><label>Korte code (a-z, 0-9, streepje)</label><input name="code" required pattern="[a-z0-9][a-z0-9-]{2,39}" maxlength="40"></div>
+        <button type="submit">Aanmaken</button></div></form>`;
+  }
+
+  function panelStaff() {
+    const rows = S.staff.map((u) => `<tr><td>${esc(u.display_name)}</td><td>${esc(u.username)}</td><td><span class="tag">${esc(ROLE_NL[u.role] || u.role)}</span></td>
+      <td>${Number(u.disabled) ? `<span class="tag off">uit</span>` : ""}</td>
+      <td class="actions"><button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? "Aanzetten" : "Uitzetten"}</button></td></tr>`).join("");
+    return `<div class="card"><h2>Beheerders en docenten</h2>
+      <table><tr><th>Naam</th><th>E-mail</th><th>Rol</th><th></th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Nog niemand.</td></tr>`}</table></div>
+      <form class="card" data-form="staff"><h2>Nieuw account</h2><div class="row">
+        <div><label>Naam</label><input name="name" required maxlength="120"></div>
+        <div><label>E-mailadres</label><input name="email" type="email" required></div>
+        <div><label>Rol</label><select name="role"><option value="teacher">Docent</option><option value="org_admin">Beheerder</option></select></div>
+        <button type="submit">Aanmaken</button></div>
+        <p class="muted">Je krijgt een startwachtwoord te zien. Geef dat door; de persoon kiest bij de eerste keer inloggen een eigen wachtwoord.</p></form>`;
+  }
+
+  function panelClasses() {
+    const rows = S.classes.map((c) => `<tr><td>${esc(c.name)}</td></tr>`).join("");
+    const teachers = S.staff.filter((u) => u.role === "teacher");
+    const assign = S.me.role === "teacher" ? "" : `<form class="card" data-form="assign"><h2>Docent koppelen aan klas</h2><div class="row">
+      <div><label>Klas</label><select name="class_id">${classOptions()}</select></div>
+      <div><label>Docent</label><select name="teacher_id">${teachers.map((u) => `<option value="${esc(u.id)}">${esc(u.display_name)}</option>`).join("")}</select></div>
+      <button type="submit" ${S.classes.length && teachers.length ? "" : "disabled"}>Koppelen</button></div></form>`;
+    return `<div class="card"><h2>Klassen</h2><table><tr><th>Naam</th></tr>${rows || `<tr><td class="muted">Nog geen klassen.</td></tr>`}</table></div>
+      <form class="card" data-form="class"><h2>Nieuwe klas</h2><div class="row"><div><label>Naam (bijvoorbeeld Groep 3A)</label><input name="name" required maxlength="80"></div>
+      <button type="submit">Aanmaken</button></div></form>${assign}`;
+  }
+
+  function panelStudents() {
+    const rows = S.students.map((s) => `<tr><td>${esc(s.display_name)}</td><td class="mono">${esc(s.username)}</td>
+      <td>${s.last_login_at ? esc(String(s.last_login_at).slice(0, 10)) : '<span class="muted">nog nooit</span>'}</td>
+      <td>${s.disabled ? `<span class="tag off">uit</span>` : ""}</td>
+      <td class="actions"><button class="small ghost" data-act="reset" data-id="${esc(s.id)}" data-name="${esc(s.display_name)}">Nieuw wachtwoord</button>
+        <button class="small ghost" data-act="studoff" data-id="${esc(s.id)}" data-off="${s.disabled ? 0 : 1}">${s.disabled ? "Aanzetten" : "Uitzetten"}</button>
+        <button class="small danger" data-act="studdel" data-id="${esc(s.id)}" data-name="${esc(s.display_name)}">Verwijderen</button></td></tr>`).join("");
+    const none = !S.classes.length;
+    return `<div class="card"><div class="row"><h2 style="margin:0">Leerlingen</h2>
+      <div class="right"><label>Klas</label><select data-change="class">${classOptions()}</select></div></div>
+      ${none ? `<p class="muted">Maak eerst een klas aan (tabblad Klassen).</p>` : `<table><tr><th>Naam</th><th>Gebruikersnaam</th><th>Laatst ingelogd</th><th></th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Nog geen leerlingen in deze klas.</td></tr>`}</table>`}</div>
+      <form class="card" data-form="students"><h2>Leerlingen toevoegen</h2>
+        <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Het wachtwoord zie je maar één keer: druk de lijst af of bewaar hem.</p>
+        <textarea name="names" placeholder="Aya&#10;Bilal&#10;Zoë" ${none ? "disabled" : ""}></textarea>
+        <p><button type="submit" ${none || S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>`;
+  }
+
+  function panelSecret() {
+    if (!S.secret) return "";
+    const slips = S.secret.rows.map((r) => `<div class="slip"><b>${esc(r.name)}</b>
+      <div class="k">${esc(S.secret.userLabel)}</div><div class="v mono">${esc(r.username)}</div>
+      <div class="k">Wachtwoord</div><div class="v mono">${esc(r.password)}</div>
+      <div class="site">${esc(S.secret.site)}</div></div>`).join("");
+    return `<div class="card secret printable"><h2>${esc(S.secret.title)}</h2>
+      <div class="msg warn noprint">Bewaar of druk dit nu af. Wachtwoorden worden hierna <b>nooit meer</b> getoond (je kunt wel een nieuw wachtwoord laten maken).</div>
+      <p class="noprint"><button data-act="print">Afdrukken</button> <button class="ghost" data-act="csv">Download CSV</button> <button class="ghost right" data-act="closesecret">Sluiten</button></p>
+      <div class="slips">${slips}</div></div>`;
+  }
+
+  function render() {
+    if (!S.me) return viewLogin();
+    const tabs = tabsFor().map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-act="tab" data-tab="${k}">${esc(l)}</button>`).join("");
+    const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
+    const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents }[S.tab];
+    $app.innerHTML = `<div class="top"><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}<span class="grow"></span>
+        <span class="who">${esc(S.me.display_name)} · ${esc(ROLE_NL[S.me.role])}</span>
+        <button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
+      <div class="tabs">${tabs}</div>
+      ${S.msg ? `<div class="msg ${S.msg.kind}">${esc(S.msg.text)}</div>` : ""}
+      ${panelSecret()}${panel ? panel() : ""}`;
+  }
+
+  // ---------- acties ----------
+  const guard = async (fn) => { try { await fn(); } catch (e) { if (e.status === 401) { S.me = null; viewLogin("Je sessie is verlopen. Log opnieuw in."); return; } flash(e.message, "err"); render(); } };
+
+  const handlers = {
+    tab: ({ tab }) => go(tab),
+    back: () => { render(); },
+    chpw: () => viewChangePassword(false),
+    logout: async () => { try { await api("POST", "/auth/logout", {}); } catch { /* maakt niet uit */ } S.me = null; S.secret = null; viewLogin(); },
+    openorg: async ({ id }) => { S.orgId = id; S.classId = ""; S.secret = null; await go("staff"); },
+    staffoff: ({ id, off }) => guard(async () => { await api("POST", `/users/${id}/disable`, { disabled: off === "1" }); flash(off === "1" ? "Account uitgezet." : "Account aangezet."); await loadStaff(); render(); }),
+    reset: ({ id, name }) => guard(async () => {
+      if (!confirm(`Nieuw wachtwoord maken voor ${name}? Het oude wachtwoord werkt dan niet meer.`)) return;
+      const r = await api("POST", `/students/${id}/reset-password`, {});
+      S.secret = { title: "Nieuw wachtwoord", userLabel: "Gebruikersnaam", site: APP_URL, rows: [{ name, username: r.username, password: r.password }] };
+      flash(null); render(); window.scrollTo(0, 0);
+    }),
+    studoff: ({ id, off }) => guard(async () => { await api("POST", `/students/${id}/disable`, { disabled: off === "1" }); await loadStudents(); render(); }),
+    studdel: ({ id, name }) => guard(async () => {
+      if (!confirm(`${name} definitief verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+      await api("DELETE", `/students/${id}`); flash(`${name} is verwijderd.`); await loadStudents(); render();
+    }),
+    print: () => window.print(),
+    csv: () => {
+      const q = (v) => `"${String(v).replace(/"/g, '""')}"`;
+      const lines = [["Naam", S.secret.userLabel, "Wachtwoord"].map(q).join(";"), ...S.secret.rows.map((r) => [r.name, r.username, r.password].map(q).join(";"))];
+      const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a"); a.href = url; a.download = "accounts.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    },
+    closesecret: () => { S.secret = null; render(); },
+  };
+
+  const forms = {
+    login: (f) => async () => {
+      try {
+        await api("POST", "/auth/login", { username: f.username.value, password: f.password.value });
+      } catch (e) { return viewLogin(e.message); }
+      await boot(true);
+    },
+    password: (f) => async () => {
+      try { await api("POST", "/auth/change-password", { current: f.current.value, next: f.next.value }); }
+      catch (e) { return viewChangePassword(S.me && S.me.must_change_password, e.message); }
+      S.me.must_change_password = false; await start(); flash("Wachtwoord gewijzigd."); render();
+    },
+    org: (f) => async () => { await api("POST", "/orgs", { name: f.name.value, code: f.code.value }); flash("Organisatie aangemaakt."); await loadOrgs(); render(); },
+    staff: (f) => async () => {
+      const r = await api("POST", "/users", { role: f.role.value, name: f.name.value, email: f.email.value, ...(isSuper() ? { org_id: S.orgId } : {}) });
+      S.secret = { title: `Account aangemaakt voor ${r.user.display_name}`, userLabel: "Inloggen met e-mailadres", site: location.origin + location.pathname, rows: [{ name: r.user.display_name, username: r.user.username, password: r.password }] };
+      flash(null); await loadStaff(); render(); window.scrollTo(0, 0);
+    },
+    class: (f) => async () => { await api("POST", "/classes", { name: f.name.value, ...(isSuper() ? { org_id: S.orgId } : {}) }); flash("Klas aangemaakt."); await loadClasses(); render(); },
+    assign: (f) => async () => { await api("POST", `/classes/${f.class_id.value}/teachers`, { teacher_id: f.teacher_id.value }); flash("Docent gekoppeld."); render(); },
+    students: (f) => async () => {
+      const names = f.names.value.split(/\r?\n/).map((n) => n.trim()).filter(Boolean);
+      if (!names.length) { flash("Vul minstens één naam in.", "err"); return render(); }
+      S.busy = true; render();
+      const rows = []; let failed = null;
+      try {
+        for (let i = 0; i < names.length; i += MAX_BULK) {
+          const r = await api("POST", "/students/bulk", { class_id: S.classId, names: names.slice(i, i + MAX_BULK) });
+          rows.push(...r.students.map((s) => ({ name: s.name, username: s.username, password: s.password })));
+        }
+      } catch (e) { failed = e; }
+      S.busy = false;
+      if (rows.length) S.secret = { title: `${rows.length} leerling${rows.length === 1 ? "" : "en"} aangemaakt`, userLabel: "Gebruikersnaam", site: APP_URL, rows };
+      flash(failed ? `Gestopt na ${rows.length} van ${names.length}: ${failed.message}` : null, failed ? "err" : "ok");
+      await loadStudents(); render(); window.scrollTo(0, 0);
+    },
+  };
+
+  $app.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-act]"); if (!b) return;
+    const fn = handlers[b.dataset.act]; if (fn) { e.preventDefault(); guard(() => fn(b.dataset)); }
+  });
+  $app.addEventListener("submit", (e) => {
+    const f = e.target.closest("form[data-form]"); if (!f) return;
+    e.preventDefault(); const fn = forms[f.dataset.form]; if (fn) guard(fn(f));
+  });
+  $app.addEventListener("change", async (e) => {
+    if (e.target.dataset.change === "class") { S.classId = e.target.value; await guard(async () => { await loadStudents(); render(); }); }
+  });
+
+  // ---------- starten ----------
+  async function start() {
+    const first = tabsFor()[0][0];
+    S.tab = S.tab && tabsFor().some(([k]) => k === S.tab) ? S.tab : first;
+    if (isSuper() && !S.orgs.length) { try { await loadOrgs(); } catch { /* */ } }
+    await go(S.tab);
+  }
+  async function boot(afterLogin) {
+    try { S.me = (await api("GET", "/me")).user; }
+    catch (e) {
+      S.me = null;
+      return viewLogin(afterLogin ? "Inloggen lukte, maar je browser bewaart de sessie niet. Sta cookies van deze site toe en probeer opnieuw." : "");
+    }
+    if (S.me.must_change_password) return viewChangePassword(true);
+    await start();
+  }
+  window.__beheer = { boot, S };
+  boot(false);
+})();

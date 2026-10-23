@@ -1,4 +1,4 @@
-const VERSION = "v83";
+const VERSION = "v84";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
@@ -81,6 +81,7 @@ function saveCopy(req, res) {
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
+  if (url.pathname.indexOf("/beheer/") !== -1) return; // beheerpagina: altijd vers van het netwerk, nooit uit de app-cache
 
   if (isMedia(url)) {
     e.respondWith(
