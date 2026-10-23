@@ -10,7 +10,7 @@
   const WORLD1_LEVELS = 9, MINI_LEVELS = 8; // aantal niveaus in Wereld 1 en in de spelletjesroute
   const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
 
-  const S = { me: null, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
+  const S = { me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -63,7 +63,7 @@
   }
 
   async function go(tab) {
-    S.tab = tab; flash(null);
+    S.tab = tab; S.shown = {}; flash(null);
     try { await loadFor(tab); } catch (e) { flash(e.message, "err"); }
     render();
   }
@@ -106,7 +106,7 @@
   }
 
   function panelStaff() {
-    const rows = S.staff.map((u) => `<tr><td>${esc(u.display_name)}</td><td>${esc(u.username)}</td><td><span class="tag">${esc(ROLE_NL[u.role] || u.role)}</span></td>
+    const rows = S.staff.map((u) => `<tr><td>${esc(u.display_name)}</td><td>${esc(u.username)}</td><td><span class="tag">${esc(ROLE_NL[u.role] || u.role)}</span>${Number(u.org_count) > 1 ? ` <span class="tag" title="Hoort bij meerdere organisaties">${Number(u.org_count)} organisaties</span>` : ""}</td>
       <td>${Number(u.disabled) ? `<span class="tag off">uit</span>` : ""}</td>
       <td class="actions"><button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? "Aanzetten" : "Uitzetten"}</button></td></tr>`).join("");
     return `<div class="card"><h2>Beheerders en docenten</h2>
@@ -116,7 +116,20 @@
         <div><label>E-mailadres</label><input name="email" type="email" required></div>
         <div><label>Rol</label><select name="role"><option value="teacher">Docent</option><option value="org_admin">Beheerder</option></select></div>
         <button type="submit">Aanmaken</button></div>
-        <p class="muted">Je krijgt een startwachtwoord te zien. Geef dat door; de persoon kiest bij de eerste keer inloggen een eigen wachtwoord.</p></form>`;
+        <p class="muted">Je krijgt een startwachtwoord te zien. Geef dat door; de persoon kiest bij de eerste keer inloggen een eigen wachtwoord.</p></form>${panelLinkOrg()}`;
+  }
+
+  // Alleen de hoofdbeheerder: een bestaand account aan nog een organisatie koppelen (of weer losmaken).
+  function panelLinkOrg() {
+    if (!isSuper() || !S.staff.length) return "";
+    const others = S.orgs.filter((o) => Number(o.active));
+    return `<form class="card" data-form="linkorg"><h2>Account aan meerdere organisaties koppelen</h2>
+      <p class="muted">Een docent of beheerder kan dan met een keuzemenu bovenin wisselen tussen de organisaties. Klassen en leerlingen blijven gescheiden per organisatie.</p>
+      <div class="row">
+        <div><label>Account</label><select name="user_id">${S.staff.map((u) => `<option value="${esc(u.id)}">${esc(u.display_name)} (${esc(u.username)})</option>`).join("")}</select></div>
+        <div><label>Organisatie</label><select name="org_id">${others.map((o) => `<option value="${esc(o.id)}">${esc(o.name)}</option>`).join("")}</select></div>
+        <div><label>Actie</label><select name="mode"><option value="add">Koppelen</option><option value="remove">Losmaken</option></select></div>
+        <button type="submit">Uitvoeren</button></div></form>`;
   }
 
   function panelClasses() {
@@ -134,6 +147,8 @@
   function panelStudents() {
     const rows = S.students.map((s) => `<tr><td>${esc(s.display_name)}</td><td class="mono">${esc(s.username)}</td>
       <td>${s.last_login_at ? esc(String(s.last_login_at).slice(0, 10)) : '<span class="muted">nog nooit</span>'}</td>
+      <td>${S.shown[s.id] ? `<span class="mono"><b>${esc(S.shown[s.id])}</b></span> <button class="small ghost" data-act="hidepw" data-id="${esc(s.id)}">Verberg</button>`
+        : s.has_password ? `<button class="small ghost" data-act="showpw" data-id="${esc(s.id)}">Toon</button>` : `<span class="muted" title="Dit wachtwoord is niet bewaard. Maak een nieuw wachtwoord.">-</span>`}</td>
       <td>${s.disabled ? `<span class="tag off">uit</span>` : ""}</td>
       <td class="actions"><button class="small ghost" data-act="reset" data-id="${esc(s.id)}" data-name="${esc(s.display_name)}">Nieuw wachtwoord</button>
         <button class="small ghost" data-act="studoff" data-id="${esc(s.id)}" data-off="${s.disabled ? 0 : 1}">${s.disabled ? "Aanzetten" : "Uitzetten"}</button>
@@ -141,9 +156,10 @@
     const none = !S.classes.length;
     return `<div class="card"><div class="row"><h2 style="margin:0">Leerlingen</h2>
       <div class="right"><label>Klas</label><select data-change="class">${classOptions()}</select></div></div>
-      ${none ? `<p class="muted">Maak eerst een klas aan (tabblad Klassen).</p>` : `<table><tr><th>Naam</th><th>Gebruikersnaam</th><th>Laatst ingelogd</th><th></th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Nog geen leerlingen in deze klas.</td></tr>`}</table>`}</div>
+      ${none ? `<p class="muted">Maak eerst een klas aan (tabblad Klassen).</p>` : `<table><tr><th>Naam</th><th>Gebruikersnaam</th><th>Laatst ingelogd</th><th>Wachtwoord</th><th></th><th></th></tr>${rows || `<tr><td colspan="6" class="muted">Nog geen leerlingen in deze klas.</td></tr>`}</table>
+      <p><button class="ghost small" data-act="classcards" ${S.students.length ? "" : "disabled"}>Inlogkaartjes van deze klas tonen en printen</button></p>`}</div>
       <form class="card" data-form="students"><h2>Leerlingen toevoegen</h2>
-        <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Het wachtwoord zie je maar één keer: druk de lijst af of bewaar hem.</p>
+        <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Je kunt de wachtwoorden later weer bekijken met de knop Toon, en de kaartjes opnieuw printen.</p>
         <textarea name="names" placeholder="Aya&#10;Bilal&#10;Zoë" ${none ? "disabled" : ""}></textarea>
         <p><button type="submit" ${none || S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>`;
   }
@@ -189,7 +205,7 @@
       <div class="k">Wachtwoord</div><div class="v mono">${esc(r.password)}</div>
       <div class="site">${esc(S.secret.site)}</div></div>`).join("");
     return `<div class="card secret printable"><h2>${esc(S.secret.title)}</h2>
-      <div class="msg warn noprint">Bewaar of druk dit nu af. Wachtwoorden worden hierna <b>nooit meer</b> getoond (je kunt wel een nieuw wachtwoord laten maken).</div>
+      <div class="msg warn noprint">${S.secret.stored ? "Dit zijn de bewaarde inloggegevens van de klas. Laat ze niet rondslingeren: print ze en bewaar ze veilig." : "Bewaar of druk dit nu af. Voor accounts van volwassenen wordt het wachtwoord hierna <b>nooit meer</b> getoond (je kunt wel een nieuw wachtwoord laten maken)."}${S.secret.missing ? ` <b>${S.secret.missing} leerling(en) staan er niet bij</b>: hun wachtwoord is niet bewaard. Maak voor hen een nieuw wachtwoord.` : ""}</div>
       <p class="noprint"><button data-act="print">Afdrukken</button> <button class="ghost" data-act="csv">Download CSV</button> <button class="ghost right" data-act="closesecret">Sluiten</button></p>
       <div class="slips">${slips}</div></div>`;
   }
@@ -201,7 +217,8 @@
     const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
     const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
     $app.innerHTML = `<div class="top">
-        <div class="brand"><img class="brand-logo" src="../icons/icon-192.png" alt=""><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}</div>
+        <div class="brand"><img class="brand-logo" src="../icons/icon-192.png" alt=""><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}
+          ${S.myOrgs.length > 1 ? `<select class="org-switch" data-change="myorg" aria-label="Organisatie">${S.myOrgs.map((o) => `<option value="${esc(o.id)}" ${S.myOrg && o.id === S.myOrg.id ? "selected" : ""}>${esc(o.name)}</option>`).join("")}</select>` : S.myOrg ? `<span class="tag">${esc(S.myOrg.name)}</span>` : ""}</div>
         <div class="top-user">
           <div class="who"><b>${esc(S.me.display_name)}</b><span>${esc(ROLE_NL[S.me.role])}</span></div>
           <div class="top-actions"><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
@@ -231,6 +248,16 @@
     studdel: ({ id, name }) => guard(async () => {
       if (!confirm(`${name} definitief verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
       await api("DELETE", `/students/${id}`); flash(`${name} is verwijderd.`); await loadStudents(); render();
+    }),
+    showpw: ({ id }) => guard(async () => { const r = await api("GET", `/students/${id}/password`); S.shown[id] = r.password; render(); }),
+    hidepw: ({ id }) => { delete S.shown[id]; render(); },
+    classcards: () => guard(async () => {
+      const r = await api("GET", `/classes/${S.classId}/credentials`);
+      const rows = r.students.filter((x) => x.password).map((x) => ({ name: x.name, username: x.username, password: x.password }));
+      const missing = r.students.length - rows.length;
+      if (!rows.length) { flash("Van deze leerlingen is geen wachtwoord bewaard. Maak eerst een nieuw wachtwoord.", "err"); return render(); }
+      S.secret = { title: `Inloggegevens ${r.class.name}`, userLabel: "Gebruikersnaam", site: APP_URL, rows, stored: true, missing };
+      flash(null); render(); window.scrollTo(0, 0);
     }),
     print: () => window.print(),
     csv: () => {
@@ -269,6 +296,11 @@
       flash(null); await loadStaff(); render(); window.scrollTo(0, 0);
     },
     class: (f) => async () => { await api("POST", "/classes", { name: f.name.value, ...(isSuper() ? { org_id: S.orgId } : {}) }); flash("Klas aangemaakt."); await loadClasses(); render(); },
+    linkorg: (f) => async () => {
+      const remove = f.mode.value === "remove";
+      await api("POST", `/users/${f.user_id.value}/orgs${remove ? "/remove" : ""}`, { org_id: f.org_id.value });
+      flash(remove ? "Account losgemaakt van die organisatie." : "Account gekoppeld. Die persoon kan nu wisselen van organisatie."); await loadStaff(); render();
+    },
     assign: (f) => async () => { await api("POST", `/classes/${f.class_id.value}/teachers`, { teacher_id: f.teacher_id.value }); flash("Docent gekoppeld."); render(); },
     students: (f) => async () => {
       const names = f.names.value.split(/\r?\n/).map((n) => n.trim()).filter(Boolean);
@@ -297,6 +329,14 @@
     e.preventDefault(); const fn = forms[f.dataset.form]; if (fn) guard(fn(f));
   });
   $app.addEventListener("change", async (e) => {
+    if (e.target.dataset.change === "myorg") {
+      const id = e.target.value;
+      await guard(async () => {
+        await api("POST", "/me/org", { org_id: id });
+        S.myOrg = S.myOrgs.find((o) => o.id === id) || null; S.classId = ""; S.progClass = ""; S.secret = null;
+        await go(S.tab);
+      });
+    }
     if (e.target.dataset.change === "class") { S.classId = e.target.value; await guard(async () => { await loadStudents(); render(); }); }
     if (e.target.dataset.change === "progclass") { S.progClass = e.target.value; await guard(async () => { await loadProgress(); render(); }); }
   });
@@ -309,7 +349,7 @@
     await go(S.tab);
   }
   async function boot(afterLogin) {
-    try { S.me = (await api("GET", "/me")).user; }
+    try { const m = await api("GET", "/me"); S.me = m.user; S.myOrgs = m.orgs || []; S.myOrg = m.org || null; }
     catch (e) {
       S.me = null;
       return viewLogin(afterLogin ? "Inloggen lukte, maar je browser bewaart de sessie niet. Sta cookies van deze site toe en probeer opnieuw." : "");
