@@ -1307,22 +1307,39 @@
       gohash(`#/spel/wereld/${chapterTarget(info)}`);
     }));
     const hereEl = scr.overview.querySelector(".ov-node.is-here");
-    const sc = $("ovScroll"); if (hereEl && sc) setTimeout(() => { sc.scrollLeft = hereEl.offsetLeft - sc.clientWidth / 2; }, 30);
-    // Start van een sessie: eerst de totale kaart, dan inzoomen op de wereld waar het kind is en die openen.
+    // De kaart vult het scherm (cover); wat buiten beeld valt kan het kind verschuiven.
+    const sc = $("ovScroll"), scene = scr.overview.querySelector(".ov-scene");
+    const MW = 1672, MH = 941;
+    const layout = () => {
+      const cw = sc.clientWidth, ch = sc.clientHeight; if (!cw || !ch) return;
+      const z = Math.max(cw / MW, ch / MH);
+      scene.style.width = MW * z + "px"; scene.style.height = MH * z + "px";
+    };
+    const centerOn = (info) => {
+      const px = info.ch.pos.x * scene.offsetWidth, py = info.ch.pos.y * scene.offsetHeight;
+      sc.scrollLeft = Math.max(0, px - sc.clientWidth / 2); sc.scrollTop = Math.max(0, py - sc.clientHeight / 2);
+    };
+    layout(); centerOn(infos[here]);
+    window.addEventListener("resize", layout);
+    // Start van een sessie: eerst de totale kaart, dan rustig inzoomen op de wereld waar het kind is en die openen.
     if (location.hash.indexOf("intro") > -1) {
-      const info = infos[here], sc2 = $("ovScroll"), scene = scr.overview.querySelector(".ov-scene");
+      const info = infos[here];
       const dest = `#/spel/wereld/${chapterTarget(info.status === "soon" ? (infos.find((c) => c.status === "open") || infos[0]) : info)}`;
       const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
       const go = () => location.replace(dest);
-      if (!scene || reduce) { setTimeout(go, 600); return; }
-      sc2.style.overflow = "hidden";
+      if (reduce) { setTimeout(go, 800); return; }
       setTimeout(() => {
-        scene.style.transformOrigin = `${info.ch.pos.x * 100}% ${info.ch.pos.y * 100}%`;
-        scene.style.transition = "transform 1.3s cubic-bezier(.65,0,.35,1), opacity .35s ease 1.05s";
-        scene.style.transform = "scale(4.2)";
-        scene.style.opacity = "0.15";
-        setTimeout(go, 1450);
-      }, 900);
+        const S = 4, cw = sc.clientWidth, ch = sc.clientHeight;
+        const ix = info.ch.pos.x * scene.offsetWidth, iy = info.ch.pos.y * scene.offsetHeight;
+        // het eiland komt in het midden van het scherm terecht, ook als het niet te centreren was met scrollen
+        const tx = cw / 2 + sc.scrollLeft - S * ix, ty = ch / 2 + sc.scrollTop - S * iy;
+        sc.style.overflow = "hidden";
+        scene.style.transformOrigin = "0 0";
+        scene.style.transition = "transform 2.8s cubic-bezier(.45,0,.25,1), opacity .5s ease 2.5s";
+        scene.style.transform = `translate(${tx}px, ${ty}px) scale(${S})`;
+        scene.style.opacity = "0.1";
+        setTimeout(go, 3050);
+      }, 1200);
     }
   }
 
