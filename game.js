@@ -1304,7 +1304,7 @@
       sfx.tap();
       if (info.status === "soon") return toast(`🚧 ${gsub(info.ch.land)} · ${o.soon}`);
       if (info.status === "locked") return toast(`🔒 ${o.locked}`);
-      gohash(`#/spel/wereld/${chapterTarget(info)}`);
+      zoomInto(info);
     }));
     const hereEl = scr.overview.querySelector(".ov-node.is-here");
     // De kaart vult het scherm (cover); wat buiten beeld valt kan het kind verschuiven.
@@ -1321,25 +1321,23 @@
     };
     layout(); centerOn(infos[here]);
     window.addEventListener("resize", layout);
-    // Start van een sessie: eerst de totale kaart, dan rustig inzoomen op de wereld waar het kind is en die openen.
-    if (location.hash.indexOf("intro") > -1) {
-      const info = infos[here];
-      const dest = `#/spel/wereld/${chapterTarget(info.status === "soon" ? (infos.find((c) => c.status === "open") || infos[0]) : info)}`;
+    // Pas als het kind op een wereld tikt: rustig inzoomen op precies die wereld, dan openen.
+    let zooming = false;
+    function zoomInto(info) {
+      if (zooming) return; zooming = true;
+      const dest = `#/spel/wereld/${chapterTarget(info)}`;
       const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const go = () => location.replace(dest);
-      if (reduce) { setTimeout(go, 800); return; }
-      setTimeout(() => {
-        const S = 4, cw = sc.clientWidth, ch = sc.clientHeight;
-        const ix = info.ch.pos.x * scene.offsetWidth, iy = info.ch.pos.y * scene.offsetHeight;
-        // het eiland komt in het midden van het scherm terecht, ook als het niet te centreren was met scrollen
-        const tx = cw / 2 + sc.scrollLeft - S * ix, ty = ch / 2 + sc.scrollTop - S * iy;
-        sc.style.overflow = "hidden";
-        scene.style.transformOrigin = "0 0";
-        scene.style.transition = "transform 2.8s cubic-bezier(.45,0,.25,1), opacity .5s ease 2.5s";
-        scene.style.transform = `translate(${tx}px, ${ty}px) scale(${S})`;
-        scene.style.opacity = "0.1";
-        setTimeout(go, 3050);
-      }, 1200);
+      if (reduce) return location.replace(dest);
+      const S = 4, cw = sc.clientWidth, ch = sc.clientHeight;
+      const ix = info.ch.pos.x * scene.offsetWidth, iy = info.ch.pos.y * scene.offsetHeight;
+      // het eiland komt in het midden van het scherm terecht, ook als het niet te centreren was met scrollen
+      const tx = cw / 2 + sc.scrollLeft - S * ix, ty = ch / 2 + sc.scrollTop - S * iy;
+      sc.style.overflow = "hidden";
+      scene.style.transformOrigin = "0 0";
+      scene.style.transition = "transform 2.4s cubic-bezier(.45,0,.25,1), opacity .5s ease 2.1s";
+      scene.style.transform = `translate(${tx}px, ${ty}px) scale(${S})`;
+      scene.style.opacity = "0.1";
+      setTimeout(() => location.replace(dest), 2600);
     }
   }
 
