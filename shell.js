@@ -18,7 +18,7 @@
   const SHELL_I18N = {
     ar: {
       dir: "rtl",
-      nav: { leren: "تعلّم", boek: "الكتاب", beloningen: "الجوائز", profiel: "ملفي" },
+      nav: { leren: "العب وتعلّم", boek: "الكتاب", beloningen: "الجوائز", profiel: "ملفي" },
       kicker: "قاعدة الفتح الربَّاني",
       greeting: (n) => `السَّلَامُ عَلَيْكُمْ، ${n}`,
       startAdventure: "هل أنت مستعدّ لبدء رحلتك في تعلّم العربية؟",
@@ -38,7 +38,7 @@
     },
     nl: {
       dir: "ltr",
-      nav: { leren: "Leren", boek: "Boek", beloningen: "Beloningen", profiel: "Profiel" },
+      nav: { leren: "Speel & leer", boek: "Boek", beloningen: "Beloningen", profiel: "Profiel" },
       kicker: "Qa'idah al-Fath ar-Rabbani",
       greeting: (n) => `Assalamu alaikum, ${n}`,
       startAdventure: "Klaar om je Arabische avontuur te beginnen?",
@@ -58,7 +58,7 @@
     },
     en: {
       dir: "ltr",
-      nav: { leren: "Learn", boek: "Book", beloningen: "Rewards", profiel: "Profile" },
+      nav: { leren: "Play & learn", boek: "Book", beloningen: "Rewards", profiel: "Profile" },
       kicker: "Qa'idah al-Fath ar-Rabbani",
       greeting: (n) => `Assalamu alaikum, ${n}`,
       startAdventure: "Ready to start your Arabic adventure?",
@@ -78,7 +78,7 @@
     },
     tr: {
       dir: "ltr",
-      nav: { leren: "Öğren", boek: "Kitap", beloningen: "Ödüller", profiel: "Profil" },
+      nav: { leren: "Oyna & öğren", boek: "Kitap", beloningen: "Ödüller", profiel: "Profil" },
       kicker: "Qa'idah al-Fath ar-Rabbani",
       greeting: (n) => `Selamün aleyküm, ${n}`,
       startAdventure: "Arapça maceranı başlatmaya hazır mısın?",
@@ -297,7 +297,7 @@
 
   // ---------- Onderste navigatie ----------
   const NAV_ITEMS = [
-    { key: "leren", icon: "🗺️", href: "#/spel/kaart?intro" },
+    { key: "leren", icon: "🎮", href: "#/spel/kaart?intro" },
     { key: "boek", icon: "📖", href: "#/boek" },
     { key: "beloningen", icon: "🏆", href: "#/beloningen" },
     { key: "profiel", icon: "👤", href: "#/profiel" },
