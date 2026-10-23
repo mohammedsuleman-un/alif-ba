@@ -424,7 +424,7 @@
       drawGuide(dir, f) {
         const g = this.guideG; g.clear();
         if (f < 0.12) return;
-        const range = this.L.maxRange * f;
+        const range = this.L.maxRange; // bereik hangt niet van de trekkracht af: de steen vliegt altijd tot aan de lantaarns
         const ray = this.castRay(dir, range);
         const { rest } = this.L;
         g.fillStyle(0xffffff, 0.9);
@@ -463,8 +463,8 @@
       release() {
         const a = this.aimFromStone();
         this.guideG.clear();
-        if (a.f < 0.18 || a.dir.y > -0.2) { this.returnStone(); return; } // te zwak/niet omhoog: geen schot, geen fout
-        this.fire(a.dir, this.L.maxRange * a.f);
+        if (a.f < 0.12 || a.dir.y > -0.2) { this.returnStone(); return; } // te zwak/niet omhoog: geen schot, geen fout
+        this.fire(a.dir, this.L.maxRange);
       }
 
       fire(dir, range) {
