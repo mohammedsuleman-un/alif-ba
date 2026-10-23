@@ -209,7 +209,7 @@
     const btn = $("phReplay");
     if (btn) { btn.disabled = true; btn.classList.add("is-playing"); }
     const done = () => { if (btn) { btn.disabled = false; btn.classList.remove("is-playing"); } };
-    return window.AudioManager.playInstruction("find-letter").then(() => letterAudio(m.target)).then(done, done);
+    return window.AudioManager.playInstruction("find-letter").then((ok) => (ok === false ? false : letterAudio(m.target))).then(done, done);
   }
   function letterAudio(letter) {
     const base = window.GAME && window.GAME.letterAudio ? window.GAME.letterAudio[letter] : null;

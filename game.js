@@ -1085,7 +1085,7 @@
     if (isAudio) {
       const replay = () => playLetter(q.letter);
       $("gQPlay").onclick = replay;
-      AudioManager.playInstruction("which-letter").then(() => playLetter(q.letter, startTimer));
+      AudioManager.playInstruction("which-letter").then((ok) => { if (ok) playLetter(q.letter, startTimer); }); // onderbroken (al geantwoord)? dan geen restje letter meer
     } else {
       AudioManager.playInstruction("find-letter");
       startTimer();

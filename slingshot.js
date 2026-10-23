@@ -171,7 +171,8 @@
     const btn = $("slReplay");
     if (btn) { btn.disabled = true; btn.classList.add("is-playing"); }
     const done = () => { if (btn) { btn.disabled = false; btn.classList.remove("is-playing"); } };
-    return window.AudioManager.playInstruction("find-letter").then(() => {
+    return window.AudioManager.playInstruction("find-letter").then((ok) => {
+      if (ok === false) return false; // onderbroken: geen restje letter na het antwoord
       const base = window.GAME && window.GAME.letterAudio ? window.GAME.letterAudio[m.target] : null;
       return base ? window.AudioManager.playLearningAudio(base) : true;
     }).then(done, done);
