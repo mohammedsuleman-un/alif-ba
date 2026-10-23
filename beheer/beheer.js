@@ -216,7 +216,7 @@
       <input type="file" accept=".csv,text/csv,text/plain" data-change="importfile" ${run ? "disabled" : ""}>
       ${S.imp ? `<p><b>${S.imp.list.length}</b> leerlingen gevonden in <span class="mono">${esc(S.imp.name)}</span>${S.imp.bad ? `, ${S.imp.bad} regels overgeslagen (onvolledig)` : ""}. Voorbeeld: <span class="mono">${esc(S.imp.list[0].number)} ${esc(S.imp.list[0].first_name)} ${esc(S.imp.list[0].last_name)} (${esc(S.imp.list[0].username)})</span></p>
         <p><button data-act="doimport" ${run ? "disabled" : ""}>${run ? "Bezig met importeren..." : "Nu importeren"}</button></p>` : ""}
-      ${run ? `<div class="msg warn">Bezig: ${run.done} van ${run.total} verwerkt (${run.created} aangemaakt, ${run.skipped.length} overgeslagen). Sluit deze pagina niet.<div class="bar"><i style="width:${Math.round((run.done / run.total) * 100)}%"></i></div></div>` : ""}
+      ${run ? `<div class="msg warn">Bezig: ${run.done} van ${run.total} verwerkt (${run.created} aangemaakt, ${run.skipped.length} overgeslagen). Sluit deze pagina niet.${run.note ? ` <b>${esc(run.note)}</b>` : ""}<div class="bar"><i style="width:${Math.round((run.done / run.total) * 100)}%"></i></div></div>` : ""}
       ${res ? `<div class="msg ${res.failed ? "err" : "ok"}">${esc(res.text)}</div>${res.skipped.length ? `<details open><summary class="muted">${res.skipped.length} overgeslagen</summary><table>${res.skipped.slice(0, 50).map((x) => `<tr><td class="mono">${esc(x.username)}</td><td>${esc(x.reason)}</td></tr>`).join("")}</table>${res.skipped.length > 50 ? `<p class="muted small-t">... en ${res.skipped.length - 50} meer</p>` : ""}</details>` : ""}` : ""}
     </div>`;
   }
@@ -390,20 +390,25 @@
     fbstatus: ({ id, status }) => guard(async () => { await api("POST", `/feedback/${id}/status`, { status }); await loadFeedback(); render(); }),
     more: () => { S.limit += 100; render(); },
     doimport: () => guard(async () => {
-      const list = S.imp.list; let size = 8, i = 0, fails = 0;
-      S.impResult = null; S.impRun = { done: 0, total: list.length, created: 0, skipped: [] }; render();
-      let failed = null;
+      // De server rekent per leerling (veilig wachtwoord opslaan) en mag op het gratis Cloudflare-abonnement maar kort rekenen.
+      // Daarom: kleine groepjes, een korte pauze ertussen, en bij een time-out even wachten en kleiner opnieuw proberen.
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+      const list = S.imp.list; let size = 4, i = 0, fails = 0, failed = null;
+      S.impResult = null; S.impRun = { done: 0, total: list.length, created: 0, skipped: [], note: "" }; render();
       while (i < list.length) {
         const chunk = list.slice(i, i + size);
         try {
           const r = await api("POST", "/students/import", { students: chunk, ...(isSuper() ? { org_id: S.orgId } : {}) });
-          S.impRun.created += r.created.length; S.impRun.skipped.push(...r.skipped); i += chunk.length; S.impRun.done = i; fails = 0;
+          S.impRun.created += r.created.length; S.impRun.skipped.push(...r.skipped); i += chunk.length; S.impRun.done = i; fails = 0; S.impRun.note = "";
+          render();
+          if (r.created.length) await sleep(1500); // pauze zodat de server weer ruimte heeft
         } catch (e) {
           if (e.status === 401 || e.status === 403 || e.status === 400 || e.status === 404) { failed = e; break; }
-          if (++fails > 4) { failed = e; break; }
-          size = Math.max(2, Math.floor(size / 2)); // te zwaar voor de server: kleinere stukken
+          if (++fails > 8) { failed = e; break; }
+          size = Math.max(2, Math.floor(size / 2));
+          S.impRun.note = `De server is even bezig. Wachten en opnieuw proberen (${fails}/8)...`; render();
+          await sleep(Math.min(40000, 10000 * fails)); // 10 s, 20 s, 30 s, 40 s...
         }
-        render();
       }
       const run = S.impRun; S.impRun = null; S.imp = null;
       S.impResult = { failed: !!failed, skipped: run.skipped, text: failed ? `Gestopt na ${run.done} van ${run.total}: ${failed.message}. Wat al is aangemaakt blijft staan; je kunt het bestand opnieuw importeren, bestaande leerlingen worden dan overgeslagen.` : `Klaar: ${run.created} leerlingen aangemaakt${run.skipped.length ? `, ${run.skipped.length} overgeslagen` : ""}.` };
