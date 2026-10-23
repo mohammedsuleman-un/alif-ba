@@ -139,3 +139,7 @@ select.inline { padding: 5px 8px; font-size: 14px; border-radius: 8px; max-width
   .scroll { margin-top: 10px; }
   table.stack td.actions button.danger { background: #fff; color: var(--bad); border: 2px solid #f0c4c0; flex: 1 1 100%; }
 }
+
+.nr { display: inline-block; background: #f1e7ce; border-radius: 6px; padding: 1px 7px; margin-right: 4px; font-weight: 800; font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 14px; }
+input.search { width: 100%; margin: 8px 0 4px; font-size: 16px; }
+input[type=file] { width: 100%; padding: 8px; background: #fff; }

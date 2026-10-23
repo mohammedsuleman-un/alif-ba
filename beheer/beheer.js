@@ -10,7 +10,7 @@
   const WORLD1_LEVELS = 9, MINI_LEVELS = 8; // aantal niveaus in Wereld 1 en in de spelletjesroute
   const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
 
-  const S = { menu: false, addClass: "", feedback: [], fbOpen: false, fbFilter: "new", me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
+  const S = { search: "", limit: 100, imp: null, impRun: null, impResult: null, menu: false, addClass: "", feedback: [], fbOpen: false, fbFilter: "new", me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -177,8 +177,13 @@
 
   const classSelect = (value, attrs, noneLabel) => `<select ${attrs}><option value="">${esc(noneLabel)}</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === value ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>`;
 
+  const matches = (s, q) => !q || [s.display_name, s.student_number, s.username].some((v) => String(v || "").toLowerCase().includes(q));
+
   function panelStudents() {
-    const rows = S.students.map((s) => `<tr><td><b>${esc(s.display_name)}</b><div class="muted small-t mono">${esc(s.username)}</div></td>
+    const q = S.search.trim().toLowerCase();
+    const found = S.students.filter((s) => matches(s, q));
+    const shown = found.slice(0, S.limit);
+    const rows = shown.map((s) => `<tr><td>${s.student_number ? `<span class="nr">${esc(s.student_number)}</span> ` : ""}<b>${esc(s.display_name)}</b><div class="muted small-t mono">${esc(s.username)}</div></td>
       <td>${classSelect(s.class_id, `data-change="stuclass" data-id="${esc(s.id)}" class="inline"`, "Geen klas")}</td>
       <td>${s.last_login_at ? esc(String(s.last_login_at).slice(0, 10)) : '<span class="muted">nog nooit</span>'}</td>
       <td>${S.shown[s.id] ? `<span class="mono"><b>${esc(S.shown[s.id])}</b></span> <button class="small ghost" data-act="hidepw" data-id="${esc(s.id)}">Verberg</button>`
@@ -190,13 +195,50 @@
     const filter = `<select data-change="class"><option value="" ${S.classId === "" ? "selected" : ""}>Alle leerlingen</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.classId ? "selected" : ""}>${esc(c.name)}</option>`).join("")}<option value="none" ${S.classId === "none" ? "selected" : ""}>Zonder klas</option></select>`;
     return `<div class="card"><div class="row"><h2 style="margin:0">Leerlingen</h2>
       <div class="right"><label>Tonen</label>${filter}</div></div>
-      <div class="scroll"><table><tr><th>Naam</th><th>Klas</th><th>Laatst ingelogd</th><th>Wachtwoord</th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Geen leerlingen in deze selectie.</td></tr>`}</table></div>
+      <input type="search" class="search" data-input="search" placeholder="Zoek op naam, nummer of gebruikersnaam" value="${esc(S.search)}" autocomplete="off">
+      <p class="muted small-t">${found.length === S.students.length ? `${S.students.length} leerlingen` : `${found.length} van ${S.students.length} leerlingen`}</p>
+      <div class="scroll"><table><tr><th>Naam</th><th>Klas</th><th>Laatst ingelogd</th><th>Wachtwoord</th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Geen leerlingen gevonden.</td></tr>`}</table></div>
+      ${found.length > shown.length ? `<p><button class="ghost" data-act="more">Toon meer (${found.length - shown.length} te gaan)</button></p>` : ""}
       ${realClass ? `<p><button class="ghost small" data-act="classcards" ${S.students.length ? "" : "disabled"}>Inlogkaartjes van deze klas tonen en printen</button></p>` : ""}</div>
       <form class="card" data-form="students"><h2>Leerlingen toevoegen</h2>
         <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Een klas is niet verplicht: je kunt een leerling later aan een klas koppelen. Je kunt de wachtwoorden later weer bekijken met de knop Toon.</p>
         <label>Klas (mag leeg blijven)</label>${classSelect(S.addClass || (realClass ? S.classId : ""), 'name="class_id"', "Geen klas")}
         <label>Namen</label><textarea name="names" placeholder="Aya&#10;Bilal&#10;Zoë"></textarea>
-        <p><button type="submit" ${S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>`;
+        <p><button type="submit" ${S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>${panelImport()}`;
+  }
+
+  // Importeren uit een bestand (alleen beheerders): voornaam, achternaam, nummer, gebruikersnaam en wachtwoord staan al in het bestand.
+  function panelImport() {
+    if (S.me.role === "teacher") return "";
+    const run = S.impRun, res = S.impResult;
+    return `<div class="card"><h2>Leerlingen importeren uit een bestand</h2>
+      <p class="muted">Voor een bestaande leerlingenlijst. Kies een CSV-bestand met de kolommen <b>nummer, voornaam, achternaam, gebruikersnaam, wachtwoord</b> (gescheiden door puntkomma's). Elke leerling krijgt dan precies die gegevens.</p>
+      <input type="file" accept=".csv,text/csv,text/plain" data-change="importfile" ${run ? "disabled" : ""}>
+      ${S.imp ? `<p><b>${S.imp.list.length}</b> leerlingen gevonden in <span class="mono">${esc(S.imp.name)}</span>${S.imp.bad ? `, ${S.imp.bad} regels overgeslagen (onvolledig)` : ""}. Voorbeeld: <span class="mono">${esc(S.imp.list[0].number)} ${esc(S.imp.list[0].first_name)} ${esc(S.imp.list[0].last_name)} (${esc(S.imp.list[0].username)})</span></p>
+        <p><button data-act="doimport" ${run ? "disabled" : ""}>${run ? "Bezig met importeren..." : "Nu importeren"}</button></p>` : ""}
+      ${run ? `<div class="msg warn">Bezig: ${run.done} van ${run.total} verwerkt (${run.created} aangemaakt, ${run.skipped.length} overgeslagen). Sluit deze pagina niet.<div class="bar"><i style="width:${Math.round((run.done / run.total) * 100)}%"></i></div></div>` : ""}
+      ${res ? `<div class="msg ${res.failed ? "err" : "ok"}">${esc(res.text)}</div>${res.skipped.length ? `<details open><summary class="muted">${res.skipped.length} overgeslagen</summary><table>${res.skipped.slice(0, 50).map((x) => `<tr><td class="mono">${esc(x.username)}</td><td>${esc(x.reason)}</td></tr>`).join("")}</table>${res.skipped.length > 50 ? `<p class="muted small-t">... en ${res.skipped.length - 50} meer</p>` : ""}</details>` : ""}` : ""}
+    </div>`;
+  }
+
+  // CSV lezen: BOM weg, scheidingsteken ; of ,, aanhalingstekens weg. Kolommen herkennen op de kopnaam.
+  function parseImport(text) {
+    const lines = String(text).replace(/^\ufeff/, "").split(/\r?\n/).filter((l) => l.trim());
+    if (lines.length < 2) return { list: [], bad: 0 };
+    const delim = lines[0].includes(";") ? ";" : ",";
+    const cut = (l) => l.split(delim).map((c) => c.trim().replace(/^"|"$/g, "").replace(/""/g, '"'));
+    const head = cut(lines[0]).map((h) => h.toLowerCase());
+    const idx = (...names) => head.findIndex((h) => names.includes(h));
+    const c = { number: idx("nummer", "nr", "number"), first: idx("voornaam", "first_name"), last: idx("achternaam", "last_name"), user: idx("gebruikersnaam", "username"), pass: idx("wachtwoord", "password") };
+    if (c.first < 0 || c.user < 0 || c.pass < 0) return { list: [], bad: 0, error: "Kolommen voornaam, gebruikersnaam en wachtwoord ontbreken." };
+    const list = []; let bad = 0;
+    for (const l of lines.slice(1)) {
+      const v = cut(l);
+      const r = { number: c.number >= 0 ? v[c.number] : "", first_name: v[c.first], last_name: c.last >= 0 ? v[c.last] : "", username: v[c.user], password: v[c.pass] };
+      if (!r.first_name || !r.username || !r.password) { bad++; continue; }
+      list.push(r);
+    }
+    return { list, bad };
   }
 
   // "vandaag", "gisteren", "5 dagen geleden", "nog nooit"
@@ -219,7 +261,7 @@
       const p = s.progress, a = lastSeen(s), done = p ? (p.worlds.letter_oasis || 0) : 0;
       const bar = `<div class="bar" title="${done} van ${WORLD1_LEVELS}"><i style="width:${Math.round((done / WORLD1_LEVELS) * 100)}%"></i></div>`;
       const weak = p && p.weak_letters.length ? p.weak_letters.map((l) => `<span class="ar" lang="ar" dir="rtl">${esc(l)}</span>`).join(" ") : (p && p.practiced_letters ? `<span class="muted">geen</span>` : `<span class="muted">-</span>`);
-      return `<tr><td><b>${esc(s.display_name)}</b>${s.disabled ? ` <span class="tag off">uit</span>` : ""}<div class="muted small-t mono">${esc(s.username)}</div></td>
+      return `<tr><td>${s.student_number ? `<span class="nr">${esc(s.student_number)}</span> ` : ""}<b>${esc(s.display_name)}</b>${s.disabled ? ` <span class="tag off">uit</span>` : ""}<div class="muted small-t mono">${esc(s.username)}</div></td>
         <td>${p ? `${done} / ${WORLD1_LEVELS}${bar}` : `<span class="muted">nog niet gespeeld</span>`}</td>
         <td>${p ? `${p.stars} ★` : ""}</td><td>${p ? `${p.mini_done} / ${MINI_LEVELS}` : ""}</td><td>${p ? `${p.coins}` : ""}</td>
         <td>${a ? `<span class="${a.days > 7 ? "stale" : ""}">${esc(a.text)}</span>` : `<span class="muted">nog nooit</span>`}</td><td>${weak}</td></tr>`;
@@ -346,6 +388,27 @@
     fbclose: () => { S.fbOpen = false; render(); },
     fbfilter: ({ f }) => guard(async () => { S.fbFilter = f; await loadFeedback(); render(); }),
     fbstatus: ({ id, status }) => guard(async () => { await api("POST", `/feedback/${id}/status`, { status }); await loadFeedback(); render(); }),
+    more: () => { S.limit += 100; render(); },
+    doimport: () => guard(async () => {
+      const list = S.imp.list; let size = 8, i = 0, fails = 0;
+      S.impResult = null; S.impRun = { done: 0, total: list.length, created: 0, skipped: [] }; render();
+      let failed = null;
+      while (i < list.length) {
+        const chunk = list.slice(i, i + size);
+        try {
+          const r = await api("POST", "/students/import", { students: chunk, ...(isSuper() ? { org_id: S.orgId } : {}) });
+          S.impRun.created += r.created.length; S.impRun.skipped.push(...r.skipped); i += chunk.length; S.impRun.done = i; fails = 0;
+        } catch (e) {
+          if (e.status === 401 || e.status === 403 || e.status === 400 || e.status === 404) { failed = e; break; }
+          if (++fails > 4) { failed = e; break; }
+          size = Math.max(2, Math.floor(size / 2)); // te zwaar voor de server: kleinere stukken
+        }
+        render();
+      }
+      const run = S.impRun; S.impRun = null; S.imp = null;
+      S.impResult = { failed: !!failed, skipped: run.skipped, text: failed ? `Gestopt na ${run.done} van ${run.total}: ${failed.message}. Wat al is aangemaakt blijft staan; je kunt het bestand opnieuw importeren, bestaande leerlingen worden dan overgeslagen.` : `Klaar: ${run.created} leerlingen aangemaakt${run.skipped.length ? `, ${run.skipped.length} overgeslagen` : ""}.` };
+      await loadStudents(); render();
+    }),
     print: () => window.print(),
     csv: () => {
       const q = (v) => `"${String(v).replace(/"/g, '""')}"`;
@@ -421,6 +484,11 @@
     const f = e.target.closest("form[data-form]"); if (!f) return;
     e.preventDefault(); const fn = forms[f.dataset.form]; if (fn) guard(fn(f));
   });
+  $app.addEventListener("input", (e) => {
+    if (e.target.dataset.input !== "search") return;
+    S.search = e.target.value; S.limit = 100; render();
+    const el = $app.querySelector('[data-input="search"]'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  });
   $app.addEventListener("change", async (e) => {
     if (e.target.dataset.change === "myorg") {
       const id = e.target.value;
@@ -429,6 +497,13 @@
         S.myOrg = S.myOrgs.find((o) => o.id === id) || null; S.classId = ""; S.progClass = ""; S.secret = null;
         await go(S.tab);
       });
+    }
+    if (e.target.dataset.change === "importfile") {
+      const file = e.target.files && e.target.files[0]; if (!file) { S.imp = null; return render(); }
+      const text = await file.text(); const p = parseImport(text);
+      S.impResult = null;
+      if (p.error || !p.list.length) { S.imp = null; flash(p.error || "Geen leerlingen gevonden in dit bestand.", "err"); } else { S.imp = { name: file.name, list: p.list, bad: p.bad }; flash(null); }
+      return render();
     }
     if (e.target.dataset.change === "stuclass") {
       const id = e.target.dataset.id, cid = e.target.value;
