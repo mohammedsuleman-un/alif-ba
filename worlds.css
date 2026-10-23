@@ -84,3 +84,4 @@ form.g-login-form .g-login-msg { background: rgba(253, 236, 235, .9); border-rad
 
 .g-admin-link { text-align: center; margin: 18px 0 0; font-size: 15px; font-weight: 800; }
 .g-admin-link a { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); text-decoration: underline; }
+.g-logo { display: block; width: 104px; height: 104px; margin: 4px auto 6px; border-radius: 26px; box-shadow: 0 10px 26px rgba(0,0,0,.35); }

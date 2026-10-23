@@ -332,6 +332,7 @@
           <button type="button" data-l="tr" class="${glang() === "tr" ? "sel" : ""}">TR</button>
         </div>
       </div>
+      <img class="g-logo" src="icons/icon-192.png" alt="Alif Ba">
       <h2 class="g-who">${t.who}</h2>
       <div class="g-profiles" id="gProfileList"></div>
       ${window.Account ? `<form id="gLoginForm" class="g-new-form g-login-form" autocomplete="on">
