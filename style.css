@@ -43,7 +43,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; height: 100%; }
 body {
-  background: var(--cream);
+  background: linear-gradient(180deg, rgba(255, 249, 236, .86), rgba(253, 248, 238, .92)), url("assets/backgrounds/general.jpg") center/cover fixed no-repeat, var(--cream);
   color: var(--ink);
   font-family: "Nunito", system-ui, sans-serif;
   overscroll-behavior: none;

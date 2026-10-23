@@ -1,4 +1,4 @@
-﻿const VERSION = "v92";
+﻿const VERSION = "v93";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
