@@ -10,7 +10,7 @@
   const WORLD1_LEVELS = 9, MINI_LEVELS = 8; // aantal niveaus in Wereld 1 en in de spelletjesroute
   const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
 
-  const S = { feedback: [], fbOpen: false, fbFilter: "new", me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
+  const S = { menu: false, addClass: "", feedback: [], fbOpen: false, fbFilter: "new", me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -30,26 +30,31 @@
   const flash = (text, kind = "ok") => { S.msg = text ? { text, kind } : null; };
 
   // ---------- gegevens laden ----------
+  // Welke leerlingen: "" = alle, "none" = zonder klas, anders een klas-id.
+  function scopeQ(classId) {
+    if (classId && classId !== "none") return `?class_id=${encodeURIComponent(classId)}`;
+    const org = isSuper() ? `org_id=${encodeURIComponent(S.orgId)}` : "";
+    return classId === "none" ? `?class_id=none${org ? "&" + org : ""}` : (org ? "?" + org : "");
+  }
   async function loadOrgs() { S.orgs = (await api("GET", "/orgs")).orgs; }
   async function loadStaff() { S.staff = isSuper() && !S.orgId ? [] : (await api("GET", "/users" + orgQ())).users; }
   async function loadClasses() {
     S.classes = isSuper() && !S.orgId ? [] : (await api("GET", "/classes" + orgQ())).classes;
-    if (!S.classes.some((c) => c.id === S.classId)) S.classId = S.classes[0] ? S.classes[0].id : "";
+    if (S.classId !== "" && S.classId !== "none" && !S.classes.some((c) => c.id === S.classId)) S.classId = "";
+    if (S.addClass && !S.classes.some((c) => c.id === S.addClass)) S.addClass = "";
   }
   async function loadStudents() {
     if (isSuper() && !S.orgId) { S.students = []; return; }
-    const q = S.classId ? `?class_id=${encodeURIComponent(S.classId)}` : orgQ();
-    S.students = (await api("GET", "/students" + q)).students;
+    S.students = (await api("GET", "/students" + scopeQ(S.classId))).students;
   }
   async function loadProgress() {
     if (isSuper() && !S.orgId) { S.progress = []; return; }
-    const q = S.progClass ? `?class_id=${encodeURIComponent(S.progClass)}` : orgQ();
-    S.progress = (await api("GET", "/students/progress" + q)).students;
+    S.progress = (await api("GET", "/students/progress" + scopeQ(S.progClass))).students;
   }
   async function loadFeedback() { S.feedback = (await api("GET", "/feedback" + (S.fbFilter ? `?status=${S.fbFilter}` : "") + (isSuper() && S.orgId ? `${S.fbFilter ? "&" : "?"}org_id=${encodeURIComponent(S.orgId)}` : ""))).items; }
   async function loadFor(tab) {
     if (tab === "feedback") return loadFeedback();
-    if (tab === "progress") { await loadClasses(); if (S.progClass && !S.classes.some((c) => c.id === S.progClass)) S.progClass = ""; return loadProgress(); }
+    if (tab === "progress") { await loadClasses(); if (S.progClass && S.progClass !== "none" && !S.classes.some((c) => c.id === S.progClass)) S.progClass = ""; return loadProgress(); }
     if (tab === "orgs") return loadOrgs();
     if (tab === "staff") return Promise.all([loadStaff(), loadClasses()]);
     if (tab === "classes") return Promise.all([loadClasses(), S.me.role === "teacher" ? Promise.resolve() : loadStaff()]);
@@ -170,24 +175,28 @@
       <button type="submit">Aanmaken</button></div></form>${assign}`;
   }
 
+  const classSelect = (value, attrs, noneLabel) => `<select ${attrs}><option value="">${esc(noneLabel)}</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === value ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>`;
+
   function panelStudents() {
-    const rows = S.students.map((s) => `<tr><td>${esc(s.display_name)}</td><td class="mono">${esc(s.username)}</td>
+    const rows = S.students.map((s) => `<tr><td><b>${esc(s.display_name)}</b><div class="muted small-t mono">${esc(s.username)}</div></td>
+      <td>${classSelect(s.class_id, `data-change="stuclass" data-id="${esc(s.id)}" class="inline"`, "Geen klas")}</td>
       <td>${s.last_login_at ? esc(String(s.last_login_at).slice(0, 10)) : '<span class="muted">nog nooit</span>'}</td>
       <td>${S.shown[s.id] ? `<span class="mono"><b>${esc(S.shown[s.id])}</b></span> <button class="small ghost" data-act="hidepw" data-id="${esc(s.id)}">Verberg</button>`
-        : s.has_password ? `<button class="small ghost" data-act="showpw" data-id="${esc(s.id)}">Toon</button>` : `<span class="muted" title="Dit wachtwoord is niet bewaard. Maak een nieuw wachtwoord.">-</span>`}</td>
-      <td>${s.disabled ? `<span class="tag off">uit</span>` : ""}</td>
+        : s.has_password ? `<button class="small ghost" data-act="showpw" data-id="${esc(s.id)}">Toon</button>` : `<span class="muted" title="Dit wachtwoord is niet bewaard. Maak een nieuw wachtwoord.">-</span>`}${s.disabled ? ` <span class="tag off">uit</span>` : ""}</td>
       <td class="actions"><button class="small ghost" data-act="reset" data-id="${esc(s.id)}" data-name="${esc(s.display_name)}">Nieuw wachtwoord</button>
         <button class="small ghost" data-act="studoff" data-id="${esc(s.id)}" data-off="${s.disabled ? 0 : 1}">${s.disabled ? "Aanzetten" : "Uitzetten"}</button>
         <button class="small danger" data-act="studdel" data-id="${esc(s.id)}" data-name="${esc(s.display_name)}">Verwijderen</button></td></tr>`).join("");
-    const none = !S.classes.length;
+    const realClass = S.classId && S.classId !== "none";
+    const filter = `<select data-change="class"><option value="" ${S.classId === "" ? "selected" : ""}>Alle leerlingen</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.classId ? "selected" : ""}>${esc(c.name)}</option>`).join("")}<option value="none" ${S.classId === "none" ? "selected" : ""}>Zonder klas</option></select>`;
     return `<div class="card"><div class="row"><h2 style="margin:0">Leerlingen</h2>
-      <div class="right"><label>Klas</label><select data-change="class">${classOptions()}</select></div></div>
-      ${none ? `<p class="muted">Maak eerst een klas aan (tabblad Klassen).</p>` : `<table><tr><th>Naam</th><th>Gebruikersnaam</th><th>Laatst ingelogd</th><th>Wachtwoord</th><th></th><th></th></tr>${rows || `<tr><td colspan="6" class="muted">Nog geen leerlingen in deze klas.</td></tr>`}</table>
-      <p><button class="ghost small" data-act="classcards" ${S.students.length ? "" : "disabled"}>Inlogkaartjes van deze klas tonen en printen</button></p>`}</div>
+      <div class="right"><label>Tonen</label>${filter}</div></div>
+      <div class="scroll"><table><tr><th>Naam</th><th>Klas</th><th>Laatst ingelogd</th><th>Wachtwoord</th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Geen leerlingen in deze selectie.</td></tr>`}</table></div>
+      ${realClass ? `<p><button class="ghost small" data-act="classcards" ${S.students.length ? "" : "disabled"}>Inlogkaartjes van deze klas tonen en printen</button></p>` : ""}</div>
       <form class="card" data-form="students"><h2>Leerlingen toevoegen</h2>
-        <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Je kunt de wachtwoorden later weer bekijken met de knop Toon, en de kaartjes opnieuw printen.</p>
-        <textarea name="names" placeholder="Aya&#10;Bilal&#10;Zoë" ${none ? "disabled" : ""}></textarea>
-        <p><button type="submit" ${none || S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>`;
+        <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Een klas is niet verplicht: je kunt een leerling later aan een klas koppelen. Je kunt de wachtwoorden later weer bekijken met de knop Toon.</p>
+        <label>Klas (mag leeg blijven)</label>${classSelect(S.addClass || (realClass ? S.classId : ""), 'name="class_id"', "Geen klas")}
+        <label>Namen</label><textarea name="names" placeholder="Aya&#10;Bilal&#10;Zoë"></textarea>
+        <p><button type="submit" ${S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>`;
   }
 
   // "vandaag", "gisteren", "5 dagen geleden", "nog nooit"
@@ -216,7 +225,7 @@
         <td>${a ? `<span class="${a.days > 7 ? "stale" : ""}">${esc(a.text)}</span>` : `<span class="muted">nog nooit</span>`}</td><td>${weak}</td></tr>`;
     }).join("");
     return `<div class="card"><div class="row"><h2 style="margin:0">Voortgang</h2>
-        <div class="right"><label>Klas</label><select data-change="progclass"><option value="">Alle klassen</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.progClass ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
+        <div class="right"><label>Klas</label><select data-change="progclass"><option value="">Alle leerlingen</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.progClass ? "selected" : ""}>${esc(c.name)}</option>`).join("")}<option value="none" ${S.progClass === "none" ? "selected" : ""}>Zonder klas</option></select></div>
         <button class="ghost small" data-act="progcsv" ${list.length ? "" : "disabled"}>Download CSV</button></div>
       <div class="stats"><div><b>${list.length}</b><span>leerlingen</span></div><div><b>${active7}</b><span>actief afgelopen 7 dagen</span></div><div><b>${avg.toFixed(1)}</b><span>gemiddeld niveau van ${WORLD1_LEVELS}</span></div></div>
       <div class="scroll"><table><tr><th>Leerling</th><th>Wereld 1</th><th>Sterren</th><th>Spellen</th><th>Munten</th><th>Laatst actief</th><th>Aandacht voor</th></tr>
@@ -270,16 +279,29 @@
     const tabs = tabsFor().map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-act="tab" data-tab="${k}">${esc(l)}</button>`).join("");
     const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
     const panel = { feedback: panelFeedback, orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
-    $app.innerHTML = `<div class="top">
+    $app.innerHTML = `<div class="top ${S.menu ? "menu-open" : ""}">
         <div class="brand"><img class="brand-logo" src="../icons/icon-192.png" alt=""><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}
           ${S.myOrgs.length > 1 ? `<select class="org-switch" data-change="myorg" aria-label="Organisatie">${S.myOrgs.map((o) => `<option value="${esc(o.id)}" ${S.myOrg && o.id === S.myOrg.id ? "selected" : ""}>${esc(o.name)}</option>`).join("")}</select>` : S.myOrg ? `<span class="tag">${esc(S.myOrg.name)}</span>` : ""}</div>
         <div class="top-user">
           <div class="who"><b>${esc(S.me.display_name)}</b><span>${esc(ROLE_NL[S.me.role])}</span></div>
+          <button class="ghost small menu-btn" data-act="menu" aria-expanded="${S.menu}" aria-label="Menu">${S.menu ? "✕" : "☰"} Menu</button>
           <div class="top-actions"><button class="ghost small" data-act="fbopen">💬 Feedback</button><a class="btn-link" href="${APP_URL}/#/spel?voorbeeld" target="_blank" rel="noopener" title="Open het spel als leerling, met alles open">Spel bekijken</a><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
         </div></div>
       <div class="tabs">${tabs}</div>
       ${S.msg ? `<div class="msg ${S.msg.kind}">${esc(S.msg.text)}</div>` : ""}
       ${panelFeedbackForm()}${panelSecret()}${panel ? panel() : ""}`;
+    labelTables();
+  }
+
+  // Op de telefoon worden tabellen kaartjes: elke cel krijgt het label van zijn kolom.
+  function labelTables() {
+    $app.querySelectorAll(".card table").forEach((t) => {
+      if (t.closest("details")) return;
+      const heads = [...t.querySelectorAll("tr:first-child th")].map((th) => th.textContent.trim());
+      if (!heads.length) return;
+      t.classList.add("stack");
+      t.querySelectorAll("tr").forEach((tr, i) => { if (i) [...tr.children].forEach((td, j) => td.setAttribute("data-label", heads[j] || "")); });
+    });
   }
 
   // ---------- acties ----------
@@ -288,6 +310,7 @@
   const handlers = {
     tab: ({ tab }) => go(tab),
     back: () => { render(); },
+    menu: () => { S.menu = !S.menu; render(); },
     chpw: () => viewChangePassword(false),
     logout: async () => { try { await api("POST", "/auth/logout", {}); } catch { /* maakt niet uit */ } S.me = null; S.secret = null; viewLogin(); },
     openorg: async ({ id }) => { S.orgId = id; S.classId = ""; S.secret = null; await go("staff"); },
@@ -374,11 +397,12 @@
     students: (f) => async () => {
       const names = f.names.value.split(/\r?\n/).map((n) => n.trim()).filter(Boolean);
       if (!names.length) { flash("Vul minstens één naam in.", "err"); return render(); }
+      S.addClass = f.class_id.value;
       S.busy = true; render();
       const rows = []; let failed = null;
       try {
         for (let i = 0; i < names.length; i += MAX_BULK) {
-          const r = await api("POST", "/students/bulk", { class_id: S.classId, names: names.slice(i, i + MAX_BULK) });
+          const r = await api("POST", "/students/bulk", { names: names.slice(i, i + MAX_BULK), ...(S.addClass ? { class_id: S.addClass } : {}), ...(isSuper() && !S.addClass ? { org_id: S.orgId } : {}) });
           rows.push(...r.students.map((s) => ({ name: s.name, username: s.username, password: s.password })));
         }
       } catch (e) { failed = e; }
@@ -405,6 +429,10 @@
         S.myOrg = S.myOrgs.find((o) => o.id === id) || null; S.classId = ""; S.progClass = ""; S.secret = null;
         await go(S.tab);
       });
+    }
+    if (e.target.dataset.change === "stuclass") {
+      const id = e.target.dataset.id, cid = e.target.value;
+      await guard(async () => { await api("POST", `/students/${id}/class`, { class_id: cid || null }); flash(cid ? "Leerling gekoppeld aan de klas." : "Leerling heeft nu geen klas."); await loadStudents(); render(); });
     }
     if (e.target.dataset.change === "class") { S.classId = e.target.value; await guard(async () => { await loadStudents(); render(); }); }
     if (e.target.dataset.change === "progclass") { S.progClass = e.target.value; await guard(async () => { await loadProgress(); render(); }); }

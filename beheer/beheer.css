@@ -87,3 +87,55 @@ body.auth .login .row-btns { display: flex; gap: 10px; }
 .fb-msg-txt { margin: 6px 0 8px; font-size: 16px; font-weight: 700; white-space: pre-wrap; word-break: break-word; }
 .fb-btns { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
 .fb-item details table { margin-top: 6px; } .fb-item details th { width: 120px; }
+
+select.inline { padding: 5px 8px; font-size: 14px; border-radius: 8px; max-width: 150px; }
+.menu-btn { display: none; }
+
+/* Telefoon */
+@media (max-width: 640px) {
+  #app { padding: 8px; }
+  h2 { font-size: 17px; }
+  .top { padding: 8px 10px; gap: 6px; }
+  .brand { width: 100%; flex-wrap: wrap; gap: 8px; }
+  .brand-logo { width: 32px; height: 32px; border-radius: 8px; }
+  .brand h1 { font-size: 18px; }
+  .brand .org-switch { flex: 1 1 100%; max-width: none; padding: 8px 12px; }
+  .top-user { width: 100%; gap: 10px; margin-left: 0; justify-content: space-between; }
+  .who { align-items: flex-start; }
+  .menu-btn { display: inline-flex; }
+  .top-actions { display: none; width: 100%; flex-direction: column; }
+  .top.menu-open .top-actions { display: flex; }
+  .top-actions button, .top-actions .btn-link { width: 100%; justify-content: center; padding: 11px 12px; font-size: 15px; }
+  .top-user { flex-wrap: wrap; }
+  .tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -8px 10px; padding: 0 8px 4px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: none; padding: 8px 14px; font-size: 15px; }
+  .card { padding: 12px; border-radius: 14px; }
+  .row { align-items: stretch; }
+  .row > div, .row > button { flex: 1 1 100%; }
+  .row .right { margin-left: 0; width: 100%; }
+  .row .right select, .card select:not(.inline), input, textarea { width: 100%; }
+  button, .btn-link { min-height: 40px; }
+  button.small { min-height: 38px; }
+  .stats { gap: 8px; } .stats > div { min-width: 0; flex: 1 1 28%; padding: 8px 10px; } .stats b { font-size: 20px; } .stats span { font-size: 12px; }
+  .scroll { overflow: visible; }
+  table.stack, table.stack tbody, table.stack tr, table.stack td { display: block; width: 100%; }
+  table.stack tr:first-child:has(th) { display: none; }
+  table.stack tr { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; background: rgba(255, 255, 255, .75); }
+  table.stack td { border: 0; padding: 4px 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; text-align: right; }
+  table.stack td::before { content: attr(data-label); color: var(--muted); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; text-align: left; flex: none; }
+  table.stack td[data-label=""]::before, table.stack td:first-child::before { display: none; }
+  table.stack td:first-child { justify-content: flex-start; text-align: left; font-size: 16px; }
+  table.stack td:empty { display: none; }
+  table.stack td.actions { justify-content: flex-start; flex-wrap: wrap; gap: 6px; padding-top: 8px; }
+  table.stack td.actions::before { display: none; }
+  table.stack td.actions button { margin-left: 0; flex: 1 1 auto; }
+  table.stack .bar { min-width: 90px; }
+  select.inline { max-width: 60%; }
+  .slips { grid-template-columns: 1fr; }
+  .fb-head { gap: 6px; }
+}
+@media (max-width: 640px) {
+  .scroll { margin-top: 10px; }
+  table.stack td.actions button.danger { background: #fff; color: var(--bad); border: 2px solid #f0c4c0; flex: 1 1 100%; }
+}
