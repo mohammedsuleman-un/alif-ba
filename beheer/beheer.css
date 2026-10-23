@@ -1,14 +1,14 @@
 :root { --cream: #fdf8ee; --ink: #3a2410; --muted: #7a6a52; --accent: #b8862b; --accent-d: #8f6718; --ok: #2f8f4e; --bad: #c0392b; --line: #e8dcc0; --card: #fff; }
 * { box-sizing: border-box; }
-body { margin: 0; min-height: 100vh; background: linear-gradient(180deg, rgba(253, 248, 238, .78), rgba(253, 248, 238, .9)), url("../assets/backgrounds/general.jpg") center / cover fixed no-repeat, var(--cream); color: var(--ink); font: 16px/1.45 "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif; }
+body { margin: 0; min-height: 100vh; background: linear-gradient(180deg, rgba(253, 248, 238, .2), rgba(253, 248, 238, .5)), url("../assets/backgrounds/general.jpg") center / cover fixed no-repeat, var(--cream); color: var(--ink); font: 16px/1.45 "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif; }
 #app { max-width: 1000px; margin: 0 auto; padding: 16px; }
 h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 0 0 10px; } h3 { font-size: 16px; margin: 14px 0 6px; }
-.top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.top { background: rgba(255, 252, 242, .75); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-radius: 16px; padding-left: 14px; padding-right: 14px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 0 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
 .top .grow { flex: 1; } .who { color: var(--muted); font-size: 14px; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
 .tab { border: 2px solid var(--line); background: rgba(255, 255, 255, .85); border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 800; color: var(--ink); cursor: pointer; }
 .tab.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
-.card { background: rgba(255, 255, 255, .86); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(90, 60, 10, .06); }
+.card { background: rgba(255, 255, 255, .9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(90, 60, 10, .06); }
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
 label { display: block; font-weight: 800; font-size: 14px; margin: 8px 0 3px; }
 input, select, textarea { font: inherit; padding: 9px 11px; border: 2px solid var(--line); border-radius: 10px; background: #fff; color: var(--ink); min-width: 0; }
