@@ -40,3 +40,7 @@
   .ov-badge { min-width: 28px; height: 28px; font-size: 14px; }
 }
 .ov-scroll::-webkit-scrollbar { display: none; }
+
+/* Wereldkaart verschuiven met slepen */
+#gMap .g-world-viewport { touch-action: none; cursor: grab; }
+#gMap .g-world-viewport.is-panning { cursor: grabbing; }

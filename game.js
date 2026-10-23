@@ -867,6 +867,28 @@
     // zodat juist meer van de wereld te zien is. Daarna wordt de stage
     // verschoven zodat het huidige level gecentreerd in beeld staat, geklemd
     // aan de wereldranden zodat er nooit voorbij de illustratie zichtbaar is.
+    // Kaart verschuiven: slepen (vinger of muis) om de rest van de wereld te zien.
+    let camX = 0, camY = 0, camMinX = 0, camMinY = 0;
+    const setCam = (x, y) => {
+      camX = Math.min(0, Math.max(camMinX, x)); camY = Math.min(0, Math.max(camMinY, y));
+      const stage = $("gWorldStage"); if (stage) stage.style.transform = `translate(${camX}px, ${camY}px)`;
+    };
+    (() => {
+      const vp = $("gWorldViewport"); if (!vp) return;
+      let sx = 0, sy = 0, bx = 0, by = 0, down = false, moved = false, pid = null;
+      vp.addEventListener("pointerdown", (e) => { if (e.button > 0) return; down = true; moved = false; sx = e.clientX; sy = e.clientY; bx = camX; by = camY; pid = e.pointerId; });
+      vp.addEventListener("pointermove", (e) => {
+        if (!down || e.pointerId !== pid) return;
+        const dx = e.clientX - sx, dy = e.clientY - sy;
+        if (!moved && Math.hypot(dx, dy) < 8) return;
+        if (!moved) { moved = true; try { vp.setPointerCapture(pid); } catch (_) {} vp.classList.add("is-panning"); }
+        setCam(bx + dx, by + dy);
+      });
+      const end = (e) => { if (e.pointerId !== pid) return; down = false; vp.classList.remove("is-panning"); try { vp.releasePointerCapture(pid); } catch (_) {} };
+      vp.addEventListener("pointerup", end); vp.addEventListener("pointercancel", end);
+      // na een sleepbeweging mag er geen knop (level) per ongeluk worden aangetikt
+      vp.addEventListener("click", (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+    })();
     const applyCamera = () => {
       const vp = $("gWorldViewport");
       const stage = $("gWorldStage");
@@ -882,9 +904,8 @@
       stage.style.height = stageH + "px";
       let tx = vw / 2 - cur.x * stageW;
       let ty = vh / 2 - cur.y * stageH;
-      tx = Math.min(0, Math.max(vw - stageW, tx));
-      ty = Math.min(0, Math.max(vh - stageH, ty));
-      stage.style.transform = `translate(${tx}px, ${ty}px)`;
+      camMinX = Math.min(0, vw - stageW); camMinY = Math.min(0, vh - stageH);
+      setCam(tx, ty);
     };
     requestAnimationFrame(applyCamera);
     window.addEventListener("resize", applyCamera);
