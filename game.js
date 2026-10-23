@@ -1312,7 +1312,7 @@
           <h2 class="g-who" style="margin:0;font-size:18px;">${o.title}</h2>
           <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
         </div>
-        <div class="ov-scroll" id="ovScroll"><div class="ov-scene">
+        <div class="ov-scroll" id="ovScroll"><img class="ov-backdrop" src="assets/worlds/overview/map.jpg" alt="" aria-hidden="true" onerror="this.remove()"><div class="ov-scene">
           <img class="ov-bg" src="assets/worlds/overview/map.jpg" alt="" onerror="this.remove()">
           ${nodes}
           <div class="ov-toast" id="ovToast" hidden></div>
@@ -1339,7 +1339,7 @@
       const cw = sc.clientWidth, ch = sc.clientHeight; if (!cw || !ch) return;
       // vullend scherm (cover); liggend zijn alle eilanden tegelijk te zien
       const cover = Math.max(cw / MW, ch / MH);
-      const z = cw >= ch ? Math.max(cover, Math.min(cw / (CL.w * MW), ch / (CL.h * MH))) : cover; // liggend: alle eilanden in beeld; staand: vullen en schuiven
+      const z = cw >= ch ? Math.min(cw / MW, ch / MH) : cover; // liggend: de hele kaart in één oogopslag; staand: vullen en schuiven
       scene.style.width = MW * z + "px"; scene.style.height = MH * z + "px";
     };
     const centerOn = (info) => {
@@ -1359,10 +1359,11 @@
       const dest = `#/spel/wereld/${chapterTarget(info)}`;
       const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduce) return location.replace(dest);
-      const S = 2.4, cw = sc.clientWidth, ch = sc.clientHeight;
-      const ix = scene.offsetLeft + info.ch.pos.x * scene.offsetWidth, iy = scene.offsetTop + info.ch.pos.y * scene.offsetHeight;
+      const cw = sc.clientWidth, ch = sc.clientHeight;
+      const S = Math.max(2, Math.min(5, (ch * 0.7) / (scene.offsetHeight * 0.26))); // het eiland vult straks ruim het scherm
+      const ix = info.ch.pos.x * scene.offsetWidth, iy = info.ch.pos.y * scene.offsetHeight; // binnen de kaart
       // het eiland komt in het midden van het scherm terecht, ook als het niet te centreren was met scrollen
-      const tx = cw / 2 + sc.scrollLeft - S * ix, ty = ch / 2 + sc.scrollTop - S * iy;
+      const tx = cw / 2 + sc.scrollLeft - scene.offsetLeft - S * ix, ty = ch / 2 + sc.scrollTop - scene.offsetTop - S * iy;
       sc.style.overflow = "hidden";
       scene.style.transformOrigin = "0 0";
       scene.style.transition = "transform 1.8s cubic-bezier(.45,0,.25,1), opacity .4s ease 1.4s";

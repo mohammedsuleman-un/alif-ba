@@ -45,3 +45,8 @@
 #gMap .g-world-viewport { touch-action: none; cursor: grab; }
 #gMap .g-world-viewport.is-panning { cursor: grabbing; }
 .ov-soon-t { display: none; }
+
+/* Liggend scherm: de hele kaart past; de ruimte ernaast wordt gevuld met een wazige versie van dezelfde tekening. */
+.ov-scroll { position: relative; }
+.ov-backdrop { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(22px) brightness(.85); transform: scale(1.12); pointer-events: none; }
+.ov-scene { z-index: 1; }
