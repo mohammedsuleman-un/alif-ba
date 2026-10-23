@@ -223,7 +223,8 @@
     $("phTarget").textContent = m.target;
     $("phHelp").classList.remove("is-used");
     scene.setupMission(m, layoutSigns(m));
-    playMissionAudio();
+    // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).
+    if (missionIdx === 0) { const idx = missionIdx; window.AudioManager.playOnce("photo-how").then((ok) => { if (ok !== false && active && missionIdx === idx) playMissionAudio(); }); } else playMissionAudio();
   }
 
   function onHelp() {

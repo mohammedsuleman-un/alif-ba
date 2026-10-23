@@ -176,6 +176,7 @@
       scene = local.scene.add("DiverScene", SceneClass, true, { art });
       scene.events.on("diver-handover", onHandover);
       scene.events.on("diver-chest", onChest);
+      scene.events.on("diver-pearl", () => { if (active) window.AudioManager.playOnce("diver-hand"); });
       scene.events.once("diver-ready", () => { if (myEpoch === epoch) startMission(); });
     });
     resizeObs = new ResizeObserver(() => {
@@ -238,7 +239,8 @@
     $("dvNeed").textContent = "× " + m.need;
     $("dvHelp").classList.remove("is-used");
     scene.setupMission(m);
-    playMissionAudio();
+    // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).
+    if (missionIdx === 0) { const idx = missionIdx; window.AudioManager.playOnce("diver-intro").then((ok) => { if (ok !== false && active && missionIdx === idx) playMissionAudio(); }); } else playMissionAudio();
   }
 
   function onHelp() {
@@ -264,7 +266,7 @@
       scene.giveKey();
       MG.sfx("ok");
       MG.banner(field, { ok: true, letter: m.target });
-      voiceDone = MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback()).then(() => MG.wait(700)).then(() => { MG.hideBanner(field); });
+      voiceDone = MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback()).then(() => window.AudioManager.playOnce("diver-chest")).then(() => MG.wait(700)).then(() => { MG.hideBanner(field); });
     } else {
       wrongThisMission++;
       scene.returnBag();
@@ -656,7 +658,7 @@
             sh.taken = true; sh.pearl.setVisible(false);
             const entry = { letter: sh.letter, shell: sh, arriving: true };
             const slot = this.slotXY(this.bag.length);
-            this.bag.push(entry); this.drawBag();
+            this.bag.push(entry); this.drawBag(); this.events.emit("diver-pearl");
             this.flyPearl(sh.letter, { x: sh.x, y: sh.y - r * 0.3 }, slot, 420, 0, () => { entry.arriving = false; this.drawBag(); });
           }
         });

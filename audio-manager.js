@@ -125,6 +125,17 @@
       return playNow([`${INSTR_DIR}${currentLang()}/${id}.mp3`]);
     },
 
+    // Eenmalige uitleg per kind (bv. hoe een spel werkt): speelt alleen de eerste keer en onthoudt dat pas als het
+    // fragment volledig is afgespeeld. Geen opname in deze taal (bv. Arabisch) of spraak uit → meteen verder (true).
+    // Resolve false = onderbroken.
+    playOnce(id) {
+      const entry = VOICE.instructions[id];
+      if (!settings.voiceOn || !entry || !entry[currentLang()]) return Promise.resolve(true);
+      const key = `gp_voice_seen_${store.get("gp_active", "x")}`, seen = store.get(key, []);
+      if (seen.includes(id)) return Promise.resolve(true);
+      return this.playInstruction(id).then((ok) => { if (ok) store.set(key, [...store.get(key, []), id]); return ok; });
+    },
+
     // Speelt de Arabische leeruitspraak. `base` is een pad zonder extensie
     // (bv. "audio/Page1-02"), net als elders in de app — probeert .m4a dan .mp3.
     playLearningAudio(base) {
@@ -150,6 +161,7 @@
 
     // Breekt het huidige fragment meteen af (bv. omdat het kind al verder is).
     stop() { stopInternal(); },
+    isBusy() { return playing || loading; },
 
     // Herhaalt het laatst afgespeelde fragment (instructie of leeraudio).
     replay() {

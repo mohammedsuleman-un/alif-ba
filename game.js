@@ -166,6 +166,13 @@
   // via de gedeelde AudioManager (audio-manager.js), zodat ze nooit tegelijk
   // spelen. `playLetter` blijft bestaan als klein gemaksfunctie voor de rest
   // van dit bestand.
+  // Wacht tot er niets meer klinkt (max ~4 s) en speelt dan pas een eenmalige uitleg, zodat die geen vorige zin afkapt.
+  function sayOnceWhenFree(id) {
+    let tries = 0;
+    const go = () => { if (AudioManager.isBusy() && tries++ < 20) return setTimeout(go, 200); AudioManager.playOnce(id); };
+    setTimeout(go, 400);
+  }
+
   function playLetter(letter, onEnd) {
     AudioManager.playLearningAudio(G.letterAudio[letter]).then((ok) => onEnd && onEnd(ok));
   }
@@ -907,6 +914,7 @@
       camMinX = Math.min(0, vw - stageW); camMinY = Math.min(0, vh - stageH);
       setCam(tx, ty);
     };
+    sayOnceWhenFree("world-map-start");
     requestAnimationFrame(applyCamera);
     window.addEventListener("resize", applyCamera);
   }
@@ -1217,7 +1225,8 @@
       if (!(await AudioManager.playInstruction("level-complete"))) return;
       if (stars === 3 && !(await AudioManager.playInstruction("three-stars"))) return;
       if (newBadge && !(await AudioManager.playInstruction("new-badge"))) return;
-      if (worldNowComplete || worldUnlocksNext) await AudioManager.playInstruction("world-complete");
+      if (worldNowComplete || worldUnlocksNext) { if (!(await AudioManager.playInstruction("world-complete"))) return; }
+      if (newGames.length) await AudioManager.playInstruction("game-unlocked");
     })();
 
     // Volgorde volgt de referentie: titel → sterren → hype-regel → gevierd
@@ -1325,6 +1334,7 @@
       sfx.tap();
       if (info.status === "soon") return toast(`🚧 ${gsub(info.ch.land)} · ${o.soon}`);
       if (info.status === "locked") return toast(`🔒 ${o.locked}`);
+      const wid = "world-" + info.ch.n; if (window.VOICE && VOICE.instructions[wid]) AudioManager.playInstruction(wid);
       zoomInto(info);
     }));
     const hereEl = scr.overview.querySelector(".ov-node.is-here");
@@ -1353,6 +1363,7 @@
     setTimeout(() => { if (!zooming) { layout(); home(); } }, 150);
     window.addEventListener("resize", layout);
     // Pas als het kind op een wereld tikt: rustig inzoomen op precies die wereld, dan openen.
+    setTimeout(() => { if (!zooming && location.hash.indexOf("kaart") > -1) AudioManager.playInstruction("map-choose"); }, 600);
     let zooming = false;
     function zoomInto(info) {
       if (zooming) return; zooming = true;
@@ -1411,6 +1422,7 @@
         <p class="lh-title">${L.games}</p>
         <div class="lh-grid">${games}</div>
       </div>`;
+    sayOnceWhenFree("level-choose");
     $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
     scr.overview.querySelectorAll(".lh-card[data-game]").forEach((b) => (b.onclick = () => {
       if (MG) MG.focusLevel(pid, level.n - 1);

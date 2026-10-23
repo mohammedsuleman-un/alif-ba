@@ -145,6 +145,17 @@
     },
     "world-complete": { nl: "MashaAllah! Je hebt deze wereld voltooid!", en: "MashaAllah! You completed this world!", tr: "MaşaAllah! Bu dünyayı tamamladın!", ar: "مَا شَاءَ اللهُ! أَكْمَلْتَ هَذَا الْعَالَمَ!", needsReview: true },
     "continue": { nl: "Klaar voor het volgende level?", en: "Ready for the next level?", tr: "Sonraki seviyeye hazır mısın?", ar: "هَلْ أَنْتَ مُسْتَعِدٌّ لِلْمُسْتَوَى التَّالِي؟", needsReview: true },
+    "map-choose": { nl: "Kies een wereld!", en: "Choose a world!", tr: "Bir dünya seç!", ar: null, needsReview: true },
+    "world-1": { nl: "Wereld één: de Arabische letters.", en: "World one: the Arabic letters.", tr: "Dünya bir: Arap harfleri.", ar: null, needsReview: true },
+    "world-map-start": { nl: "Tik op jouw niveau om te beginnen.", en: "Tap your level to start.", tr: "Başlamak için seviyene dokun.", ar: null, needsReview: true },
+    "level-choose": { nl: "Leer de letters, of speel een spel!", en: "Learn the letters, or play a game!", tr: "Harfleri öğren ya da bir oyun oyna!", ar: null, needsReview: true },
+    "slingshot-how": { nl: "Trek de steen naar achteren en laat los. Raak de lantaarn met de goede letter!", en: "Pull the stone back and let go. Hit the lantern with the right letter!", tr: "Taşı geri çek ve bırak. Doğru harfli feneri vur!", ar: null, needsReview: true },
+    "photo-how": { nl: "Zoom in en maak een foto van de goede letter.", en: "Zoom in and take a photo of the right letter.", tr: "Yakınlaştır ve doğru harfin fotoğrafını çek.", ar: null, needsReview: true },
+    "diver-intro": { nl: "Zwem naar de schelpen en pak de parel met de goede letter. Breng de parels naar de grote schelp.", en: "Swim to the shells and take the pearl with the right letter. Bring the pearls to the big shell.", tr: "Deniz kabuklarına yüz ve doğru harfli incileri al. İncileri büyük kabuğa götür.", ar: null, needsReview: true },
+    "diver-hand": { nl: "Zwem naar de grote schelp en geef de parels door.", en: "Swim to the big shell and hand over the pearls.", tr: "Büyük kabuğa yüz ve incileri ver.", ar: null, needsReview: true },
+    "diver-chest": { nl: "Je krijgt een sleutel. Open de kist!", en: "You get a key. Open the chest!", tr: "Bir anahtar alıyorsun. Sandığı aç!", ar: null, needsReview: true },
+    "bridge-how": { nl: "Maak de rij letters af. Sleep de goede plank naar de lege plek.", en: "Finish the row of letters. Drag the right plank to the empty spot.", tr: "Harf sırasını tamamla. Doğru tahtayı boş yere sürükle.", ar: null, needsReview: true },
+    "game-unlocked": { nl: "Geweldig! Je hebt een nieuw spel verdiend!", en: "Great! You earned a new game!", tr: "Harika! Yeni bir oyun kazandın!", ar: null, needsReview: true },
   };
 
   return { instructions };

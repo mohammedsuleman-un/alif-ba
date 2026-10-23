@@ -189,7 +189,8 @@
     $("slTarget").textContent = m.target;
     $("slHelp").classList.remove("is-used");
     scene.setupMission(m);
-    playMissionAudio();
+    // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).
+    if (missionIdx === 0) { const idx = missionIdx; window.AudioManager.playOnce("slingshot-how").then((ok) => { if (ok !== false && active && missionIdx === idx) playMissionAudio(); }); } else playMissionAudio();
   }
 
   function onHelp() {

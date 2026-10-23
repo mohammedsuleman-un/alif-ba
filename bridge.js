@@ -136,7 +136,8 @@
     $("brHelp").classList.remove("is-used");
     const ex = $("brExplorer"); ex.className = "br-explorer"; ex.style.opacity = 0;
     render();
-    playMissionAudio();
+    // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).
+    if (missionIdx === 0) { const idx = missionIdx; window.AudioManager.playOnce("bridge-how").then((ok) => { if (ok !== false && active && missionIdx === idx) playMissionAudio(); }); } else playMissionAudio();
   }
 
   function render() {
