@@ -68,6 +68,7 @@
       loading = true;
       activeResolve = resolve;
       const remaining = [...sources];
+      let attempt = 0;
       const finish = (ok) => {
         loading = false; playing = false;
         if (activeResolve === resolve) activeResolve = null;
@@ -76,17 +77,23 @@
       const tryNext = () => {
         const src = remaining.shift();
         if (!src) { lastError = "not-found"; finish(false); return; }
+        const mine = ++attempt;
         player.onerror = () => {
+          if (mine !== attempt) return;
           if (DEV) console.warn("[audio] ontbreekt (nog geen opname?):", src);
           tryNext();
         };
-        player.onended = () => finish(true);
+        player.onended = () => { if (mine === attempt) finish(true); };
         player.src = src;
         playing = true;
         const p = player.play();
         if (p && p.catch) {
-          p.then(() => { loading = false; }).catch(() => {
-            // Browser blokkeert autoplay (nog geen gebruikersinteractie), of bestand ontbreekt.
+          p.then(() => { loading = false; }).catch((err) => {
+            // Een bestand dat ontbreekt/niet laadt: onerror probeert al de volgende bron, dus hier niet al "klaar" melden
+            // (anders gaat de aanroeper door terwijl het volgende bestand nog speelt en wordt dat afgekapt).
+            if (mine !== attempt) return;
+            if (err && err.name === "NotSupportedError" && remaining.length) return;
+            // Browser blokkeert autoplay (nog geen gebruikersinteractie), of er is geen bron meer.
             lastError = "blocked-or-missing";
             finish(false);
           });

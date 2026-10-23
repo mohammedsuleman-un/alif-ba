@@ -230,7 +230,8 @@
       if (!active || myEpoch !== epoch) return;
       place(planks[i]);
       const right = slots[i] === m.seq[i];
-      await Promise.all([MG.wait(650), letterAudio(slots[i] || m.seq[i])]);
+      await Promise.all([MG.wait(900), letterAudio(slots[i] || m.seq[i])]);
+      await MG.wait(220); // even ademruimte: de letter klinkt helemaal uit voor de volgende plank
       if (!right) { badIndex = i; break; }
       planks[i].classList.add("is-ok");
     }
