@@ -324,7 +324,7 @@
     const list = profiles.all().filter((p) => p.account);
     scr.profile.innerHTML = `
       <div class="g-profile-head">
-        <a href="#/" class="g-back-book">🏠</a>
+        <span></span>
         <div class="g-lang-pick" role="group" aria-label="Taal · Language · اللغة">
           <button type="button" data-l="ar" class="${glang() === "ar" ? "sel" : ""}">ع</button>
           <button type="button" data-l="nl" class="${glang() === "nl" ? "sel" : ""}">NL</button>
@@ -363,7 +363,7 @@
         try {
           await window.Account.login($("gLoginUser").value, $("gLoginPass").value);
           loadActive();
-          gohash("#/spel/kaart?intro");
+          gohash("#/"); // na het inloggen eerst het welkomstscherm
         } catch (err) { msg.textContent = err.message; btn.disabled = false; }
       };
       const lo = $("gLogout");

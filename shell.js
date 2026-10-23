@@ -105,7 +105,8 @@
   const profilesAll = () => store.get("gp_profiles", []);
   const activeProfile = () => {
     const id = store.get("gp_active", null);
-    return id ? profilesAll().find((p) => p.id === id) || null : null;
+    const p = id ? profilesAll().find((p) => p.id === id) || null : null;
+    return p && p.account ? p : null; // alleen schoolaccounts
   };
   const stateFor = (pid) => store.get(`gp_state_${pid}`, defaultState());
   const levelKey = (world, level) => `${world.id}_l${level.n}`;
@@ -316,7 +317,7 @@
   // zodat het kind daar het volledige scherm heeft.
   function navHidden() {
     const h = location.hash;
-    return h.startsWith("#/les/") || h.startsWith("#/spel/level/");
+    return !activeProfile() || h.startsWith("#/les/") || h.startsWith("#/spel/level/");
   }
 
   function renderNav() {
@@ -333,6 +334,8 @@
   function shellRoute() {
     document.documentElement.dir = ST().dir;
     const sec = section();
+    // Zonder ingelogd schoolaccount is het inlogscherm (in game.js) het enige scherm.
+    if (!activeProfile() && sec !== "leren") { location.hash = "#/spel"; return; }
     $("appHome").hidden = sec !== "home";
     $("rewards").hidden = sec !== "beloningen";
     $("profileHub").hidden = sec !== "profiel";
