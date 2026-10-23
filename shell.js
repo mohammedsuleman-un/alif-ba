@@ -201,6 +201,7 @@
             <span class="ahp-pill">✨ ${state.xp || 0}</span>
           </div>
         </div>
+        <div class="app-home-langrow lang-picks" role="group" aria-label="${t.language}">${LANGS.map((l) => `<button type="button" class="lang-pick ${curLang() === l ? "sel" : ""}" data-l="${l}" ${l === "ar" ? 'lang="ar"' : ""}>${l === "ar" ? "ع" : l.toUpperCase()}</button>`).join("")}</div>
         <div class="app-home-stage">${stageHtml}</div>
         <div class="app-home-worldcard">
           <div class="app-home-current">
@@ -216,6 +217,7 @@
         </div>
         ${bookCardHtml(t)}
       </div>`;
+    root.querySelectorAll(".app-home-langrow .lang-pick").forEach((b) => (b.onclick = () => { store.set("lang", b.dataset.l); location.reload(); }));
   }
 
   // ---------- Beloningen ----------
