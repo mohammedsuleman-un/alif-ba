@@ -1,7 +1,7 @@
-const VERSION = "v84";
+const VERSION = "v85";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
-  "voice-manifest.js", "audio-manager.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
+  "voice-manifest.js", "audio-manager.js", "account.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png",
   "pages/p-05.jpg",
   "pages/p-06.jpg",

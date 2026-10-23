@@ -333,6 +333,14 @@
       <h2 class="g-who">${t.who}</h2>
       <div class="g-profiles" id="gProfileList"></div>
       <button id="gAddProfile" class="g-add">+ ${t.newProfile}</button>
+      ${window.Account ? `<button id="gLoginBtn" class="g-add">🔑 ${window.Account.t().login}</button>
+      <form id="gLoginForm" class="g-new-form g-login-form" hidden autocomplete="on">
+        <input id="gLoginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="${window.Account.t().user}">
+        <input id="gLoginPass" type="password" autocomplete="current-password" placeholder="${window.Account.t().pass}">
+        <div id="gLoginMsg" class="g-login-msg" role="alert"></div>
+        <button type="submit" class="g-cta">${window.Account.t().go}</button>
+      </form>
+      ${window.Account.isLoggedIn() ? `<button id="gLogout" class="g-add">⎋ ${window.Account.t().logout} (${String(window.Account.current().name).replace(/[<>&"]/g, "")})</button>${window.Account.current().expired ? `<p class="g-login-msg">${window.Account.t().expired}</p>` : ""}` : ""}` : ""}
       <div id="gNewProfileForm" class="g-new-form" hidden>
         <div class="g-avatars">${AVATARS.map((a) => `<button type="button" class="g-avatar-pick" data-a="${a}">${a}</button>`).join("")}</div>
         <input id="gNewName" maxlength="16" placeholder="${t.namePlaceholder}">
@@ -348,6 +356,25 @@
       store.set("lang", b.dataset.l);
       renderProfile();
     }));
+    if (window.Account) {
+      const lf = $("gLoginForm"), lb = $("gLoginBtn");
+      lb.onclick = () => { lf.hidden = false; lb.hidden = true; $("gLoginUser").focus(); };
+      lf.onsubmit = async (e) => {
+        e.preventDefault();
+        const msg = $("gLoginMsg"), btn = lf.querySelector("button[type=submit]");
+        msg.textContent = window.Account.t().wait; btn.disabled = true;
+        try {
+          await window.Account.login($("gLoginUser").value, $("gLoginPass").value);
+          loadActive();
+          gohash("#/spel/kaart?intro");
+        } catch (err) { msg.textContent = err.message; btn.disabled = false; }
+      };
+      const lo = $("gLogout");
+      if (lo) lo.onclick = async () => {
+        if (!confirm(window.Account.t().confirm)) return;
+        await window.Account.logout(); loadActive(); renderProfile();
+      };
+    }
     let chosenAvatar = AVATARS[0];
     $("gAddProfile").onclick = () => { $("gNewProfileForm").hidden = false; $("gAddProfile").hidden = true; };
     scr.profile.querySelectorAll(".g-avatar-pick").forEach((b) => (b.onclick = () => {

@@ -53,3 +53,8 @@
 
 /* Wereldkaart: precies tot aan het onderste menu, geen strookje ertussen */
 #gMap.g-screen { padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+
+/* Inloggen met schoolaccount (profielkeuze) */
+.g-login-form { display: flex; flex-direction: column; gap: 10px; align-items: stretch; max-width: 320px; margin: 10px auto; }
+.g-login-form input { font: inherit; padding: 12px 14px; border-radius: 14px; border: 2px solid #e8dcc0; }
+.g-login-msg { min-height: 1.2em; color: #c0392b; font-weight: 800; text-align: center; font-size: 14px; }
