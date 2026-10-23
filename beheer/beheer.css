@@ -80,3 +80,10 @@ body.auth .login .row-btns { display: flex; gap: 10px; }
 /* Status van docenten */
 .status { display: inline-block; font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: #f1e7ce; }
 .status.ok { background: #e1f3e6; color: var(--ok); } .status.warn { background: #fff0c9; color: #7a5a00; } .status.off { background: #fdeceb; color: var(--bad); }
+
+/* Feedback */
+.fb-item { border-top: 1px solid var(--line); padding: 12px 0; }
+.fb-head { display: flex; gap: 8px 12px; flex-wrap: wrap; align-items: center; }
+.fb-msg-txt { margin: 6px 0 8px; font-size: 16px; font-weight: 700; white-space: pre-wrap; word-break: break-word; }
+.fb-btns { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.fb-item details table { margin-top: 6px; } .fb-item details th { width: 120px; }

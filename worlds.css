@@ -88,3 +88,23 @@ form.g-login-form .g-login-msg { background: rgba(253, 236, 235, .9); border-rad
 #previewBar a { color: #fff; background: #b8862b; padding: 2px 10px; border-radius: 99px; text-decoration: none; }
 body.has-preview { padding-top: 30px; }
 .g-logo { display: block; width: 104px; height: 104px; margin: 4px auto 6px; border-radius: 26px; box-shadow: 0 10px 26px rgba(0,0,0,.35); }
+
+/* Feedbackknop en -venster */
+#fbBtn { position: fixed; left: 12px; bottom: calc(82px + env(safe-area-inset-bottom)); z-index: 8000; width: 42px; height: 42px; border-radius: 50%; border: 2px solid rgba(255,255,255,.85); background: rgba(59, 42, 18, .72); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.3); opacity: .7; padding: 0; }
+#fbBtn:hover, #fbBtn:focus-visible { opacity: 1; }
+#fbModal { position: fixed; inset: 0; z-index: 9500; background: rgba(30, 20, 8, .55); display: flex; align-items: center; justify-content: center; padding: 14px; }
+.fb-card { width: 100%; max-width: 440px; max-height: 92vh; overflow: auto; background: #fffaf0; border-radius: 22px; padding: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.4); color: #3a2410; font-family: "Nunito", system-ui, sans-serif; }
+.fb-card h3 { margin: 0 0 10px; font-size: 19px; }
+.fb-kinds, .fb-quick { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.fb-chip { border: 2px solid #e8dcc0; background: #fff; color: #3a2410; border-radius: 999px; padding: 7px 12px; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+.fb-chip.sel { background: #b8862b; border-color: #b8862b; color: #fff; }
+.fb-label { margin: 4px 0 6px; font-weight: 800; font-size: 14px; }
+.fb-card textarea { width: 100%; box-sizing: border-box; border: 2px solid #e8dcc0; border-radius: 12px; padding: 10px; font: inherit; resize: vertical; min-height: 72px; background: #fff; }
+.fb-auto { display: block; margin: 6px 0 10px; color: #7a6a52; font-size: 12px; }
+.fb-msg { background: #fdeceb; color: #c0392b; border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+.fb-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.fb-send, .fb-cancel { border: 0; border-radius: 12px; padding: 10px 18px; font: inherit; font-weight: 800; cursor: pointer; }
+.fb-send { background: #b8862b; color: #fff; } .fb-send:disabled { opacity: .6; }
+.fb-cancel { background: #fff; color: #3a2410; border: 2px solid #e8dcc0; }
+.fb-done { font-size: 44px; text-align: center; } .fb-card p { text-align: center; font-weight: 800; }
+.fb-done + p + .fb-send { display: block; margin: 8px auto 0; }

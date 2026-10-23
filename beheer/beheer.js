@@ -10,7 +10,7 @@
   const WORLD1_LEVELS = 9, MINI_LEVELS = 8; // aantal niveaus in Wereld 1 en in de spelletjesroute
   const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
 
-  const S = { me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
+  const S = { feedback: [], fbOpen: false, fbFilter: "new", me: null, myOrgs: [], myOrg: null, shown: {}, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -46,7 +46,9 @@
     const q = S.progClass ? `?class_id=${encodeURIComponent(S.progClass)}` : orgQ();
     S.progress = (await api("GET", "/students/progress" + q)).students;
   }
+  async function loadFeedback() { S.feedback = (await api("GET", "/feedback" + (S.fbFilter ? `?status=${S.fbFilter}` : "") + (isSuper() && S.orgId ? `${S.fbFilter ? "&" : "?"}org_id=${encodeURIComponent(S.orgId)}` : ""))).items; }
   async function loadFor(tab) {
+    if (tab === "feedback") return loadFeedback();
     if (tab === "progress") { await loadClasses(); if (S.progClass && !S.classes.some((c) => c.id === S.progClass)) S.progClass = ""; return loadProgress(); }
     if (tab === "orgs") return loadOrgs();
     if (tab === "staff") return Promise.all([loadStaff(), loadClasses()]);
@@ -56,8 +58,8 @@
 
   function tabsFor() {
     const r = S.me.role, t = [];
-    if (r === "superadmin") { t.push(["orgs", "Organisaties"]); if (S.orgId) t.push(["progress", "Voortgang"], ["staff", "Beheerders en docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]); }
-    else if (r === "org_admin") t.push(["progress", "Voortgang"], ["staff", "Docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]);
+    if (r === "superadmin") { t.push(["orgs", "Organisaties"]); if (S.orgId) t.push(["progress", "Voortgang"], ["staff", "Beheerders en docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]); t.push(["feedback", "Feedback"]); }
+    else if (r === "org_admin") t.push(["progress", "Voortgang"], ["staff", "Docenten"], ["classes", "Klassen"], ["students", "Leerlingen"], ["feedback", "Feedback"]);
     else t.push(["progress", "Voortgang"], ["classes", "Klassen"], ["students", "Leerlingen"]);
     return t;
   }
@@ -222,6 +224,34 @@
       <p class="muted small-t">De voortgang komt binnen zodra het kind is ingelogd en speelt (een paar seconden na elke wijziging). <b>Aandacht voor</b> toont letters die het kind vaker fout dan goed heeft.</p></div>`;
   }
 
+  const KIND_ICON = { defect: "🐞", idea: "💡", question: "❓" }, KIND_TXT = { defect: "Defect", idea: "Idee", question: "Vraag" };
+  const ST_TXT = { new: "Nieuw", doing: "Wordt opgepakt", done: "Klaar" };
+  const CTX_LABEL = { screen: "Scherm", lang: "Taal", version: "Versie", viewport: "Schermgrootte", device: "Toestel", online: "Online", mode: "Modus", user: "Gebruiker", errors: "Laatste fouten" };
+  function panelFeedback() {
+    const filters = [["new", "Nieuw"], ["doing", "Wordt opgepakt"], ["done", "Klaar"], ["", "Alles"]];
+    const rows = S.feedback.map((f) => {
+      const ctx = Object.entries(f.context || {}).filter(([, v]) => v !== "" && !(Array.isArray(v) && !v.length))
+        .map(([k, v]) => `<tr><th>${esc(CTX_LABEL[k] || k)}</th><td class="mono small-t">${esc(Array.isArray(v) ? v.join(" | ") : v)}</td></tr>`).join("");
+      return `<div class="fb-item"><div class="fb-head"><b>${KIND_ICON[f.kind] || ""} ${esc(KIND_TXT[f.kind] || f.kind)}</b> <span class="muted">${esc(f.user_name)} · ${esc(ROLE_NL[f.role] || f.role)} · ${esc(dateNl(f.created_at))}</span>
+          <span class="status ${f.status === "done" ? "ok" : f.status === "doing" ? "warn" : ""}">${esc(ST_TXT[f.status] || f.status)}</span></div>
+        <p class="fb-msg-txt">${esc(f.message)}</p>
+        ${ctx ? `<details><summary class="muted small-t">Technische gegevens</summary><table>${ctx}</table></details>` : ""}
+        <div class="fb-btns">${["new", "doing", "done"].filter((x) => x !== f.status).map((x) => `<button class="small ghost" data-act="fbstatus" data-id="${esc(f.id)}" data-status="${x}">${x === "new" ? "Terug naar nieuw" : x === "doing" ? "Oppakken" : "Klaar"}</button>`).join(" ")}</div></div>`;
+    }).join("");
+    return `<div class="card"><div class="row"><h2 style="margin:0">Feedback en defecten</h2>
+      <div class="right">${filters.map(([k, l]) => `<button class="small ${S.fbFilter === k ? "" : "ghost"}" data-act="fbfilter" data-f="${k}">${l}</button>`).join(" ")}</div></div>
+      ${rows || `<p class="muted">Geen meldingen.</p>`}</div>`;
+  }
+  // Formulier om zelf iets door te geven (alle rollen)
+  function panelFeedbackForm() {
+    if (!S.fbOpen) return "";
+    return `<form class="card" data-form="feedback"><h2>Feedback geven</h2><div class="row">
+      <div><label>Soort</label><select name="kind"><option value="defect">🐞 Defect</option><option value="idea">💡 Idee</option><option value="question">❓ Vraag</option></select></div></div>
+      <label>Wat wil je doorgeven?</label><textarea name="message" maxlength="1500" required placeholder="Bijvoorbeeld: bij Leerlingen werkt de knop Toon niet"></textarea>
+      <p class="muted small-t">We sturen automatisch mee: op welk tabblad je zat, je toestel en de versie.</p>
+      <p><button type="submit">Versturen</button> <button type="button" class="ghost" data-act="fbclose">Annuleren</button></p></form>`;
+  }
+
   function panelSecret() {
     if (!S.secret) return "";
     const slips = S.secret.rows.map((r) => `<div class="slip"><b>${esc(r.name)}</b>
@@ -239,17 +269,17 @@
     document.body.classList.remove("auth");
     const tabs = tabsFor().map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-act="tab" data-tab="${k}">${esc(l)}</button>`).join("");
     const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
-    const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
+    const panel = { feedback: panelFeedback, orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
     $app.innerHTML = `<div class="top">
         <div class="brand"><img class="brand-logo" src="../icons/icon-192.png" alt=""><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}
           ${S.myOrgs.length > 1 ? `<select class="org-switch" data-change="myorg" aria-label="Organisatie">${S.myOrgs.map((o) => `<option value="${esc(o.id)}" ${S.myOrg && o.id === S.myOrg.id ? "selected" : ""}>${esc(o.name)}</option>`).join("")}</select>` : S.myOrg ? `<span class="tag">${esc(S.myOrg.name)}</span>` : ""}</div>
         <div class="top-user">
           <div class="who"><b>${esc(S.me.display_name)}</b><span>${esc(ROLE_NL[S.me.role])}</span></div>
-          <div class="top-actions"><a class="btn-link" href="${APP_URL}/#/spel?voorbeeld" target="_blank" rel="noopener" title="Open het spel als leerling, met alles open">Spel bekijken</a><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
+          <div class="top-actions"><button class="ghost small" data-act="fbopen">💬 Feedback</button><a class="btn-link" href="${APP_URL}/#/spel?voorbeeld" target="_blank" rel="noopener" title="Open het spel als leerling, met alles open">Spel bekijken</a><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
         </div></div>
       <div class="tabs">${tabs}</div>
       ${S.msg ? `<div class="msg ${S.msg.kind}">${esc(S.msg.text)}</div>` : ""}
-      ${panelSecret()}${panel ? panel() : ""}`;
+      ${panelFeedbackForm()}${panelSecret()}${panel ? panel() : ""}`;
   }
 
   // ---------- acties ----------
@@ -289,6 +319,10 @@
       S.secret = { title: `Inloggegevens ${r.class.name}`, userLabel: "Gebruikersnaam", site: APP_URL, rows, stored: true, missing };
       flash(null); render(); window.scrollTo(0, 0);
     }),
+    fbopen: () => { S.fbOpen = true; render(); window.scrollTo(0, 0); },
+    fbclose: () => { S.fbOpen = false; render(); },
+    fbfilter: ({ f }) => guard(async () => { S.fbFilter = f; await loadFeedback(); render(); }),
+    fbstatus: ({ id, status }) => guard(async () => { await api("POST", `/feedback/${id}/status`, { status }); await loadFeedback(); render(); }),
     print: () => window.print(),
     csv: () => {
       const q = (v) => `"${String(v).replace(/"/g, '""')}"`;
@@ -326,6 +360,11 @@
       flash(null); await loadStaff(); render(); window.scrollTo(0, 0);
     },
     class: (f) => async () => { await api("POST", "/classes", { name: f.name.value, ...(isSuper() ? { org_id: S.orgId } : {}) }); flash("Klas aangemaakt."); await loadClasses(); render(); },
+    feedback: (f) => async () => {
+      await api("POST", "/feedback", { kind: f.kind.value, message: f.message.value, context: {
+        screen: "beheer/" + (S.tab || ""), version: "beheer", viewport: `${innerWidth}x${innerHeight}`, device: navigator.userAgent.slice(0, 200), mode: ROLE_NL[S.me.role], user: S.me.username, lang: "nl", online: navigator.onLine } });
+      S.fbOpen = false; flash("Bedankt! Je melding is verstuurd."); render();
+    },
     linkorg: (f) => async () => {
       const remove = f.mode.value === "remove";
       await api("POST", `/users/${f.user_id.value}/orgs${remove ? "/remove" : ""}`, { org_id: f.org_id.value });
