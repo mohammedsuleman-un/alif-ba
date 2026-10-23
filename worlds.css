@@ -2,8 +2,8 @@
    nummers en namen al in de tekening; hier komen alleen onzichtbare tikvlakken + statusbadges overheen.
    Op een smal scherm kan de kaart zijwaarts schuiven. */
 .ov-wrap { max-width: none; margin: 0 auto; padding: 0; }
-.ov-scroll { overflow: auto; scrollbar-width: none; margin-top: 6px; -webkit-overflow-scrolling: touch; background: #11164a; }
-.ov-scene { position: relative; overflow: hidden; flex: none;
+.ov-scroll { display: flex; overflow: auto; scrollbar-width: none; margin-top: 6px; -webkit-overflow-scrolling: touch; background: #11164a; }
+.ov-scene { position: relative; overflow: hidden; flex: none; margin: auto;
   background: #11164a; box-shadow: 0 10px 26px rgba(20, 20, 70, .3); }
 .ov-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .ov-node { position: absolute; transform: translate(-50%, -50%); width: 22%; aspect-ratio: 1.35; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 50%; font-family: inherit; }

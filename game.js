@@ -1314,11 +1314,12 @@
       const nav = document.querySelector(".bottom-nav"), navH = nav && getComputedStyle(nav).display !== "none" ? nav.offsetHeight : 0;
       sc.style.height = Math.max(200, window.innerHeight - sc.getBoundingClientRect().top - navH) + "px";
       const cw = sc.clientWidth, ch = sc.clientHeight; if (!cw || !ch) return;
-      const z = Math.max(cw / MW, ch / MH);
+      // hele kaart in één oogopslag (contain); op een smalle telefoon niet kleiner dan 700px breed, dan schuiven
+      let z = Math.min(cw / MW, ch / MH); if (cw < 700) z = Math.max(z, 700 / MW);
       scene.style.width = MW * z + "px"; scene.style.height = MH * z + "px";
     };
     const centerOn = (info) => {
-      const px = info.ch.pos.x * scene.offsetWidth, py = info.ch.pos.y * scene.offsetHeight;
+      const px = scene.offsetLeft + info.ch.pos.x * scene.offsetWidth, py = scene.offsetTop + info.ch.pos.y * scene.offsetHeight;
       sc.scrollLeft = Math.max(0, px - sc.clientWidth / 2); sc.scrollTop = Math.max(0, py - sc.clientHeight / 2);
     };
     layout(); centerOn(infos[here]);
@@ -1333,7 +1334,7 @@
       const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduce) return location.replace(dest);
       const S = 2.4, cw = sc.clientWidth, ch = sc.clientHeight;
-      const ix = info.ch.pos.x * scene.offsetWidth, iy = info.ch.pos.y * scene.offsetHeight;
+      const ix = scene.offsetLeft + info.ch.pos.x * scene.offsetWidth, iy = scene.offsetTop + info.ch.pos.y * scene.offsetHeight;
       // het eiland komt in het midden van het scherm terecht, ook als het niet te centreren was met scrollen
       const tx = cw / 2 + sc.scrollLeft - S * ix, ty = ch / 2 + sc.scrollTop - S * iy;
       sc.style.overflow = "hidden";
