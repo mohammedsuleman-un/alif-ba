@@ -11,7 +11,9 @@ h1 { font-size: 22px; margin: 0; } h2 { font-size: 18px; margin: 0 0 10px; } h3 
 .who b { color: var(--ink); font-size: 15px; }
 .top-actions { display: flex; gap: 8px; }
 .org-switch { font-weight: 800; padding: 5px 10px; border-radius: 999px; background: #fff3d6; border: 2px solid var(--accent); max-width: 200px; }
-.top-actions button { white-space: nowrap; }
+.top-actions button, .btn-link { white-space: nowrap; }
+.btn-link { display: inline-flex; align-items: center; font: inherit; font-weight: 800; font-size: 14px; padding: 5px 10px; border-radius: 10px; background: var(--accent); color: #fff; text-decoration: none; }
+.btn-link:hover { background: var(--accent-d); }
 @media (max-width: 640px) { .top-user { width: 100%; justify-content: space-between; } .who { align-items: flex-start; } }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
 .tab { border: 2px solid var(--line); background: rgba(255, 255, 255, .85); border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 800; color: var(--ink); cursor: pointer; }

@@ -54,8 +54,9 @@
   function load(pid) {
     const d = store.get(key(pid), null) || {};
     const done = Array.isArray(d.done) ? d.done : [];
-    const unlocked = Math.min(LAST, Math.max(d.unlocked || 0, d.level || 0)); // 'level' = oude opslag
-    return { unlocked, play: Math.min(d.play == null ? unlocked : d.play, unlocked), done };
+    const pv = !!(window.Account && window.Account.isPreview && window.Account.isPreview()); // docent-voorbeeld: alle niveaus open
+    const unlocked = pv ? LAST : Math.min(LAST, Math.max(d.unlocked || 0, d.level || 0)); // 'level' = oude opslag
+    return { unlocked, play: Math.min(d.play == null ? (pv ? 0 : unlocked) : d.play, unlocked), done };
   }
   const save = (pid, d) => store.set(key(pid), d);
   const currentLevel = (pid) => load(pid).play;
@@ -164,7 +165,7 @@
   // Spellen komen vrij naarmate Wereld 1 (Letter Oase) vordert: aantal voltooide oase-niveaus.
   const UNLOCKS = { slingshot: 0, photographer: 3, diver: 5, bridge: 7 };
   const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
-  const gameOpen = (pid, key) => oasisDone(pid) >= (UNLOCKS[key] || 0);
+  const gameOpen = (pid, key) => !!(window.Account && window.Account.isPreview && window.Account.isPreview()) || oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
     GROUPS, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
     focusLevel, UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,

@@ -245,7 +245,7 @@
           ${S.myOrgs.length > 1 ? `<select class="org-switch" data-change="myorg" aria-label="Organisatie">${S.myOrgs.map((o) => `<option value="${esc(o.id)}" ${S.myOrg && o.id === S.myOrg.id ? "selected" : ""}>${esc(o.name)}</option>`).join("")}</select>` : S.myOrg ? `<span class="tag">${esc(S.myOrg.name)}</span>` : ""}</div>
         <div class="top-user">
           <div class="who"><b>${esc(S.me.display_name)}</b><span>${esc(ROLE_NL[S.me.role])}</span></div>
-          <div class="top-actions"><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
+          <div class="top-actions"><a class="btn-link" href="${APP_URL}/#/spel?voorbeeld" target="_blank" rel="noopener" title="Open het spel als leerling, met alles open">Spel bekijken</a><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
         </div></div>
       <div class="tabs">${tabs}</div>
       ${S.msg ? `<div class="msg ${S.msg.kind}">${esc(S.msg.text)}</div>` : ""}

@@ -131,8 +131,10 @@
     stageOf(pid) { const c = this.getConfig(pid); return c ? c.stage || 1 : 1; },
     setStage(pid, n) { const c = this.getConfig(pid); if (!c || (c.stage || 1) === n) return c; return this.saveConfig(pid, { stage: n }); },
     // Items die in de winkel/kast getoond worden: gratis starters, wat je al bezit, en wat bij de huidige fase past.
+    isPreview() { return !!(window.Account && window.Account.isPreview && window.Account.isPreview()); }, // docent-voorbeeld
     shopItems(pid, category) {
       const cfg = this.getConfig(pid); if (!cfg) return [];
+      if (this.isPreview()) return C.items.filter((i) => i.category === category && forType(i, cfg.type));
       const owned = this.getUnlocked(pid), st = cfg.stage || 1;
       return C.items.filter((i) => i.category === category && forType(i, cfg.type) && (i.price === 0 || owned.includes(i.id) || (i.stages || [1, 2, 3]).includes(st)));
     },
@@ -148,7 +150,7 @@
       if (list.includes(id)) return false;
       list.push(id); store.set(unlockKey(pid), list); return true;
     },
-    coins(pid) { return (store.get(stateKey(pid), {}).coins) || 0; },
+    coins(pid) { return this.isPreview() ? 99999 : ((store.get(stateKey(pid), {}).coins) || 0); },
     addCoins(pid, n) {
       const st = store.get(stateKey(pid), null) || { xp: 0, coins: 0, mastery: {}, levels: {}, badges: [], lastActivity: null };
       st.coins = (st.coins || 0) + n; store.set(stateKey(pid), st); return st.coins;
@@ -159,7 +161,7 @@
       const lv = Object.keys(store.get(stateKey(pid), {}).levels || {}).length;
       return mini + lv;
     },
-    onShelf(pid, item) { return item.shelf <= this.progress(pid); },
+    onShelf(pid, item) { return this.isPreview() || item.shelf <= this.progress(pid); },
     levelsUntil(pid, item) { return Math.max(0, item.shelf - this.progress(pid)); },
     // koop → { ok, reason: "owned" | "locked" | "poor" }
     buy(pid, id) {
@@ -168,7 +170,7 @@
       if (this.isUnlocked(pid, id) || it.price === 0) { this.unlock(pid, id); return { ok: false, reason: "owned" }; }
       if (!this.onShelf(pid, it)) return { ok: false, reason: "locked" };
       if (this.coins(pid) < it.price) return { ok: false, reason: "poor" };
-      this.addCoins(pid, -it.price);
+      if (!this.isPreview()) this.addCoins(pid, -it.price);
       this.unlock(pid, id);
       return { ok: true };
     },

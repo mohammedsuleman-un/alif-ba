@@ -84,4 +84,7 @@ form.g-login-form .g-login-msg { background: rgba(253, 236, 235, .9); border-rad
 
 .g-admin-link { text-align: center; margin: 18px 0 0; font-size: 15px; font-weight: 800; }
 .g-admin-link a { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); text-decoration: underline; }
+#previewBar { position: fixed; top: 0; left: 0; right: 0; z-index: 9000; display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; padding: 4px 12px; background: #3b2a12; color: #ffe9b0; font: 700 12px/1.3 "Nunito", system-ui, sans-serif; text-align: center; }
+#previewBar a { color: #fff; background: #b8862b; padding: 2px 10px; border-radius: 99px; text-decoration: none; }
+body.has-preview { padding-top: 30px; }
 .g-logo { display: block; width: 104px; height: 104px; margin: 4px auto 6px; border-radius: 26px; box-shadow: 0 10px 26px rgba(0,0,0,.35); }

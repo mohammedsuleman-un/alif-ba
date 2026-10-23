@@ -147,8 +147,9 @@
     state = activeProfile ? gstate.load(activeProfile.id) : null;
   }
 
+  const PV = () => !!(window.Account && window.Account.isPreview && window.Account.isPreview()); // docent-voorbeeld: alles open
   function isLevelUnlocked(world, idx) {
-    if (idx === 0) return true;
+    if (PV() || idx === 0) return true;
     const prev = world.levels[idx - 1];
     return !!(state.levels[levelId(world, prev)]);
   }
@@ -354,6 +355,9 @@
       store.set("lang", b.dataset.l);
       renderProfile();
     }));
+    if (window.Account && /voorbeeld/.test(location.hash) && !window.Account.isLoggedIn()) {
+      window.Account.previewFromSession().then((me) => { if (me) { loadActive(); gohash("#/"); } }).catch(() => {});
+    }
     if (window.Account) {
       const lf = $("gLoginForm");
       lf.onsubmit = async (e) => {
@@ -1300,7 +1304,7 @@
       let status;
       if (!areas.length) status = "soon";
       else if (done >= total) status = "done";
-      else { const prev = out[idx - 1]; status = !prev || prev.status === "done" ? "open" : "locked"; }
+      else { const prev = out[idx - 1]; status = PV() || !prev || prev.status === "done" ? "open" : "locked"; }
       out.push({ ch, areas, total, done, status });
     });
     return out;
@@ -1447,7 +1451,7 @@
   // Een wereld is ontgrendeld als hij geen vereiste heeft, of als de laatste (uitdagings)level
   // van de vereiste wereld al minstens 1 ster heeft voor dit profiel.
   function worldUnlocked(world) {
-    if (!world.requires) return true;
+    if (PV() || !world.requires) return true;
     const req = G.worlds.find((w) => w.id === world.requires);
     if (!req) return true;
     const last = req.levels[req.levels.length - 1];

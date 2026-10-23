@@ -18,10 +18,10 @@
   const rawSet = localStorage.setItem.bind(localStorage);
 
   const T = {
-    nl: { admin: "Docent of beheerder? Hier inloggen", hint: "Gebruik het kaartje van je juf of meester.", cancel: "Terug", login: "Inloggen met schoolaccount", user: "Gebruikersnaam", pass: "Wachtwoord", go: "Inloggen", logout: "Uitloggen", bad: "Gebruikersnaam of wachtwoord klopt niet.", teacher: "Dit is een account voor docenten. Gebruik de beheerpagina.", net: "Geen verbinding. Probeer het later opnieuw.", cookie: "Inloggen lukte, maar deze browser bewaart het niet. Probeer een andere browser.", confirm: "Uitloggen? De voortgang staat op de server en is er weer als je opnieuw inlogt.", expired: "Je bent uitgelogd. Log opnieuw in om je voortgang te bewaren.", wait: "Even geduld..." },
-    en: { admin: "Teacher or admin? Log in here", hint: "Use the card from your teacher.", cancel: "Back", login: "Log in with school account", user: "Username", pass: "Password", go: "Log in", logout: "Log out", bad: "Username or password is wrong.", teacher: "This is a teacher account. Use the admin page.", net: "No connection. Try again later.", cookie: "Login worked, but this browser does not keep it. Try another browser.", confirm: "Log out? Your progress is saved on the server and returns when you log in again.", expired: "You were logged out. Log in again to save your progress.", wait: "One moment..." },
-    ar: { admin: "معلّم أو مسؤول؟ سجّل الدخول من هنا", hint: "استخدم البطاقة التي أعطاك إياها معلّمك.", cancel: "رجوع", login: "تسجيل الدخول بحساب المدرسة", user: "اسم المستخدم", pass: "كلمة المرور", go: "دخول", logout: "تسجيل الخروج", bad: "اسم المستخدم أو كلمة المرور غير صحيحة.", teacher: "هذا حساب معلّم. استخدم صفحة الإدارة.", net: "لا يوجد اتصال. حاول لاحقًا.", cookie: "تم الدخول لكن هذا المتصفح لا يحفظه. جرّب متصفحًا آخر.", confirm: "تسجيل الخروج؟ تقدّمك محفوظ على الخادم وسيعود عند الدخول مجددًا.", expired: "تم تسجيل خروجك. ادخل مجددًا لحفظ تقدّمك.", wait: "لحظة..." },
-    tr: { admin: "Öğretmen veya yönetici? Buradan giriş yap", hint: "Öğretmeninin verdiği kartı kullan.", cancel: "Geri", login: "Okul hesabıyla giriş", user: "Kullanıcı adı", pass: "Şifre", go: "Giriş", logout: "Çıkış", bad: "Kullanıcı adı veya şifre yanlış.", teacher: "Bu bir öğretmen hesabı. Yönetim sayfasını kullan.", net: "Bağlantı yok. Daha sonra tekrar dene.", cookie: "Giriş yapıldı ama bu tarayıcı saklamıyor. Başka bir tarayıcı dene.", confirm: "Çıkış yapılsın mı? İlerlemen sunucuda kayıtlı, tekrar girince geri gelir.", expired: "Çıkış yapıldı. İlerlemeni kaydetmek için tekrar giriş yap.", wait: "Bir saniye..." },
+    nl: { pvTag: "voorbeeld", pvBar: "Voorbeeldmodus voor docenten: alles is open en alles is te koop. Er wordt niets bij leerlingen bewaard.", pvBack: "Terug naar beheer", admin: "Docent of beheerder? Hier inloggen", hint: "Gebruik het kaartje van je juf of meester.", cancel: "Terug", login: "Inloggen met schoolaccount", user: "Gebruikersnaam", pass: "Wachtwoord", go: "Inloggen", logout: "Uitloggen", bad: "Gebruikersnaam of wachtwoord klopt niet.", teacher: "Dit is een account voor docenten. Gebruik de beheerpagina.", net: "Geen verbinding. Probeer het later opnieuw.", cookie: "Inloggen lukte, maar deze browser bewaart het niet. Probeer een andere browser.", confirm: "Uitloggen? De voortgang staat op de server en is er weer als je opnieuw inlogt.", expired: "Je bent uitgelogd. Log opnieuw in om je voortgang te bewaren.", wait: "Even geduld..." },
+    en: { pvTag: "preview", pvBar: "Teacher preview: everything is open and free to buy. Nothing is saved for students.", pvBack: "Back to admin", admin: "Teacher or admin? Log in here", hint: "Use the card from your teacher.", cancel: "Back", login: "Log in with school account", user: "Username", pass: "Password", go: "Log in", logout: "Log out", bad: "Username or password is wrong.", teacher: "This is a teacher account. Use the admin page.", net: "No connection. Try again later.", cookie: "Login worked, but this browser does not keep it. Try another browser.", confirm: "Log out? Your progress is saved on the server and returns when you log in again.", expired: "You were logged out. Log in again to save your progress.", wait: "One moment..." },
+    ar: { pvTag: "معاينة", pvBar: "وضع المعاينة للمعلّمين: كل شيء مفتوح ومتاح للشراء. لا يتم حفظ أي شيء للطلاب.", pvBack: "العودة إلى الإدارة", admin: "معلّم أو مسؤول؟ سجّل الدخول من هنا", hint: "استخدم البطاقة التي أعطاك إياها معلّمك.", cancel: "رجوع", login: "تسجيل الدخول بحساب المدرسة", user: "اسم المستخدم", pass: "كلمة المرور", go: "دخول", logout: "تسجيل الخروج", bad: "اسم المستخدم أو كلمة المرور غير صحيحة.", teacher: "هذا حساب معلّم. استخدم صفحة الإدارة.", net: "لا يوجد اتصال. حاول لاحقًا.", cookie: "تم الدخول لكن هذا المتصفح لا يحفظه. جرّب متصفحًا آخر.", confirm: "تسجيل الخروج؟ تقدّمك محفوظ على الخادم وسيعود عند الدخول مجددًا.", expired: "تم تسجيل خروجك. ادخل مجددًا لحفظ تقدّمك.", wait: "لحظة..." },
+    tr: { pvTag: "önizleme", pvBar: "Öğretmen önizlemesi: her şey açık ve satın alınabilir. Öğrenciler için hiçbir şey kaydedilmez.", pvBack: "Yönetime dön", admin: "Öğretmen veya yönetici? Buradan giriş yap", hint: "Öğretmeninin verdiği kartı kullan.", cancel: "Geri", login: "Okul hesabıyla giriş", user: "Kullanıcı adı", pass: "Şifre", go: "Giriş", logout: "Çıkış", bad: "Kullanıcı adı veya şifre yanlış.", teacher: "Bu bir öğretmen hesabı. Yönetim sayfasını kullan.", net: "Bağlantı yok. Daha sonra tekrar dene.", cookie: "Giriş yapıldı ama bu tarayıcı saklamıyor. Başka bir tarayıcı dene.", confirm: "Çıkış yapılsın mı? İlerlemen sunucuda kayıtlı, tekrar girince geri gelir.", expired: "Çıkış yapıldı. İlerlemeni kaydetmek için tekrar giriş yap.", wait: "Bir saniye..." },
   };
   const t = () => T[store.get("lang", "nl")] || T.nl;
 
@@ -61,7 +61,7 @@
   const markDirty = () => store.set(DIRTY, true);
   async function push() {
     const a = account(); clearTimeout(timer); timer = null;
-    if (!a || pushing || !navigator.onLine) return;
+    if (!a || a.preview || pushing || !navigator.onLine) return;
     pushing = true;
     try { await api("PUT", "/progress", { data: { v: 1, keys: collect(a.pid) } }); store.del(DIRTY); }
     catch (e) { if (e.status === 401) store.set(ACCT, { ...a, expired: true }); }
@@ -73,7 +73,7 @@
   localStorage.setItem = function (k, v) {
     rawSet(k, v);
     const a = account();
-    if (a && typeof k === "string" && k.startsWith("gp_") && k.endsWith(`_${a.pid}`)) schedule();
+    if (a && !a.preview && typeof k === "string" && k.startsWith("gp_") && k.endsWith(`_${a.pid}`)) schedule();
   };
   document.addEventListener("visibilitychange", () => { if (document.hidden && store.get(DIRTY, false)) push(); });
   window.addEventListener("pagehide", () => { if (store.get(DIRTY, false)) push(); });
@@ -84,9 +84,9 @@
     if (r && r.data && r.data.keys && !store.get(DIRTY, false)) apply(pid, r.data.keys); // eigen niet-geüploade wijzigingen gaan voor
   }
 
-  function ensureProfile(me) {
+  function ensureProfile(me, preview) {
     const list = store.get("gp_profiles", []);
-    if (!list.some((p) => p.id === me.id)) list.push({ id: me.id, name: me.display_name, avatar: "🧒", createdAt: Date.now(), account: true });
+    if (!list.some((p) => p.id === me.id)) list.push({ id: me.id, name: me.display_name, avatar: preview ? "🧑‍🏫" : "🧒", createdAt: Date.now(), account: true, ...(preview ? { preview: true } : {}) });
     store.set("gp_profiles", list);
     store.set("gp_active", me.id);
   }
@@ -98,17 +98,31 @@
     });
     let me;
     try { me = (await api("GET", "/me")).user; } catch { throw new Error(t().cookie); }
-    if (me.role !== "student") { await api("POST", "/auth/logout", {}).catch(() => {}); throw new Error(t().teacher); }
+    if (me.role !== "student") { startPreview(me); return me; } // docent/beheerder: voorbeeldmodus, er wordt niets bewaard
     store.set(ACCT, { pid: me.id, username: me.username, name: me.display_name });
     ensureProfile(me);
     await pull(me.id).catch(() => {});
     return me;
   }
 
+  // Voorbeeldmodus: een docent/beheerder speelt lokaal mee met alles open. Niets gaat naar de server.
+  function startPreview(me) {
+    const pid = "pv-" + me.id;
+    store.set(ACCT, { pid, username: me.username, name: me.display_name, preview: true });
+    ensureProfile({ id: pid, display_name: me.display_name }, true);
+  }
+  // Voor de link "Spel bekijken" in de beheerpagina: er is al een sessie, dus geen tweede keer inloggen.
+  async function previewFromSession() {
+    const me = (await api("GET", "/me")).user;
+    if (!me || me.role === "student") return null;
+    startPreview(me);
+    return me;
+  }
+
   async function logout() {
     const a = account();
-    if (a) { await push().catch(() => {}); }
-    await api("POST", "/auth/logout", {}).catch(() => {});
+    if (a && !a.preview) { await push().catch(() => {}); }
+    if (!(a && a.preview)) await api("POST", "/auth/logout", {}).catch(() => {});
     if (a) {
       const suffix = `_${a.pid}`, gone = [];
       for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("gp_") && k.endsWith(suffix)) gone.push(k); }
@@ -121,11 +135,25 @@
 
   // Bij het starten: nog ingelogd? Zo niet, onthoud dat zodat het profielscherm dat kan melden.
   async function check() {
-    const a = account(); if (!a || !navigator.onLine) return;
+    const a = account(); if (!a || a.preview || !navigator.onLine) return;
     try { const me = (await api("GET", "/me")).user; if (me.id === a.pid && a.expired) store.set(ACCT, { ...a, expired: false }); if (store.get(DIRTY, false)) push(); }
     catch (e) { if (e.status === 401) store.set(ACCT, { ...a, expired: true }); }
   }
 
-  window.Account = { login, logout, check, push, current: account, t, isLoggedIn: () => !!account() };
+  const isPreview = () => { const a = account(); return !!(a && a.preview); };
+
+  // Smalle balk bovenaan zolang je in voorbeeldmodus zit.
+  function mountBar() {
+    let bar = document.getElementById("previewBar");
+    if (!isPreview()) { if (bar) bar.remove(); document.body.classList.remove("has-preview"); return; }
+    if (!bar) { bar = document.createElement("div"); bar.id = "previewBar"; document.body.appendChild(bar); }
+    const T = t();
+    bar.innerHTML = `<span>🧑‍🏫 ${T.pvBar}</span><a href="${new URL("beheer/", location.href).pathname}">${T.pvBack}</a>`;
+    document.body.classList.add("has-preview");
+  }
+  window.addEventListener("hashchange", mountBar);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountBar); else mountBar();
+
+  window.Account = { login, logout, check, push, current: account, t, isLoggedIn: () => !!account(), isPreview, previewFromSession, mountBar };
   check();
 })();
