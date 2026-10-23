@@ -200,9 +200,12 @@
     const tabs = tabsFor().map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-act="tab" data-tab="${k}">${esc(l)}</button>`).join("");
     const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
     const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
-    $app.innerHTML = `<div class="top"><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}<span class="grow"></span>
-        <span class="who">${esc(S.me.display_name)} · ${esc(ROLE_NL[S.me.role])}</span>
-        <button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
+    $app.innerHTML = `<div class="top">
+        <div class="brand"><img class="brand-logo" src="../icons/icon-192.png" alt=""><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}</div>
+        <div class="top-user">
+          <div class="who"><b>${esc(S.me.display_name)}</b><span>${esc(ROLE_NL[S.me.role])}</span></div>
+          <div class="top-actions"><button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
+        </div></div>
       <div class="tabs">${tabs}</div>
       ${S.msg ? `<div class="msg ${S.msg.kind}">${esc(S.msg.text)}</div>` : ""}
       ${panelSecret()}${panel ? panel() : ""}`;
