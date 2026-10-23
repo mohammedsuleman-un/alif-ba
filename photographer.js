@@ -259,7 +259,7 @@
       MG.banner(field, { ok: true, letter });
       const finished = missionIdx + 1 >= missions.length;
       MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback())
-        .then(() => letterAudio(letter)).then(() => MG.wait(1100)).then(() => {
+        .then(() => MG.wait(1100)).then(() => {
           MG.hideBanner(field);
           if (!active) return;
           if (finished) complete(); else { missionIdx++; startMission(); }

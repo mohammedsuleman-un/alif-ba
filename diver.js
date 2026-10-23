@@ -264,7 +264,7 @@
       scene.giveKey();
       MG.sfx("ok");
       MG.banner(field, { ok: true, letter: m.target });
-      voiceDone = MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback()).then(() => letterAudio(m.target)).then(() => MG.wait(700)).then(() => { MG.hideBanner(field); });
+      voiceDone = MG.wait(500).then(() => window.AudioManager.playRandomCorrectFeedback()).then(() => MG.wait(700)).then(() => { MG.hideBanner(field); });
     } else {
       wrongThisMission++;
       scene.returnBag();
