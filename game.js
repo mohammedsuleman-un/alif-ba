@@ -335,10 +335,12 @@
       <button id="gAddProfile" class="g-add">+ ${t.newProfile}</button>
       ${window.Account ? `<button id="gLoginBtn" class="g-add">🔑 ${window.Account.t().login}</button>
       <form id="gLoginForm" class="g-new-form g-login-form" hidden autocomplete="on">
+        <div class="g-login-head"><span class="g-login-ico" aria-hidden="true">🔑</span><div><b>${window.Account.t().login}</b><small>${window.Account.t().hint}</small></div></div>
         <input id="gLoginUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="${window.Account.t().user}">
         <input id="gLoginPass" type="password" autocomplete="current-password" placeholder="${window.Account.t().pass}">
         <div id="gLoginMsg" class="g-login-msg" role="alert"></div>
         <button type="submit" class="g-cta">${window.Account.t().go}</button>
+        <button type="button" class="g-login-cancel" id="gLoginCancel">${window.Account.t().cancel}</button>
       </form>
       ${window.Account.isLoggedIn() ? `<button id="gLogout" class="g-add">⎋ ${window.Account.t().logout} (${String(window.Account.current().name).replace(/[<>&"]/g, "")})</button>${window.Account.current().expired ? `<p class="g-login-msg">${window.Account.t().expired}</p>` : ""}` : ""}` : ""}
       <div id="gNewProfileForm" class="g-new-form" hidden>
@@ -358,7 +360,8 @@
     }));
     if (window.Account) {
       const lf = $("gLoginForm"), lb = $("gLoginBtn");
-      lb.onclick = () => { lf.hidden = false; lb.hidden = true; $("gLoginUser").focus(); };
+      lb.onclick = () => { lf.hidden = false; lb.hidden = true; $("gLoginUser").focus({ preventScroll: true }); setTimeout(() => lf.scrollIntoView({ block: "center", behavior: "smooth" }), 60); };
+      $("gLoginCancel").onclick = () => { lf.hidden = true; lb.hidden = false; $("gLoginMsg").textContent = ""; };
       lf.onsubmit = async (e) => {
         e.preventDefault();
         const msg = $("gLoginMsg"), btn = lf.querySelector("button[type=submit]");

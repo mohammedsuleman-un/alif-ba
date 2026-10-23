@@ -70,7 +70,8 @@
 
   // ---------- schermen ----------
   function viewLogin(err) {
-    $app.innerHTML = `<div class="login"><h1>Alif Ba beheer</h1><p class="muted">Voor beheerders en docenten.</p>
+    document.body.classList.add("auth");
+    $app.innerHTML = `<div class="login"><img class="logo" src="../icons/icon-192.png" alt=""><h1>Alif Ba beheer</h1><p class="muted">Voor beheerders en docenten.</p>
       <form class="card" data-form="login">
         <label for="u">E-mailadres</label><input id="u" name="username" autocomplete="username" required>
         <label for="p">Wachtwoord</label><input id="p" name="password" type="password" autocomplete="current-password" required>
@@ -80,7 +81,8 @@
   }
 
   function viewChangePassword(forced, err) {
-    $app.innerHTML = `<div class="login"><h1>${forced ? "Kies een eigen wachtwoord" : "Wachtwoord wijzigen"}</h1>
+    document.body.classList.add("auth");
+    $app.innerHTML = `<div class="login"><img class="logo" src="../icons/icon-192.png" alt=""><h1>${forced ? "Kies een eigen wachtwoord" : "Wachtwoord wijzigen"}</h1>
       ${forced ? `<p class="muted">Je hebt een startwachtwoord gekregen. Kies nu een eigen wachtwoord (minstens 10 tekens).</p>` : ""}
       <form class="card" data-form="password">
         <label for="c">Huidig wachtwoord</label><input id="c" name="current" type="password" autocomplete="current-password" required>
@@ -194,6 +196,7 @@
 
   function render() {
     if (!S.me) return viewLogin();
+    document.body.classList.remove("auth");
     const tabs = tabsFor().map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-act="tab" data-tab="${k}">${esc(l)}</button>`).join("");
     const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
     const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
