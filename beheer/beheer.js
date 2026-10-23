@@ -201,9 +201,9 @@
       ${found.length > shown.length ? `<p><button class="ghost" data-act="more">Toon meer (${found.length - shown.length} te gaan)</button></p>` : ""}
       ${realClass ? `<p><button class="ghost small" data-act="classcards" ${S.students.length ? "" : "disabled"}>Inlogkaartjes van deze klas tonen en printen</button></p>` : ""}</div>
       <form class="card" data-form="students"><h2>Leerlingen toevoegen</h2>
-        <p class="muted">Eén naam per regel. Elke leerling krijgt een gebruikersnaam en een wachtwoord. Een klas is niet verplicht: je kunt een leerling later aan een klas koppelen. Je kunt de wachtwoorden later weer bekijken met de knop Toon.</p>
+        <p class="muted">Eén leerling per regel, met <b>voornaam en achternaam</b>. Elke leerling krijgt een nummer, een gebruikersnaam en een wachtwoord. Een klas is niet verplicht: je kunt een leerling later aan een klas koppelen. Je kunt de wachtwoorden later weer bekijken met de knop Toon.</p>
         <label>Klas (mag leeg blijven)</label>${classSelect(S.addClass || (realClass ? S.classId : ""), 'name="class_id"', "Geen klas")}
-        <label>Namen</label><textarea name="names" placeholder="Aya&#10;Bilal&#10;Zoë"></textarea>
+        <label>Voor- en achternaam (één leerling per regel)</label><textarea name="names" placeholder="Aya Said&#10;Bilal Amrani&#10;Zoë de Vries"></textarea>
         <p><button type="submit" ${S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>${panelImport()}`;
   }
 
