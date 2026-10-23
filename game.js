@@ -937,21 +937,44 @@
   // ---------- Level: vraag-generators ----------
   function buildQuestions(world, level) {
     const pool = world.letters;
-    // Bij een nieuwe letter: die + een paar willekeurige herhalingsletters.
-    // Bij een puur herhalingslevel: alle herhalingsletters, zodat er niets wordt overgeslagen.
-    // Letters waar het kind meer moeite mee heeft komen wat vaker terug.
-    const reviewPart = level.letters.length
-      ? pick(level.review, Math.min(level.review.length, 3))
-      : weakLetters(level.review, level.review.length);
-    const focus = [...level.letters, ...reviewPart];
+    // Bij een nieuwe letter: die komt het vaakst terug (zo blijft hij hangen), plus alle herhalingsletters van het vorige level.
+    // Bij een puur herhalingslevel (de uitdaging): alle letters, zwakste eerst, zodat er niets wordt overgeslagen.
+    const weak = level.letters.length ? level.review : weakLetters(level.review, level.review.length);
+    const count = level.count;
     const targets = [];
-    while (targets.length < level.count) {
-      const src = level.letters.length && targets.length < level.letters.length ? level.letters : (focus.length ? focus : pool);
-      targets.push(src[targets.length % src.length] || pool[(Math.random() * pool.length) | 0]);
+    if (level.letters.length) {
+      // ongeveer 60% van de vragen over de nieuwe letters, gelijk verdeeld; de rest over de herhalingsletters (zwakste eerst)
+      const share = Math.max(2, Math.round((count * 0.6) / level.letters.length));
+      level.letters.forEach((l) => { for (let k = 0; k < share && targets.length < count; k++) targets.push(l); });
+      const review = weakLetters(level.review, level.review.length);
+      for (let k = 0; targets.length < count; k++) targets.push(review.length ? review[k % review.length] : level.letters[k % level.letters.length]);
+    } else {
+      for (let k = 0; targets.length < count; k++) targets.push(weak[k % weak.length] || pool[(Math.random() * pool.length) | 0]);
     }
-    const types = level.types;
-    return shuffle(targets).map((letter, i) => ({
-      type: types[i % types.length],
+    // dooreenhusselen, maar nooit twee keer dezelfde letter achter elkaar:
+    // kies steeds (met wat toeval) de letter die nog het vaakst moet komen, behalve de vorige.
+    const left = new Map();
+    targets.forEach((l) => left.set(l, (left.get(l) || 0) + 1));
+    const order = [];
+    while (order.length < targets.length) {
+      const prev = order[order.length - 1];
+      let cands = [...left.entries()].filter(([l, n]) => n > 0 && l !== prev);
+      if (!cands.length) cands = [...left.entries()].filter(([, n]) => n > 0);
+      const top = Math.max(...cands.map(([, n]) => n));
+      const best = shuffle(cands.filter(([, n]) => n === top));
+      const [letter] = best[0];
+      left.set(letter, left.get(letter) - 1);
+      order.push(letter);
+    }
+    // vraagsoorten: afwisselend; de (langere) paren-opdracht hoogstens een paar keer en nooit als eerste vraag
+    const plain = level.types.filter((ty) => ty !== "LETTER_MATCH");
+    const withPairs = level.types.includes("LETTER_MATCH");
+    const pairCount = withPairs ? Math.min(3, Math.max(1, Math.round(count / 6))) : 0;
+    const pairAt = new Set();
+    for (let j = 0; j < pairCount; j++) pairAt.add(Math.max(1, Math.floor((count * (j + 1)) / (pairCount + 1))));
+    let p = 0;
+    return order.map((letter, i) => ({
+      type: pairAt.has(i) ? "LETTER_MATCH" : plain[p++ % plain.length],
       letter,
       options: shuffle([letter, ...pick(pool.filter((l) => l !== letter), 3)]),
     }));
