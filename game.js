@@ -1330,22 +1330,27 @@
     const hereEl = scr.overview.querySelector(".ov-node.is-here");
     // De kaart vult het scherm (cover); wat buiten beeld valt kan het kind verschuiven.
     const sc = $("ovScroll"), scene = scr.overview.querySelector(".ov-scene");
-    const MW = 1672, MH = 941;
+    const MW = 1672, MH = 940;
+    // de eilanden staan in het midden van de tekening; de rand eromheen (lucht, rotsen) mag wegvallen
+    const CL = { w: 0.68, h: 0.74 };
     const layout = () => {
       const nav = document.querySelector(".bottom-nav"), navH = nav && getComputedStyle(nav).display !== "none" ? nav.offsetHeight : 0;
       sc.style.height = Math.max(200, window.innerHeight - sc.getBoundingClientRect().top - navH) + "px";
       const cw = sc.clientWidth, ch = sc.clientHeight; if (!cw || !ch) return;
-      // hele kaart in één oogopslag (contain); op een smalle telefoon niet kleiner dan 700px breed, dan schuiven
-      let z = Math.min(cw / MW, ch / MH); if (cw < 700) z = Math.max(z, 700 / MW);
+      // vullend scherm (cover); liggend zijn alle eilanden tegelijk te zien
+      const cover = Math.max(cw / MW, ch / MH);
+      const z = cw >= ch ? Math.max(cover, Math.min(cw / (CL.w * MW), ch / (CL.h * MH))) : cover; // liggend: alle eilanden in beeld; staand: vullen en schuiven
       scene.style.width = MW * z + "px"; scene.style.height = MH * z + "px";
     };
     const centerOn = (info) => {
       const px = scene.offsetLeft + info.ch.pos.x * scene.offsetWidth, py = scene.offsetTop + info.ch.pos.y * scene.offsetHeight;
       sc.scrollLeft = Math.max(0, px - sc.clientWidth / 2); sc.scrollTop = Math.max(0, py - sc.clientHeight / 2);
     };
-    layout(); centerOn(infos[here]);
+    // liggend: het hele eilandenveld gecentreerd; staand: begin bij het eiland van het kind
+    const home = () => centerOn(sc.clientWidth >= sc.clientHeight ? { ch: { pos: { x: 0.51, y: 0.49 } } } : infos[here]);
+    layout(); home();
     // andere schermen worden net na dit moment verborgen: daarna opnieuw uitmeten en centreren
-    setTimeout(() => { if (!zooming) { layout(); centerOn(infos[here]); } }, 150);
+    setTimeout(() => { if (!zooming) { layout(); home(); } }, 150);
     window.addEventListener("resize", layout);
     // Pas als het kind op een wereld tikt: rustig inzoomen op precies die wereld, dan openen.
     let zooming = false;
