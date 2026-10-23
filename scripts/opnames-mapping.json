@@ -1,0 +1,534 @@
+[
+ {
+  "nr": 1,
+  "id": "welcome",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "السَّلَامُ عَلَيْكُمْ! هَلْ أَنْتِ مُسْتَعِدَّةْ لِتَعَلُّمِ الْعَرَبِيَّةْ؟",
+  "files": [
+   "audio/instructions/ar-f/welcome.mp3"
+  ]
+ },
+ {
+  "nr": 2,
+  "id": "listen",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "اِسْتَمِعِي جَيِّدَا.",
+  "files": [
+   "audio/instructions/ar-f/listen.mp3"
+  ]
+ },
+ {
+  "nr": 3,
+  "id": "listen-again",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "اِسْتَمِعِي مَرَّةً أُخْرَى.",
+  "files": [
+   "audio/instructions/ar-f/listen-again.mp3"
+  ]
+ },
+ {
+  "nr": 4,
+  "id": "choose-letter",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "اِخْتَارِي الْحَرْفَ الصَّحِيحْ.",
+  "files": [
+   "audio/instructions/ar-f/choose-letter.mp3"
+  ]
+ },
+ {
+  "nr": 5,
+  "id": "which-letter",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "أَيَّ حَرْفٍ تَسْمَعِينْ؟",
+  "files": [
+   "audio/instructions/ar-f/which-letter.mp3"
+  ]
+ },
+ {
+  "nr": 6,
+  "id": "find-letter",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "هَلْ تَسْتَطِيعِينَ أَنْ تَجِدِي الْحَرْفَ الصَّحِيحْ؟",
+  "files": [
+   "audio/instructions/ar-f/find-letter.mp3"
+  ]
+ },
+ {
+  "nr": 7,
+  "id": "choose-sound",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "اِخْتَارِي الصَّوْتَ الصَّحِيحْ.",
+  "files": [
+   "audio/instructions/ar-f/choose-sound.mp3"
+  ]
+ },
+ {
+  "nr": 8,
+  "id": "choose-word",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "اِخْتَارِي الْكَلِمَةَ الصَّحِيحَةْ.",
+  "files": [
+   "audio/instructions/ar-f/choose-word.mp3"
+  ]
+ },
+ {
+  "nr": 9,
+  "id": "which-word",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "أَيَّ كَلِمَةٍ تَسْمَعِينْ؟",
+  "files": [
+   "audio/instructions/ar-f/which-word.mp3"
+  ]
+ },
+ {
+  "nr": 10,
+  "id": "build-word",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "كَوِّنِي الْكَلِمَةْ.",
+  "files": [
+   "audio/instructions/ar-f/build-word.mp3"
+  ]
+ },
+ {
+  "nr": 11,
+  "id": "your-turn",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "الْآنَ دَوْرُكِ!",
+  "files": [
+   "audio/instructions/ar-f/your-turn.mp3"
+  ]
+ },
+ {
+  "nr": 12,
+  "id": "correct-02",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "أَحْسَنْتِ!",
+  "files": [
+   "audio/instructions/ar-f/correct-02.mp3"
+  ]
+ },
+ {
+  "nr": 13,
+  "id": "correct-03",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "أَحْسَنْتِ صُنْعَا!",
+  "files": [
+   "audio/instructions/ar-f/correct-03.mp3"
+  ]
+ },
+ {
+  "nr": 14,
+  "id": "correct-05",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "رَائِعَةْ!",
+  "files": [
+   "audio/instructions/ar-f/correct-05.mp3"
+  ]
+ },
+ {
+  "nr": 15,
+  "id": "correct-06",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "مَا شَاءَ اللَّهْ، وَاصِلِي!",
+  "files": [
+   "audio/instructions/ar-f/correct-06.mp3"
+  ]
+ },
+ {
+  "nr": 16,
+  "id": "retry-01",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "أَوْشَكْتِ! حَاوِلِي مَرَّةً أُخْرَى.",
+  "files": [
+   "audio/instructions/ar-f/retry-01.mp3"
+  ]
+ },
+ {
+  "nr": 17,
+  "id": "retry-02",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "مُحَاوَلَةٌ جَيِّدَةْ! اِسْتَمِعِي مَرَّةً أُخْرَى.",
+  "files": [
+   "audio/instructions/ar-f/retry-02.mp3"
+  ]
+ },
+ {
+  "nr": 18,
+  "id": "retry-03",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "حَاوِلِي مَرَّةً أُخْرَى.",
+  "files": [
+   "audio/instructions/ar-f/retry-03.mp3"
+  ]
+ },
+ {
+  "nr": 19,
+  "id": "level-start",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "هَلْ أَنْتِ مُسْتَعِدَّةْ؟ هَيَّا بِنَا!",
+  "files": [
+   "audio/instructions/ar-f/level-start.mp3"
+  ]
+ },
+ {
+  "nr": 20,
+  "id": "level-complete",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "مَا شَاءَ اللَّهْ! أَكْمَلْتِ الْمُسْتَوَى!",
+  "files": [
+   "audio/instructions/ar-f/level-complete.mp3"
+  ]
+ },
+ {
+  "nr": 21,
+  "id": "new-level",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "لَقَدْ فَتَحْتِ مُسْتَوًى جَدِيدَا!",
+  "files": [
+   "audio/instructions/ar-f/new-level.mp3"
+  ]
+ },
+ {
+  "nr": 22,
+  "id": "world-complete",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "مَا شَاءَ اللَّهْ! أَكْمَلْتِ هَذَا الْعَالَمْ!",
+  "files": [
+   "audio/instructions/ar-f/world-complete.mp3"
+  ]
+ },
+ {
+  "nr": 23,
+  "id": "continue",
+  "voor": "meisje",
+  "group": "A",
+  "ar": "هَلْ أَنْتِ مُسْتَعِدَّةْ لِلْمُسْتَوَى التَّالِي؟",
+  "files": [
+   "audio/instructions/ar-f/continue.mp3"
+  ]
+ },
+ {
+  "nr": 24,
+  "id": "map-choose",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "اِخْتَرْ عَالَمَا!",
+  "files": [
+   "audio/instructions/ar/map-choose.mp3"
+  ]
+ },
+ {
+  "nr": 25,
+  "id": "map-choose",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "اِخْتَارِي عَالَمَا!",
+  "files": [
+   "audio/instructions/ar-f/map-choose.mp3"
+  ]
+ },
+ {
+  "nr": 26,
+  "id": "world-1",
+  "voor": "beide",
+  "group": "B",
+  "ar": "الْعَالَمُ الْأَوَّلْ: الْحُرُوفُ الْعَرَبِيَّةْ.",
+  "files": [
+   "audio/instructions/ar/world-1.mp3",
+   "audio/instructions/ar-f/world-1.mp3"
+  ]
+ },
+ {
+  "nr": 27,
+  "id": "world-map-start",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "اِلْمَسْ مُسْتَوَاكْ لِتَبْدَأْ.",
+  "files": [
+   "audio/instructions/ar/world-map-start.mp3"
+  ]
+ },
+ {
+  "nr": 28,
+  "id": "world-map-start",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "اِلْمَسِي مُسْتَوَاكِ لِتَبْدَئِي.",
+  "files": [
+   "audio/instructions/ar-f/world-map-start.mp3"
+  ]
+ },
+ {
+  "nr": 29,
+  "id": "level-choose",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "تَعَلَّمِ الْحُرُوفَ، أَوِ الْعَبْ لُعْبَةْ!",
+  "files": [
+   "audio/instructions/ar/level-choose.mp3"
+  ]
+ },
+ {
+  "nr": 30,
+  "id": "level-choose",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "تَعَلَّمِي الْحُرُوفَ، أَوِ الْعَبِي لُعْبَةْ!",
+  "files": [
+   "audio/instructions/ar-f/level-choose.mp3"
+  ]
+ },
+ {
+  "nr": 31,
+  "id": "slingshot-how",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "اِسْحَبِ الْحَجَرَ إِلَى الْخَلْفْ ثُمَّ أَفْلِتْهْ. أَصِبِ الْفَانُوسَ الَّذِي عَلَيْهِ الْحَرْفُ الصَّحِيحْ!",
+  "files": [
+   "audio/instructions/ar/slingshot-how.mp3"
+  ]
+ },
+ {
+  "nr": 32,
+  "id": "slingshot-how",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "اِسْحَبِي الْحَجَرَ إِلَى الْخَلْفْ ثُمَّ أَفْلِتِيهْ. أَصِيبِي الْفَانُوسَ الَّذِي عَلَيْهِ الْحَرْفُ الصَّحِيحْ!",
+  "files": [
+   "audio/instructions/ar-f/slingshot-how.mp3"
+  ]
+ },
+ {
+  "nr": 33,
+  "id": "photo-how",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "قَرِّبِ الصُّورَةَ وَالْتَقِطْ صُورَةً لِلْحَرْفِ الصَّحِيحْ.",
+  "files": [
+   "audio/instructions/ar/photo-how.mp3"
+  ]
+ },
+ {
+  "nr": 34,
+  "id": "photo-how",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "قَرِّبِي الصُّورَةَ وَالْتَقِطِي صُورَةً لِلْحَرْفِ الصَّحِيحْ.",
+  "files": [
+   "audio/instructions/ar-f/photo-how.mp3"
+  ]
+ },
+ {
+  "nr": 35,
+  "id": "diver-intro",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "اِسْبَحْ إِلَى الْأَصْدَافْ وَخُذِ اللُّؤْلُؤَةَ الَّتِي عَلَيْهَا الْحَرْفُ الصَّحِيحْ. ثُمَّ خُذِ اللَّآلِئَ إِلَى الصَّدَفَةِ الْكَبِيرَةْ.",
+  "files": [
+   "audio/instructions/ar/diver-intro.mp3"
+  ]
+ },
+ {
+  "nr": 36,
+  "id": "diver-intro",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "اِسْبَحِي إِلَى الْأَصْدَافْ وَخُذِي اللُّؤْلُؤَةَ الَّتِي عَلَيْهَا الْحَرْفُ الصَّحِيحْ. ثُمَّ خُذِي اللَّآلِئَ إِلَى الصَّدَفَةِ الْكَبِيرَةْ.",
+  "files": [
+   "audio/instructions/ar-f/diver-intro.mp3"
+  ]
+ },
+ {
+  "nr": 37,
+  "id": "diver-hand",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "اِسْبَحْ إِلَى الصَّدَفَةِ الْكَبِيرَةْ وَسَلِّمْهَا اللَّآلِئْ.",
+  "files": [
+   "audio/instructions/ar/diver-hand.mp3"
+  ]
+ },
+ {
+  "nr": 38,
+  "id": "diver-hand",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "اِسْبَحِي إِلَى الصَّدَفَةِ الْكَبِيرَةْ وَسَلِّمِيهَا اللَّآلِئْ.",
+  "files": [
+   "audio/instructions/ar-f/diver-hand.mp3"
+  ]
+ },
+ {
+  "nr": 39,
+  "id": "diver-chest",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "سَتَحْصُلُ عَلَى مِفْتَاحْ. اِفْتَحِ الصُّنْدُوقْ!",
+  "files": [
+   "audio/instructions/ar/diver-chest.mp3"
+  ]
+ },
+ {
+  "nr": 40,
+  "id": "diver-chest",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "سَتَحْصُلِينَ عَلَى مِفْتَاحْ. اِفْتَحِي الصُّنْدُوقْ!",
+  "files": [
+   "audio/instructions/ar-f/diver-chest.mp3"
+  ]
+ },
+ {
+  "nr": 41,
+  "id": "bridge-how",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "أَكْمِلْ صَفَّ الْحُرُوفْ. اِسْحَبِ اللَّوْحَ الصَّحِيحَ إِلَى الْمَكَانِ الْفَارِغْ.",
+  "files": [
+   "audio/instructions/ar/bridge-how.mp3"
+  ]
+ },
+ {
+  "nr": 42,
+  "id": "bridge-how",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "أَكْمِلِي صَفَّ الْحُرُوفْ. اِسْحَبِي اللَّوْحَ الصَّحِيحَ إِلَى الْمَكَانِ الْفَارِغْ.",
+  "files": [
+   "audio/instructions/ar-f/bridge-how.mp3"
+  ]
+ },
+ {
+  "nr": 43,
+  "id": "game-unlocked",
+  "voor": "jongen",
+  "group": "B",
+  "ar": "رَائِعْ! لَقَدْ كَسَبْتَ لُعْبَةً جَدِيدَةْ!",
+  "files": [
+   "audio/instructions/ar/game-unlocked.mp3"
+  ]
+ },
+ {
+  "nr": 44,
+  "id": "game-unlocked",
+  "voor": "meisje",
+  "group": "B",
+  "ar": "رَائِعْ! لَقَدْ كَسَبْتِ لُعْبَةً جَدِيدَةْ!",
+  "files": [
+   "audio/instructions/ar-f/game-unlocked.mp3"
+  ]
+ },
+ {
+  "nr": 45,
+  "id": "tap-audio",
+  "voor": "jongen",
+  "group": "C",
+  "ar": "اُنْقُرْ عَلَى السَّمَّاعَةْ لِتَسْتَمِعْ.",
+  "files": [
+   "audio/instructions/ar/tap-audio.mp3"
+  ]
+ },
+ {
+  "nr": 46,
+  "id": "tap-audio",
+  "voor": "meisje",
+  "group": "C",
+  "ar": "اُنْقُرِي عَلَى السَّمَّاعَةْ لِتَسْتَمِعِي.",
+  "files": [
+   "audio/instructions/ar-f/tap-audio.mp3"
+  ]
+ },
+ {
+  "nr": 47,
+  "id": "match",
+  "voor": "jongen",
+  "group": "C",
+  "ar": "طَابِقِ الْمُتَشَابِهَاتْ.",
+  "files": [
+   "audio/instructions/ar/match.mp3"
+  ]
+ },
+ {
+  "nr": 48,
+  "id": "match",
+  "voor": "meisje",
+  "group": "C",
+  "ar": "طَابِقِي الْمُتَشَابِهَاتْ.",
+  "files": [
+   "audio/instructions/ar-f/match.mp3"
+  ]
+ },
+ {
+  "nr": 49,
+  "id": "hint",
+  "voor": "beide",
+  "group": "C",
+  "ar": "هَذِهِ تَلْمِيحَةٌ صَغِيرَةْ.",
+  "files": [
+   "audio/instructions/ar/hint.mp3",
+   "audio/instructions/ar-f/hint.mp3"
+  ]
+ },
+ {
+  "nr": 50,
+  "id": "halfway",
+  "voor": "jongen",
+  "group": "C",
+  "ar": "وَصَلْتَ إِلَى النِّصْفْ!",
+  "files": [
+   "audio/instructions/ar/halfway.mp3"
+  ]
+ },
+ {
+  "nr": 51,
+  "id": "halfway",
+  "voor": "meisje",
+  "group": "C",
+  "ar": "وَصَلْتِ إِلَى النِّصْفْ!",
+  "files": [
+   "audio/instructions/ar-f/halfway.mp3"
+  ]
+ },
+ {
+  "nr": 52,
+  "id": "new-badge",
+  "voor": "jongen",
+  "group": "C",
+  "ar": "لَقَدْ كَسَبْتَ وِسَامَا جَدِيدَا!",
+  "files": [
+   "audio/instructions/ar/new-badge.mp3"
+  ]
+ },
+ {
+  "nr": 53,
+  "id": "new-badge",
+  "voor": "meisje",
+  "group": "C",
+  "ar": "لَقَدْ كَسَبْتِ وِسَامَا جَدِيدَا!",
+  "files": [
+   "audio/instructions/ar-f/new-badge.mp3"
+  ]
+ }
+]
