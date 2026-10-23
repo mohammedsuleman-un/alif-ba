@@ -195,7 +195,7 @@
         layer(cfg, "back", u) +
         `<img class="char-base ${cached ? "ready" : ""}" src="${cached || BLANK}" alt="" draggable="false">` +
         layer(cfg, "front", u) +
-        `<span class="char-fx">${fxFor(mood)}</span>` +
+        `<span class="char-fx">${fxFor(mood, cfg.type)}</span>` +
         `</span></span>`;
     },
     svg(cfg, mood) { return this.render(cfg, mood); },
@@ -492,10 +492,11 @@
   }
 
   // ---------- Emoties: effecten (de bewegingen staan in character.css) ----------
-  function fxFor(mood) {
+  function fxFor(mood, type) {
     const i = (n, fn) => Array.from({ length: n }, (_, k) => fn(k)).join("");
     switch (mood) {
-      case "happy": return i(4, (k) => `<i class="fx-heart" style="--d:${k * 0.45}s;--x:${(k - 1.5) * 16}px">❤</i>`);
+      case "happy": if (type !== "girl") return ""; // hartjes alleen bij meisjes
+        return i(4, (k) => `<i class="fx-heart" style="--d:${k * 0.45}s;--x:${(k - 1.5) * 16}px">❤</i>`);
       case "celebrate": return i(10, (k) => `<i class="fx-conf" style="--d:${(k % 5) * 0.18}s;--x:${(k - 4.5) * 17}px;--c:${["#ff5a6e", "#ffd23f", "#4aa3e8", "#58cc02", "#b06af0"][k % 5]}"></i>`) + `<i class="fx-spark" style="--d:0s">✨</i><i class="fx-spark" style="--d:.4s;left:70%">✨</i>`;
       case "thinking": return `<span class="fx-think">💭</span><b class="fx-q">?</b>`;
       case "encouraging": return `<span class="fx-pop">💪</span>`;

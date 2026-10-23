@@ -391,7 +391,7 @@
   const swatchOf = (id) => (Character.itemById(id) || {}).swatch || "#ddd";
 
   function renderCharacterCreator() {
-    const t = GT();
+    let t = GT();
     document.documentElement.dir = t.dir;
     let step = 0;
     const tones = window.CHARACTER.skinTones;
@@ -406,6 +406,9 @@
     };
 
     function renderStep() {
+      t = GT(); document.documentElement.dir = t.dir; // taal kan hier gewijzigd worden
+      const langPick = `<div class="g-profile-head cc-lang"><span></span><div class="g-lang-pick" role="group" aria-label="Taal · Language · اللغة">
+          ${[["ar", "ع"], ["nl", "NL"], ["en", "EN"], ["tr", "TR"]].map(([l, lab]) => `<button type="button" data-l="${l}" class="${glang() === l ? "sel" : ""}">${lab}</button>`).join("")}</div></div>`;
       const preview = `<div class="cc-preview cc-preview-big">${Character.svg(previewCfg(), step === 0 ? "wave" : "happy")}</div>`;
       let body = "";
       if (step === 0) {
@@ -438,11 +441,13 @@
         body = `<h2>${t.meetCharacter}</h2>`;
       }
       scr.charCreate.innerHTML = `
+        ${langPick}
         <div class="cc-wrap">
           ${preview}
           ${body}
           <button type="button" id="ccNext" class="g-cta" ${canAdvance() ? "" : "disabled"}>${isLastStep() ? t.charStart : t.charContinue} →</button>
         </div>`;
+      scr.charCreate.querySelectorAll(".g-lang-pick button").forEach((b) => (b.onclick = () => { store.set("lang", b.dataset.l); renderStep(); }));
       scr.charCreate.querySelectorAll(".cc-pick, .cc-swatch").forEach((b) => (b.onclick = () => {
         const v = b.dataset.v;
         if (step === 0) { choice.type = v; choice.outfit = null; choice.hijab = null; }
