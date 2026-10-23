@@ -36,8 +36,16 @@ td.actions { white-space: nowrap; text-align: right; } td.actions button { margi
 .slip { border: 1px dashed #999; border-radius: 8px; padding: 10px 12px; background: #fff; break-inside: avoid; }
 .slip b { display: block; font-size: 17px; } .slip .k { color: var(--muted); font-size: 12px; margin-top: 4px; } .slip .v { font-size: 17px; font-weight: 800; }
 .slip .site { font-size: 12px; margin-top: 6px; color: var(--muted); }
-@media (max-width: 600px) { td.actions { white-space: normal; } th:nth-child(3), td:nth-child(3) { display: none; } }
+@media (max-width: 600px) { td.actions { white-space: normal; }  }
 @media print {
   body { background: #fff; } #app > :not(.printable), .printable .noprint { display: none !important; }
   .printable { display: block !important; box-shadow: none; border: 0; } .slips { grid-template-columns: repeat(3, 1fr); }
 }
+
+/* Voortgangsoverzicht */
+.stats { display: flex; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+.stats > div { flex: 1; min-width: 120px; background: #fbf6e8; border-radius: 12px; padding: 10px 14px; }
+.stats b { display: block; font-size: 24px; } .stats span { color: var(--muted); font-size: 13px; }
+.bar { height: 7px; background: #eadfc4; border-radius: 99px; margin-top: 4px; overflow: hidden; min-width: 70px; } .bar i { display: block; height: 100%; background: var(--ok); border-radius: 99px; }
+.scroll { overflow-x: auto; } .small-t { font-size: 12px; } .stale { color: var(--bad); font-weight: 800; }
+.ar { font-family: "Amiri", "Noto Naskh Arabic", serif; font-size: 22px; line-height: 1; padding: 0 2px; }

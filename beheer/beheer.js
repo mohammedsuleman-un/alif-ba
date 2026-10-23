@@ -7,9 +7,10 @@
   const API = onDomain ? "https://api.alifbakids.nl" : "https://alif-ba-api.alif-ba-api.workers.dev";
   const APP_URL = onDomain ? "https://app.alifbakids.nl" : "https://mohammedsuleman-un.github.io/alif-ba/";
   const MAX_BULK = 40;
+  const WORLD1_LEVELS = 9, MINI_LEVELS = 8; // aantal niveaus in Wereld 1 en in de spelletjesroute
   const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
 
-  const S = { me: null, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", secret: null, msg: null, busy: false };
+  const S = { me: null, tab: "", orgId: "", orgs: [], staff: [], classes: [], students: [], classId: "", progClass: "", progress: [], secret: null, msg: null, busy: false };
 
   const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -40,7 +41,13 @@
     const q = S.classId ? `?class_id=${encodeURIComponent(S.classId)}` : orgQ();
     S.students = (await api("GET", "/students" + q)).students;
   }
+  async function loadProgress() {
+    if (isSuper() && !S.orgId) { S.progress = []; return; }
+    const q = S.progClass ? `?class_id=${encodeURIComponent(S.progClass)}` : orgQ();
+    S.progress = (await api("GET", "/students/progress" + q)).students;
+  }
   async function loadFor(tab) {
+    if (tab === "progress") { await loadClasses(); if (S.progClass && !S.classes.some((c) => c.id === S.progClass)) S.progClass = ""; return loadProgress(); }
     if (tab === "orgs") return loadOrgs();
     if (tab === "staff") return Promise.all([loadStaff(), loadClasses()]);
     if (tab === "classes") return Promise.all([loadClasses(), S.me.role === "teacher" ? Promise.resolve() : loadStaff()]);
@@ -49,9 +56,9 @@
 
   function tabsFor() {
     const r = S.me.role, t = [];
-    if (r === "superadmin") { t.push(["orgs", "Organisaties"]); if (S.orgId) t.push(["staff", "Beheerders en docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]); }
-    else if (r === "org_admin") t.push(["staff", "Docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]);
-    else t.push(["classes", "Klassen"], ["students", "Leerlingen"]);
+    if (r === "superadmin") { t.push(["orgs", "Organisaties"]); if (S.orgId) t.push(["progress", "Voortgang"], ["staff", "Beheerders en docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]); }
+    else if (r === "org_admin") t.push(["progress", "Voortgang"], ["staff", "Docenten"], ["classes", "Klassen"], ["students", "Leerlingen"]);
+    else t.push(["progress", "Voortgang"], ["classes", "Klassen"], ["students", "Leerlingen"]);
     return t;
   }
 
@@ -139,6 +146,40 @@
         <p><button type="submit" ${none || S.busy ? "disabled" : ""}>${S.busy ? "Bezig..." : "Accounts maken"}</button></p></form>`;
   }
 
+  // "vandaag", "gisteren", "5 dagen geleden", "nog nooit"
+  function ago(iso) {
+    if (!iso) return null;
+    const t = Date.parse(String(iso).includes("T") ? iso : String(iso).replace(" ", "T") + "Z");
+    if (!Number.isFinite(t)) return null;
+    const d = Math.floor((Date.now() - t) / 86400000);
+    return { days: d, text: d <= 0 ? "vandaag" : d === 1 ? "gisteren" : d < 31 ? `${d} dagen geleden` : `${Math.floor(d / 30)} maand${Math.floor(d / 30) === 1 ? "" : "en"} geleden` };
+  }
+  // Laatste teken van leven: speelactiviteit uit de voortgang, anders het inlogmoment.
+  const lastSeen = (s) => ago((s.progress && s.progress.last_activity) || s.last_login_at);
+
+  function panelProgress() {
+    const list = S.progress;
+    const withData = list.filter((s) => s.progress);
+    const active7 = list.filter((s) => { const a = lastSeen(s); return a && a.days <= 7; }).length;
+    const avg = withData.length ? (withData.reduce((n, s) => n + (s.progress.worlds.letter_oasis || 0), 0) / withData.length) : 0;
+    const rows = list.map((s) => {
+      const p = s.progress, a = lastSeen(s), done = p ? (p.worlds.letter_oasis || 0) : 0;
+      const bar = `<div class="bar" title="${done} van ${WORLD1_LEVELS}"><i style="width:${Math.round((done / WORLD1_LEVELS) * 100)}%"></i></div>`;
+      const weak = p && p.weak_letters.length ? p.weak_letters.map((l) => `<span class="ar" lang="ar" dir="rtl">${esc(l)}</span>`).join(" ") : (p && p.practiced_letters ? `<span class="muted">geen</span>` : `<span class="muted">-</span>`);
+      return `<tr><td><b>${esc(s.display_name)}</b>${s.disabled ? ` <span class="tag off">uit</span>` : ""}<div class="muted small-t mono">${esc(s.username)}</div></td>
+        <td>${p ? `${done} / ${WORLD1_LEVELS}${bar}` : `<span class="muted">nog niet gespeeld</span>`}</td>
+        <td>${p ? `${p.stars} ★` : ""}</td><td>${p ? `${p.mini_done} / ${MINI_LEVELS}` : ""}</td><td>${p ? `${p.coins}` : ""}</td>
+        <td>${a ? `<span class="${a.days > 7 ? "stale" : ""}">${esc(a.text)}</span>` : `<span class="muted">nog nooit</span>`}</td><td>${weak}</td></tr>`;
+    }).join("");
+    return `<div class="card"><div class="row"><h2 style="margin:0">Voortgang</h2>
+        <div class="right"><label>Klas</label><select data-change="progclass"><option value="">Alle klassen</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.progClass ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select></div>
+        <button class="ghost small" data-act="progcsv" ${list.length ? "" : "disabled"}>Download CSV</button></div>
+      <div class="stats"><div><b>${list.length}</b><span>leerlingen</span></div><div><b>${active7}</b><span>actief afgelopen 7 dagen</span></div><div><b>${avg.toFixed(1)}</b><span>gemiddeld niveau van ${WORLD1_LEVELS}</span></div></div>
+      <div class="scroll"><table><tr><th>Leerling</th><th>Wereld 1</th><th>Sterren</th><th>Spellen</th><th>Munten</th><th>Laatst actief</th><th>Aandacht voor</th></tr>
+        ${rows || `<tr><td colspan="7" class="muted">Nog geen leerlingen. Voeg ze toe bij het tabblad Leerlingen.</td></tr>`}</table></div>
+      <p class="muted small-t">De voortgang komt binnen zodra het kind is ingelogd en speelt (een paar seconden na elke wijziging). <b>Aandacht voor</b> toont letters die het kind vaker fout dan goed heeft.</p></div>`;
+  }
+
   function panelSecret() {
     if (!S.secret) return "";
     const slips = S.secret.rows.map((r) => `<div class="slip"><b>${esc(r.name)}</b>
@@ -155,7 +196,7 @@
     if (!S.me) return viewLogin();
     const tabs = tabsFor().map(([k, l]) => `<button class="tab ${S.tab === k ? "sel" : ""}" data-act="tab" data-tab="${k}">${esc(l)}</button>`).join("");
     const orgName = isSuper() && S.orgId ? (S.orgs.find((o) => o.id === S.orgId) || {}).name : "";
-    const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents }[S.tab];
+    const panel = { orgs: panelOrgs, staff: panelStaff, classes: panelClasses, students: panelStudents, progress: panelProgress }[S.tab];
     $app.innerHTML = `<div class="top"><h1>Alif Ba beheer</h1>${orgName ? `<span class="tag">${esc(orgName)}</span>` : ""}<span class="grow"></span>
         <span class="who">${esc(S.me.display_name)} · ${esc(ROLE_NL[S.me.role])}</span>
         <button class="ghost small" data-act="chpw">Wachtwoord wijzigen</button><button class="ghost small" data-act="logout">Uitloggen</button></div>
@@ -193,6 +234,14 @@
       const a = document.createElement("a"); a.href = url; a.download = "accounts.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
     },
     closesecret: () => { S.secret = null; render(); },
+    progcsv: () => {
+      const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const head = ["Naam", "Gebruikersnaam", "Niveaus Wereld 1", "Sterren", "Spelniveaus", "Munten", "Laatst actief", "Aandacht voor letters"];
+      const lines = [head.map(q).join(";"), ...S.progress.map((s) => { const p = s.progress, a = lastSeen(s);
+        return [s.display_name, s.username, p ? p.worlds.letter_oasis || 0 : "", p ? p.stars : "", p ? p.mini_done : "", p ? p.coins : "", a ? a.text : "nog nooit", p ? p.weak_letters.join(" ") : ""].map(q).join(";"); })];
+      const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
+      const a = document.createElement("a"); a.href = url; a.download = "voortgang.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+    },
   };
 
   const forms = {
@@ -243,6 +292,7 @@
   });
   $app.addEventListener("change", async (e) => {
     if (e.target.dataset.change === "class") { S.classId = e.target.value; await guard(async () => { await loadStudents(); render(); }); }
+    if (e.target.dataset.change === "progclass") { S.progClass = e.target.value; await guard(async () => { await loadProgress(); render(); }); }
   });
 
   // ---------- starten ----------
