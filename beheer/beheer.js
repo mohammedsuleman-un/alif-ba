@@ -108,7 +108,7 @@
   function panelStaff() {
     const rows = S.staff.map((u) => `<tr><td>${esc(u.display_name)}</td><td>${esc(u.username)}</td><td><span class="tag">${esc(ROLE_NL[u.role] || u.role)}</span>${Number(u.org_count) > 1 ? ` <span class="tag" title="Hoort bij meerdere organisaties">${Number(u.org_count)} organisaties</span>` : ""}</td>
       <td>${Number(u.disabled) ? `<span class="tag off">uit</span>` : ""}</td>
-      <td class="actions"><button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? "Aanzetten" : "Uitzetten"}</button></td></tr>`).join("");
+      <td class="actions"><button class="small ghost" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}">Nieuw wachtwoord</button> <button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? "Aanzetten" : "Uitzetten"}</button></td></tr>`).join("");
     return `<div class="card"><h2>Beheerders en docenten</h2>
       <table><tr><th>Naam</th><th>E-mail</th><th>Rol</th><th></th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Nog niemand.</td></tr>`}</table></div>
       <form class="card" data-form="staff"><h2>Nieuw account</h2><div class="row">
@@ -205,7 +205,7 @@
       <div class="k">Wachtwoord</div><div class="v mono">${esc(r.password)}</div>
       <div class="site">${esc(S.secret.site)}</div></div>`).join("");
     return `<div class="card secret printable"><h2>${esc(S.secret.title)}</h2>
-      <div class="msg warn noprint">${S.secret.stored ? "Dit zijn de bewaarde inloggegevens van de klas. Laat ze niet rondslingeren: print ze en bewaar ze veilig." : "Bewaar of druk dit nu af. Voor accounts van volwassenen wordt het wachtwoord hierna <b>nooit meer</b> getoond (je kunt wel een nieuw wachtwoord laten maken)."}${S.secret.missing ? ` <b>${S.secret.missing} leerling(en) staan er niet bij</b>: hun wachtwoord is niet bewaard. Maak voor hen een nieuw wachtwoord.` : ""}</div>
+      ${S.secret.mailed ? `<div class="msg ok noprint">Er is ook een mail met deze inloggegevens verstuurd${S.secret.mailTo ? ` naar ${esc(S.secret.mailTo)}` : ""}.</div>` : ""}<div class="msg warn noprint">${S.secret.stored ? "Dit zijn de bewaarde inloggegevens van de klas. Laat ze niet rondslingeren: print ze en bewaar ze veilig." : "Bewaar of druk dit nu af. Voor accounts van volwassenen wordt het wachtwoord hierna <b>nooit meer</b> getoond (je kunt wel een nieuw wachtwoord laten maken)."}${S.secret.missing ? ` <b>${S.secret.missing} leerling(en) staan er niet bij</b>: hun wachtwoord is niet bewaard. Maak voor hen een nieuw wachtwoord.` : ""}</div>
       <p class="noprint"><button data-act="print">Afdrukken</button> <button class="ghost" data-act="csv">Download CSV</button> <button class="ghost right" data-act="closesecret">Sluiten</button></p>
       <div class="slips">${slips}</div></div>`;
   }
@@ -237,6 +237,12 @@
     chpw: () => viewChangePassword(false),
     logout: async () => { try { await api("POST", "/auth/logout", {}); } catch { /* maakt niet uit */ } S.me = null; S.secret = null; viewLogin(); },
     openorg: async ({ id }) => { S.orgId = id; S.classId = ""; S.secret = null; await go("staff"); },
+    staffreset: ({ id, name }) => guard(async () => {
+      if (!confirm(`Nieuw startwachtwoord maken voor ${name}? Het oude wachtwoord werkt dan niet meer en de persoon wordt overal uitgelogd.`)) return;
+      const r = await api("POST", `/users/${id}/reset-password`, {});
+      S.secret = { title: `Nieuw startwachtwoord voor ${name}`, userLabel: "Inloggen met e-mailadres", site: location.origin + location.pathname, rows: [{ name, username: r.username, password: r.password }], mailed: r.mailed };
+      flash(null); render(); window.scrollTo(0, 0);
+    }),
     staffoff: ({ id, off }) => guard(async () => { await api("POST", `/users/${id}/disable`, { disabled: off === "1" }); flash(off === "1" ? "Account uitgezet." : "Account aangezet."); await loadStaff(); render(); }),
     reset: ({ id, name }) => guard(async () => {
       if (!confirm(`Nieuw wachtwoord maken voor ${name}? Het oude wachtwoord werkt dan niet meer.`)) return;
@@ -292,7 +298,7 @@
     org: (f) => async () => { await api("POST", "/orgs", { name: f.name.value, code: f.code.value }); flash("Organisatie aangemaakt."); await loadOrgs(); render(); },
     staff: (f) => async () => {
       const r = await api("POST", "/users", { role: f.role.value, name: f.name.value, email: f.email.value, ...(isSuper() ? { org_id: S.orgId } : {}) });
-      S.secret = { title: `Account aangemaakt voor ${r.user.display_name}`, userLabel: "Inloggen met e-mailadres", site: location.origin + location.pathname, rows: [{ name: r.user.display_name, username: r.user.username, password: r.password }] };
+      S.secret = { title: `Account aangemaakt voor ${r.user.display_name}`, userLabel: "Inloggen met e-mailadres", site: location.origin + location.pathname, rows: [{ name: r.user.display_name, username: r.user.username, password: r.password }], mailed: r.mailed, mailTo: r.user.username };
       flash(null); await loadStaff(); render(); window.scrollTo(0, 0);
     },
     class: (f) => async () => { await api("POST", "/classes", { name: f.name.value, ...(isSuper() ? { org_id: S.orgId } : {}) }); flash("Klas aangemaakt."); await loadClasses(); render(); },
