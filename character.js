@@ -40,7 +40,7 @@
       src: "assets/characters/girl/idle/default.png", bb: [312, 20, 994, 1210],
       skin: [[650, 250, 135, 170], [355, 690, 75, 65], [960, 690, 65, 60], [540, 1095, 55, 50], [695, 1115, 50, 45]],
       fx: { hx: 50, hy: 19, rx: 95, ry: 56 },
-      a: { H: 1745, hat: [450, 70], hatW: 420, eyeL: [408, 337], eyeR: [583, 300], eyeSep: 183, tilt: -13, neck: [555, 805], chest: [575, 905], handL: [63, 984], handR: [950, 984], back: [500, 900], petX: 835 },
+      a: { H: 1745, hat: [450, 70], hatW: 420, eyeL: [408, 337], eyeR: [583, 300], eyeSep: 183, tilt: -13, neck: [510, 700], chest: [560, 905], handL: [63, 984], handR: [950, 984], back: [500, 900], petX: 835 },
     },
     boy: {
       src: "assets/characters/boy/idle/default.png", bb: [170, 36, 946, 1496],
@@ -367,7 +367,7 @@
     },
     bowtie(A, u) {
       const [x, y] = A.neck;
-      return `<defs>${grad(u + "b", "#ff5a6e", "#c9243c")}</defs><g transform="translate(${x} ${y + 55}) rotate(${A.tilt * 0.3})">
+      return `<defs>${grad(u + "b", "#ff5a6e", "#c9243c")}</defs><g transform="translate(${x} ${y + 25}) rotate(${A.tilt * 0.3})">
         <path d="M0 0 L-105 -52 Q-120 0 -105 52Z" fill="url(#${u}b)" stroke="#8a1626" stroke-width="6" stroke-linejoin="round"/>
         <path d="M0 0 L105 -52 Q120 0 105 52Z" fill="url(#${u}b)" stroke="#8a1626" stroke-width="6" stroke-linejoin="round"/>
         <rect x="-24" y="-30" width="48" height="60" rx="14" fill="#e03a52" stroke="#8a1626" stroke-width="6"/>
@@ -384,9 +384,9 @@
     medal(A, u) {
       const [x, y] = A.neck, [, cy] = A.chest;
       return `<defs>${grad(u + "m", "#ffe27a", "#e0a01a")}</defs><g transform="translate(${x} 0)">
-        <path d="M-80 ${y + 20} L-20 ${cy + 70} L40 ${cy + 70} L-22 ${y + 20}Z" fill="#e5304a"/><path d="M80 ${y + 20} L20 ${cy + 70} L-40 ${cy + 70} L22 ${y + 20}Z" fill="#fff" stroke="#e5304a" stroke-width="4"/>
-        <circle cx="0" cy="${cy + 120}" r="72" fill="url(#${u}m)" stroke="#a8730d" stroke-width="8"/><circle cx="0" cy="${cy + 120}" r="52" fill="none" stroke="#fff3b0" stroke-width="6"/>
-        ${star(0, cy + 120, 40, "#fff8d6", "#c98200")}</g>`;
+        <path d="M-80 ${y + 20} L-20 ${cy - 35} L40 ${cy - 35} L-22 ${y + 20}Z" fill="#e5304a"/><path d="M80 ${y + 20} L20 ${cy - 35} L-40 ${cy - 35} L22 ${y + 20}Z" fill="#fff" stroke="#e5304a" stroke-width="4"/>
+        <circle cx="0" cy="${cy + 25}" r="72" fill="url(#${u}m)" stroke="#a8730d" stroke-width="8"/><circle cx="0" cy="${cy + 25}" r="52" fill="none" stroke="#fff3b0" stroke-width="6"/>
+        ${star(0, cy + 25, 40, "#fff8d6", "#c98200")}</g>`;
     },
     balloon(A, u) {
       const [x, y] = A.handR;
