@@ -105,12 +105,36 @@
         <button type="submit">Aanmaken</button></div></form>`;
   }
 
+  // Status van een docent/beheerder: uitgezet, uitgenodigd (nog nooit ingelogd), wachtwoord nog te kiezen, of actief.
+  function staffStatus(u) {
+    if (u.disabled) return { key: "off", text: "Uitgezet", cls: "off" };
+    if (!u.last_login_at) return { key: "invited", text: "Uitgenodigd, nog niet ingelogd", cls: "warn" };
+    if (u.must_change_password) return { key: "pw", text: "Moet nog een eigen wachtwoord kiezen", cls: "warn" };
+    return { key: "active", text: "Actief", cls: "ok" };
+  }
+  const MAIL_TXT = { sent: "Mail verstuurd", failed: "Mail mislukt", none: "Geen mail verstuurd" };
+  function dateNl(iso) {
+    const t = Date.parse(String(iso).includes("T") ? iso : String(iso).replace(" ", "T") + "Z");
+    return Number.isFinite(t) ? new Date(t).toLocaleDateString("nl-NL", { day: "numeric", month: "short" }) + " " + new Date(t).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" }) : "";
+  }
+
   function panelStaff() {
-    const rows = S.staff.map((u) => `<tr><td>${esc(u.display_name)}</td><td>${esc(u.username)}</td><td><span class="tag">${esc(ROLE_NL[u.role] || u.role)}</span>${Number(u.org_count) > 1 ? ` <span class="tag" title="Hoort bij meerdere organisaties">${Number(u.org_count)} organisaties</span>` : ""}</td>
-      <td>${Number(u.disabled) ? `<span class="tag off">uit</span>` : ""}</td>
-      <td class="actions"><button class="small ghost" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}">Nieuw wachtwoord</button> <button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? "Aanzetten" : "Uitzetten"}</button></td></tr>`).join("");
+    const canResend = (u) => isSuper() || (S.me.role === "org_admin" && u.role === "teacher");
+    const rows = S.staff.map((u) => {
+      const st = staffStatus(u);
+      const pending = st.key === "invited" || st.key === "pw";
+      const mail = u.invite_sent_at ? `<div class="muted small-t">${esc(MAIL_TXT[u.invite_status] || "Verstuurd")} · ${esc(dateNl(u.invite_sent_at))}</div>` : "";
+      const seen = u.last_login_at ? `<div class="muted small-t">Laatst ingelogd ${esc(String(u.last_login_at).slice(0, 10))}</div>` : "";
+      return `<tr><td><b>${esc(u.display_name)}</b><div class="muted small-t">${esc(u.username)}</div></td>
+      <td><span class="tag">${esc(ROLE_NL[u.role] || u.role)}</span>${Number(u.org_count) > 1 ? ` <span class="tag" title="Hoort bij meerdere organisaties">${Number(u.org_count)} organisaties</span>` : ""}</td>
+      <td><span class="status ${st.cls}">${esc(st.text)}</span>${pending ? mail : seen}</td>
+      <td class="actions">${pending && canResend(u) ? `<button class="small" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}" data-resend="1">Opnieuw sturen</button> ` : canResend(u) ? `<button class="small ghost" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}">Nieuw wachtwoord</button> ` : ""}<button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? "Aanzetten" : "Uitzetten"}</button></td></tr>`;
+    }).join("");
+    const counts = { invited: 0, pw: 0, active: 0 };
+    S.staff.forEach((u) => { const k = staffStatus(u).key; if (counts[k] !== undefined) counts[k]++; });
     return `<div class="card"><h2>Beheerders en docenten</h2>
-      <table><tr><th>Naam</th><th>E-mail</th><th>Rol</th><th></th><th></th></tr>${rows || `<tr><td colspan="5" class="muted">Nog niemand.</td></tr>`}</table></div>
+      <div class="stats"><div><b>${counts.active}</b><span>actief</span></div><div><b>${counts.invited + counts.pw}</b><span>nog niet actief</span></div></div>
+      <div class="scroll"><table><tr><th>Naam</th><th>Rol</th><th>Status</th><th></th></tr>${rows || `<tr><td colspan="4" class="muted">Nog niemand.</td></tr>`}</table></div></div>
       <form class="card" data-form="staff"><h2>Nieuw account</h2><div class="row">
         <div><label>Naam</label><input name="name" required maxlength="120"></div>
         <div><label>E-mailadres</label><input name="email" type="email" required></div>
@@ -237,11 +261,11 @@
     chpw: () => viewChangePassword(false),
     logout: async () => { try { await api("POST", "/auth/logout", {}); } catch { /* maakt niet uit */ } S.me = null; S.secret = null; viewLogin(); },
     openorg: async ({ id }) => { S.orgId = id; S.classId = ""; S.secret = null; await go("staff"); },
-    staffreset: ({ id, name }) => guard(async () => {
-      if (!confirm(`Nieuw startwachtwoord maken voor ${name}? Het oude wachtwoord werkt dan niet meer en de persoon wordt overal uitgelogd.`)) return;
+    staffreset: ({ id, name, resend }) => guard(async () => {
+      if (!confirm(resend ? `Inloggegevens opnieuw sturen naar ${name}? Er wordt een nieuw startwachtwoord gemaakt en gemaild; het vorige werkt dan niet meer.` : `Nieuw startwachtwoord maken voor ${name}? Het oude wachtwoord werkt dan niet meer en de persoon wordt overal uitgelogd.`)) return;
       const r = await api("POST", `/users/${id}/reset-password`, {});
       S.secret = { title: `Nieuw startwachtwoord voor ${name}`, userLabel: "Inloggen met e-mailadres", site: location.origin + location.pathname, rows: [{ name, username: r.username, password: r.password }], mailed: r.mailed };
-      flash(null); render(); window.scrollTo(0, 0);
+      await loadStaff(); flash(null); render(); window.scrollTo(0, 0);
     }),
     staffoff: ({ id, off }) => guard(async () => { await api("POST", `/users/${id}/disable`, { disabled: off === "1" }); flash(off === "1" ? "Account uitgezet." : "Account aangezet."); await loadStaff(); render(); }),
     reset: ({ id, name }) => guard(async () => {

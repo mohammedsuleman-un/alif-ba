@@ -74,3 +74,7 @@ body.auth .login button[type="submit"]:active { transform: translateY(2px); box-
 body.auth .login .row-btns { display: flex; gap: 10px; }
 @keyframes loginIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { body.auth .login { animation: none; } }
+
+/* Status van docenten */
+.status { display: inline-block; font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: #f1e7ce; }
+.status.ok { background: #e1f3e6; color: var(--ok); } .status.warn { background: #fff0c9; color: #7a5a00; } .status.off { background: #fdeceb; color: var(--bad); }
