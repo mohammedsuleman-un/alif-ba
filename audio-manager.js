@@ -178,4 +178,18 @@
   };
 
   window.AudioManager = AudioManager;
+
+  // ---- Achtergrond: alles stilzetten zodra de app wegvalt (app gesloten/weggeswiped, tab verborgen, scherm uit) ----
+  // Anders blijft een uitspraak of jingle doorspelen terwijl het kind al weg is.
+  const ctxs = [];
+  const NativeAC = window.AudioContext || window.webkitAudioContext;
+  if (NativeAC) {
+    const Wrapped = function (...args) { const c = new NativeAC(...args); ctxs.push(c); return c; };
+    Wrapped.prototype = NativeAC.prototype;
+    window.AudioContext = Wrapped; if (window.webkitAudioContext) window.webkitAudioContext = Wrapped;
+  }
+  const silence = () => { AudioManager.stop(); ctxs.forEach((c) => { try { c.suspend(); } catch {} }); };
+  const wake = () => ctxs.forEach((c) => { try { c.resume(); } catch {} });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) silence(); else wake(); });
+  window.addEventListener("pagehide", silence);
 })();
