@@ -42,6 +42,18 @@
     return LANGS.includes(l) ? l : "nl";
   }
 
+  // Arabisch is mannelijk/vrouwelijk ("luister" = اِسْتَمِعْ / اِسْتَمِعِي). Een meisjespersonage hoort de meisjesopname
+  // (audio/instructions/ar-f/<id>.mp3, tekst in `arF`); bestaat die niet, dan valt het terug op de jongensopname.
+  function isGirlAr() {
+    if (currentLang() !== "ar") return false;
+    const pid = store.get("gp_active", null);
+    return !!pid && (store.get(`gp_avatar_${pid}`, {}) || {}).type === "girl";
+  }
+  function instrSources(id) {
+    const lang = currentLang(), base = `${INSTR_DIR}${lang}/${id}.mp3`;
+    return isGirlAr() ? [`${INSTR_DIR}ar-f/${id}.mp3`, base] : [base];
+  }
+
   // Eén gedeeld <audio>-element: nooit twee dingen tegelijk, en een nieuwe
   // aanroep breekt de vorige meteen af (zie uitleg hierboven).
   const player = new Audio();
@@ -122,7 +134,7 @@
         if (DEV) console.warn("[audio] onbekend instructie-ID in voice-manifest.js:", id);
         return Promise.resolve(false);
       }
-      return playNow([`${INSTR_DIR}${currentLang()}/${id}.mp3`]);
+      return playNow(instrSources(id));
     },
 
     // Eenmalige uitleg per kind (bv. hoe een spel werkt): speelt alleen de eerste keer en onthoudt dat pas als het
@@ -130,7 +142,7 @@
     // Resolve false = onderbroken.
     playOnce(id) {
       const entry = VOICE.instructions[id];
-      if (!settings.voiceOn || !entry || !entry[currentLang()]) return Promise.resolve(true);
+      if (!settings.voiceOn || !entry || !(isGirlAr() ? (entry.arF || entry.ar) : entry[currentLang()])) return Promise.resolve(true);
       const key = `gp_voice_seen_${store.get("gp_active", "x")}`, seen = store.get(key, []);
       if (seen.includes(id)) return Promise.resolve(true);
       return this.playInstruction(id).then((ok) => { if (ok) store.set(key, [...store.get(key, []), id]); return ok; });
@@ -184,7 +196,7 @@
         if (!VOICE.instructions[id]) return;
         const a = new Audio();
         a.preload = "auto";
-        a.src = `${INSTR_DIR}${currentLang()}/${id}.mp3`;
+        a.src = instrSources(id)[0];
       });
     },
   };
