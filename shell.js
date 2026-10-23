@@ -168,7 +168,7 @@
     const totalStars = Object.values(state.levels || {}).reduce((s, l) => s + (l.stars || 0), 0);
     const stop = nextStop(state);
     const worldLabel = gsub(stop.world.title);
-    const href = stop.level ? `#/spel/level/${stop.world.id}/${stop.level.n}` : `#/spel/wereld/${stop.world.id}`;
+    const href = "#/spel/kaart?intro";
     const doneInWorld = stop.world.levels.filter((l) => state.levels && state.levels[levelKey(stop.world, l)]).length;
     const pct = Math.round((doneInWorld / stop.world.levels.length) * 100);
     const charCfg = window.Character && window.Character.getConfig(p.id);
@@ -297,7 +297,7 @@
 
   // ---------- Onderste navigatie ----------
   const NAV_ITEMS = [
-    { key: "leren", icon: "🗺️", href: "#/spel" },
+    { key: "leren", icon: "🗺️", href: "#/spel/kaart?intro" },
     { key: "boek", icon: "📖", href: "#/boek" },
     { key: "beloningen", icon: "🏆", href: "#/beloningen" },
     { key: "profiel", icon: "👤", href: "#/profiel" },
