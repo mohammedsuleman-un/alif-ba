@@ -334,7 +334,7 @@
     const listEl = $("gProfileList");
     list.forEach((p) => {
       const b = el("button", "g-profile-card", `<span class="g-avatar">${p.avatar}</span><span class="g-pname">${p.name}</span>`);
-      b.onclick = () => { profiles.setActive(p.id); loadActive(); gohash("#/spel/wereld/letter_oasis"); };
+      b.onclick = () => { profiles.setActive(p.id); loadActive(); gohash("#/spel/kaart?intro"); };
       listEl.appendChild(b);
     });
     scr.profile.querySelectorAll(".g-lang-pick button").forEach((b) => (b.onclick = () => {
@@ -352,7 +352,7 @@
       if (!name) { $("gNewName").focus(); return; }
       profiles.create(name, chosenAvatar);
       loadActive();
-      gohash("#/spel/wereld/letter_oasis");
+      gohash("#/spel/kaart?intro");
     };
   }
 
@@ -445,7 +445,7 @@
     }
     function finish() {
       Character.createConfig(activeProfile.id, choice.type, choice);
-      gohash("#/spel/wereld/letter_oasis");
+      gohash("#/spel/kaart?intro");
     }
     renderStep();
   }
@@ -1308,6 +1308,22 @@
     }));
     const hereEl = scr.overview.querySelector(".ov-node.is-here");
     const sc = $("ovScroll"); if (hereEl && sc) setTimeout(() => { sc.scrollLeft = hereEl.offsetLeft - sc.clientWidth / 2; }, 30);
+    // Start van een sessie: eerst de totale kaart, dan inzoomen op de wereld waar het kind is en die openen.
+    if (location.hash.indexOf("intro") > -1) {
+      const info = infos[here], sc2 = $("ovScroll"), scene = scr.overview.querySelector(".ov-scene");
+      const dest = `#/spel/wereld/${chapterTarget(info.status === "soon" ? (infos.find((c) => c.status === "open") || infos[0]) : info)}`;
+      const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const go = () => location.replace(dest);
+      if (!scene || reduce) { setTimeout(go, 600); return; }
+      sc2.style.overflow = "hidden";
+      setTimeout(() => {
+        scene.style.transformOrigin = `${info.ch.pos.x * 100}% ${info.ch.pos.y * 100}%`;
+        scene.style.transition = "transform 1.3s cubic-bezier(.65,0,.35,1), opacity .35s ease 1.05s";
+        scene.style.transform = "scale(4.2)";
+        scene.style.opacity = "0.15";
+        setTimeout(go, 1450);
+      }, 900);
+    }
   }
 
   // ---------- Niveau-keuze: per wereld-niveau het leerquizje + de spellen met precies deze letters ----------
