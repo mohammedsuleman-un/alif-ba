@@ -62,6 +62,7 @@
   function teardown() {
     active = false; epoch++;
     window.removeEventListener("keydown", onKey);
+    window.removeEventListener("resize", layoutScene);
     document.documentElement.classList.remove("gamestage-active");
     const section = $("gamestage");
     if (section && section.dataset.owner === "bridge") { section.hidden = true; section.innerHTML = ""; delete section.dataset.owner; }
@@ -80,6 +81,7 @@
     missions = buildMissions(); missionIdx = 0; solved = [];
     renderChrome();
     window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", layoutScene);
     startMission();
   }
 
@@ -96,9 +98,12 @@
           <div class="chase-dots" id="brDots"></div>
         </header>
         <div class="chase-field br-field" id="brField">
-          <div class="br-scene">
+          <div class="br-scene" id="brScene">
+            <div class="br-waves" aria-hidden="true"></div>
+            <div class="br-bank br-bank-r" id="brBankR" aria-hidden="true"><span class="br-deco">🌴</span></div>
+            <div class="br-bank br-bank-l" id="brBankL" aria-hidden="true"><span class="br-deco">🌷</span></div>
             <div class="br-row" id="brRow" dir="rtl"></div>
-            <div class="br-explorer" id="brExplorer">🧒</div>
+            <div class="br-explorer" id="brExplorer"></div>
           </div>
           <div class="br-tray" id="brTray" dir="rtl"></div>
           <button id="brCross" class="chase-cta chase-cta-primary br-cross" disabled>${tt.cross} ➜</button>
@@ -135,8 +140,8 @@
     slots = m.seq.map((l, i) => (m.gaps.includes(i) ? null : l));
     tray = m.tray.map((l, i) => ({ id: i, letter: l, used: false }));
     $("brHelp").classList.remove("is-used");
-    const ex = $("brExplorer"); ex.className = "br-explorer"; ex.style.opacity = 0;
     render();
+    resetExplorer();
     // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).
     if (missionIdx === 0) { const idx = missionIdx; window.AudioManager.playOnce("bridge-how").then((ok) => { if (ok !== false && active && missionIdx === idx) playMissionAudio(); }); } else playMissionAudio();
   }
@@ -153,6 +158,69 @@
     row.querySelectorAll(".br-placed").forEach((b) => { b.onclick = () => removePlank(+b.dataset.i); });
     trayEl.querySelectorAll(".br-tray-plank:not(.is-used)").forEach((b) => bindDrag(b, +b.dataset.id));
     $("brCross").disabled = busy || slots.some((v, i) => m.gaps.includes(i) && !v);
+    layoutScene();
+  }
+
+  // ---------- Scène: water, oevers, personage en haai ----------
+  const heroCfg = () => { try { return window.Character && Character.getConfig ? Character.getConfig(profileId) : null; } catch { return null; } };
+  function heroHtml(mood) {
+    const cfg = heroCfg();
+    return cfg ? `<div class="br-hero">${Character.svg(cfg, mood)}</div>` : `<div class="br-hero br-hero-emoji">🧒</div>`;
+  }
+  const setMood = (mood) => { const ex = $("brExplorer"); if (ex) ex.innerHTML = heroHtml(mood); };
+  let geo = null; // { water, top, startX, startY, endX, endY }: water = hoogte van het wateroppervlak, start = oever rechts, end = oever links
+  function layoutScene() {
+    const scene = $("brScene"), row = $("brRow"); if (!scene || !row) return;
+    const sr = scene.getBoundingClientRect(), rr = row.getBoundingClientRect();
+    if (!sr.width || !rr.width) return;
+    const plank = row.querySelector(".br-plank"), pr = plank ? plank.getBoundingClientRect() : rr;
+    const top = pr.top - sr.top, water = rr.bottom - sr.top + 46;
+    const left = rr.left - sr.left, right = sr.right - rr.right;
+    scene.style.setProperty("--water", Math.round(water) + "px");
+    scene.style.setProperty("--bank-top", Math.round(top + 4) + "px");
+    scene.style.setProperty("--bank-wl", Math.max(44, Math.round(left + 22)) + "px");
+    scene.style.setProperty("--bank-wr", Math.max(44, Math.round(right + 22)) + "px");
+    geo = {
+      water, top,
+      startX: Math.min(sr.width - 26, rr.right - sr.left + Math.max(30, right / 2)), startY: top + 2,
+      endX: Math.max(26, left - Math.max(30, left / 2)), endY: top + 2,
+    };
+    const ex = $("brExplorer");
+    if (ex && !busy && !ex.classList.contains("is-grabbed")) standAt(geo.startX, geo.startY);
+  }
+  function standAt(x, y) { const ex = $("brExplorer"); if (ex) { ex.style.left = x + "px"; ex.style.top = y + "px"; } }
+  function resetExplorer() {
+    const ex = $("brExplorer"); if (!ex) return;
+    layoutScene();
+    ex.className = "br-explorer";
+    ex.style.transition = "none"; ex.style.opacity = 1; setMood("idle");
+    if (geo) standAt(geo.startX, geo.startY);
+    requestAnimationFrame(() => { ex.style.transition = ""; });
+  }
+  const SHARK_SVG = `<svg viewBox="0 0 170 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs><linearGradient id="brSh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f93b3"/><stop offset="1" stop-color="#4a6f90"/></linearGradient></defs>
+    <path d="M10 62 Q40 18 98 24 Q132 28 160 58 L132 56 Q118 82 70 84 Q30 86 10 62Z" fill="url(#brSh)" stroke="#34506b" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M84 24 L98 -2 L112 26Z" fill="#5a7f9f" stroke="#34506b" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M12 62 Q40 80 70 84 Q118 82 132 56 Q80 70 12 62Z" fill="#eaf4fa"/>
+    <path d="M12 62 Q46 70 92 62" fill="#fff" stroke="#34506b" stroke-width="3"/>
+    <path d="M22 60 L30 66 L38 61 L46 67 L54 62 L62 67 L70 62 L78 66 L86 62" fill="#fff" stroke="#34506b" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle cx="48" cy="44" r="7" fill="#fff" stroke="#34506b" stroke-width="2.5"/><circle cx="50" cy="45" r="3.2" fill="#1b2a38"/>
+    <path d="M150 58 L168 34 L168 80 L142 62Z" fill="#5a7f9f" stroke="#34506b" stroke-width="3" stroke-linejoin="round"/></svg>`;
+  // Een verkeerde plank: de haai springt uit het water, pakt het personage en ze vallen met een plons terug in het water.
+  async function sharkAttack(plank) {
+    const scene = $("brScene"), ex = $("brExplorer"); if (!scene || !ex || !geo) return;
+    const sr = scene.getBoundingClientRect(), pr = plank.getBoundingClientRect();
+    const x = pr.left - sr.left + pr.width / 2, exY = pr.top - sr.top - 1;
+    const rise = Math.max(60, geo.water - exY + 20), fall = Math.max(60, geo.water - exY + 24);
+    const shark = document.createElement("div"); shark.className = "br-shark"; shark.innerHTML = SHARK_SVG;
+    shark.style.left = x + "px"; shark.style.top = geo.water + "px"; shark.style.setProperty("--rise", rise + "px");
+    const splash = document.createElement("div"); splash.className = "br-splash"; splash.style.left = x + "px"; splash.style.top = geo.water + "px";
+    splash.innerHTML = "<i></i><i></i><i></i>";
+    scene.append(shark, splash);
+    setMood("surprised"); ex.style.setProperty("--fall", fall + "px");
+    shark.classList.add("is-jump"); ex.classList.add("is-grabbed"); splash.classList.add("is-go");
+    await MG.wait(1750);
+    shark.remove(); splash.remove();
   }
 
   function selectPlank(id) {
@@ -219,11 +287,9 @@
     busy = true; render();
     const row = $("brRow"), ex = $("brExplorer");
     const planks = [...row.querySelectorAll(".br-plank")];
-    const place = (p) => { const r = p.getBoundingClientRect(), sc = ex.parentElement.getBoundingClientRect(); ex.style.left = (r.left - sc.left + r.width / 2) + "px"; ex.style.top = (r.top - sc.top - 6) + "px"; };
-    ex.style.opacity = 1; ex.style.transition = "none";
-    const first = planks[0].getBoundingClientRect(), sc0 = ex.parentElement.getBoundingClientRect();
-    ex.style.left = (first.left - sc0.left + first.width + 14) + "px"; ex.style.top = (first.top - sc0.top - 6) + "px"; // begint op de oever rechts
-    await MG.wait(60); ex.style.transition = "";
+    const place = (p) => { const r = p.getBoundingClientRect(), sc = ex.parentElement.getBoundingClientRect(); ex.style.left = (r.left - sc.left + r.width / 2) + "px"; ex.style.top = (r.top - sc.top - 1) + "px"; };
+    resetExplorer(); // het personage staat op de oever rechts
+    await MG.wait(350); setMood("happy");
     const myEpoch = epoch;
     let badIndex = -1;
     for (let i = 0; i < m.seq.length; i++) {
@@ -235,6 +301,7 @@
       if (!right) { badIndex = i; break; }
       planks[i].classList.add("is-ok");
     }
+    if (badIndex < 0 && geo) { setMood("celebrate"); standAt(geo.endX, geo.endY); await MG.wait(900); } // veilig aan de overkant
     const gapLetters = m.gaps.map((i) => m.seq[i]);
     const wrongLetter = badIndex >= 0 ? slots[badIndex] : null;
     recordAttempt(profileId, {
@@ -254,18 +321,19 @@
     } else {
       wrongThisMission++;
       planks[badIndex].classList.add("is-bad");
-      ex.classList.add("is-slip");
       MG.sfx("no");
+      await sharkAttack(planks[badIndex]);
       MG.banner(field, { ok: false, letter: wrongLetter });
-      await MG.wait(1100);
-      await window.AudioManager.playRandomRetryFeedback(); await MG.wait(400);
+      await MG.wait(700);
+      await window.AudioManager.playRandomRetryFeedback(); await MG.wait(300);
       MG.hideBanner(field);
       if (!active) return;
       // De foute plank gaat terug naar de bak; de rest blijft staan.
       const t = tray.find((x) => x.used && x.letter === wrongLetter); if (t) t.used = false;
       slots[badIndex] = null;
-      ex.className = "br-explorer"; ex.style.opacity = 0;
-      busy = false; render(); playMissionAudio();
+      busy = false; render(); resetExplorer(); // het personage klimt weer op de oever rechts
+      ex.classList.add("is-back"); setTimeout(() => ex.classList.remove("is-back"), 900);
+      playMissionAudio();
     }
   }
 
