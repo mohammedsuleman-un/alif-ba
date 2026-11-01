@@ -18,16 +18,16 @@
   const RETURN_HASH = D.RETURN_HASH;
 
   const TXT = {
-    nl: { find: "Fotografeer", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
+    nl: { find: "Luister en zoek de letter", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
       hint: "Sleep om te zoeken, zoom in en maak de foto",
       empty: "Zet een letter in het kader", far: "Kom dichterbij", cut: "Eén hele letter in het kader", zoomIn: "Inzoomen", zoomOut: "Uitzoomen", shutter: "Foto maken" },
-    en: { find: "Photograph", good: "Well done", again: "Play again", back: "Back", listen: "Listen again", help: "Help me",
+    en: { find: "Listen and find the letter", good: "Well done", again: "Play again", back: "Back", listen: "Listen again", help: "Help me",
       hint: "Drag to look around, zoom in and take the photo",
       empty: "Put a letter in the frame", far: "Come closer", cut: "One whole letter in the frame", zoomIn: "Zoom in", zoomOut: "Zoom out", shutter: "Take photo" },
-    ar: { find: "صوّر", good: "أحسنت", again: "مرة أخرى", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني",
+    ar: { find: "استمع وابحث عن الحرف", good: "أحسنت", again: "مرة أخرى", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني",
       hint: "اسحب للبحث ثم قرّب والتقط الصورة",
       empty: "ضع حرفًا داخل الإطار", far: "اقترب قليلًا", cut: "حرف واحد كامل داخل الإطار", zoomIn: "تكبير", zoomOut: "تصغير", shutter: "التقط صورة" },
-    tr: { find: "Fotoğrafla", good: "Aferin", again: "Tekrar oyna", back: "Geri", listen: "Tekrar dinle", help: "Yardım et",
+    tr: { find: "Dinle ve harfi bul", good: "Aferin", again: "Tekrar oyna", back: "Geri", listen: "Tekrar dinle", help: "Yardım et",
       hint: "Sürükleyerek ara, yakınlaş ve fotoğrafı çek",
       empty: "Bir harfi çerçevenin içine al", far: "Biraz yaklaş", cut: "Çerçevede tek bir tam harf", zoomIn: "Yakınlaştır", zoomOut: "Uzaklaştır", shutter: "Fotoğraf çek" },
   };
@@ -150,7 +150,7 @@
           <button id="phReplay" class="chase-replay" aria-label="${tt.listen}">🔊</button>
           <div class="chase-instr">
             <span class="chase-instr-text">${tt.find}</span>
-            <span class="chase-instr-letter" id="phTarget" lang="ar" dir="rtl">؟</span>
+            <span class="chase-instr-letter" id="phTarget" lang="ar" dir="rtl"></span>
           </div>
           <button id="phHelp" class="chase-replay sling-help" aria-label="${tt.help}">💡</button>
           <div class="chase-dots" id="phDots"></div>
@@ -221,7 +221,7 @@
   function startMission() {
     const m = missions[missionIdx];
     helped = false; wrongThisMission = 0; busy = false; missionStart = performance.now();
-    $("phTarget").textContent = m.target;
+    $("phTarget").textContent = ""; // de letter wordt niet getoond: het kind moet luisteren
     $("phHelp").classList.remove("is-used");
     scene.setupMission(m, layoutSigns(m));
     // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).

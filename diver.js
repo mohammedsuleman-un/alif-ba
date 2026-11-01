@@ -21,10 +21,10 @@
   const shuffle = MG.shuffle;
 
   const TXT = {
-    nl: { find: "Verzamel", back: "Terug", listen: "Luister opnieuw", help: "Help mij", hint: "Zwem naar de schelpen, pak de goede parels en geef ze aan de mossel" },
-    en: { find: "Collect", back: "Back", listen: "Listen again", help: "Help me", hint: "Swim to the shells, grab the right pearls and give them to the clam" },
-    ar: { find: "اجمع", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني", hint: "اسبح إلى الأصداف، خذ اللآلئ الصحيحة وأعطها للمحارة" },
-    tr: { find: "Topla", back: "Geri", listen: "Tekrar dinle", help: "Yardım et", hint: "Deniz kabuklarına yüz, doğru incileri al ve istiridyeye ver" },
+    nl: { find: "Luister en zoek de letter", back: "Terug", listen: "Luister opnieuw", help: "Help mij", hint: "Zwem naar de schelpen, pak de goede parels en geef ze aan de mossel" },
+    en: { find: "Listen and find the letter", back: "Back", listen: "Listen again", help: "Help me", hint: "Swim to the shells, grab the right pearls and give them to the clam" },
+    ar: { find: "استمع وابحث عن الحرف", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني", hint: "اسبح إلى الأصداف، خذ اللآلئ الصحيحة وأعطها للمحارة" },
+    tr: { find: "Dinle ve harfi bul", back: "Geri", listen: "Tekrar dinle", help: "Yardım et", hint: "Deniz kabuklarına yüz, doğru incileri al ve istiridyeye ver" },
   };
   const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
   const tx = () => AF.deep(TXT[lang()] || TXT.nl);
@@ -200,7 +200,7 @@
           <button id="dvReplay" class="chase-replay" aria-label="${tt.listen}">🔊</button>
           <div class="chase-instr">
             <span class="chase-instr-text">${tt.find}</span>
-            <span class="chase-instr-letter" id="dvTarget" lang="ar" dir="rtl">؟</span>
+            <span class="chase-instr-letter" id="dvTarget" lang="ar" dir="rtl"></span>
             <span class="dv-need" id="dvNeed"></span>
           </div>
           <button id="dvHelp" class="chase-replay sling-help" aria-label="${tt.help}">💡</button>
@@ -237,7 +237,7 @@
   function startMission() {
     const m = missions[missionIdx];
     helped = false; wrongThisMission = 0; busy = false; missionStart = performance.now();
-    $("dvTarget").textContent = m.target;
+    $("dvTarget").textContent = ""; // de letter wordt niet getoond: het kind moet luisteren
     $("dvNeed").textContent = "× " + m.need;
     $("dvHelp").classList.remove("is-used");
     scene.setupMission(m);
@@ -441,7 +441,7 @@
         const g = this.add.graphics();
         g.fillStyle(0xffffff, 0.96); g.fillRoundedRect(-bw / 2, -bh / 2, bw, bh, 18); g.lineStyle(4, 0x7e3fb6, 1); g.strokeRoundedRect(-bw / 2, -bh / 2, bw, bh, 18);
         g.fillStyle(0xffffff, 0.96); g.fillTriangle(-r * 0.6, bh / 2 - 2, r * 0.6, bh / 2 - 2, -r * 1.3, bh / 2 + r * 0.7);
-        const t = MG.letterText(this, -bw * 0.2, 0, m.target, r * 1.6);
+        const t = this.add.text(-bw * 0.2, 0, "🔊", { fontSize: Math.round(r * 1.5) + "px" }).setOrigin(0.5); // geen letter tonen: de mossel vraagt om een geluid
         this.bubble.add([g, t]);
         for (let i = 0; i < m.need; i++) {
           const p = this.add.image(bw * 0.2 + (i - (m.need - 1) / 2) * r * 0.62 * (m.need > 1 ? 1 : 0), (i - (m.need - 1) / 2) * 0, "dv-pearl").setDisplaySize(r * 0.7, r * 0.7);

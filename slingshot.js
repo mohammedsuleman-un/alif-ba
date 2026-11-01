@@ -22,13 +22,13 @@
   const RETURN_HASH = "#/gamestage/games";
 
   const TXT = {
-    nl: { find: "Vind", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
+    nl: { find: "Luister en zoek de letter", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
       pull: "Trek de steen naar achteren en laat los", keys: "Pijltjes richten, spatie schiet" },
-    en: { find: "Find", good: "Well done", again: "Play again", back: "Back", listen: "Listen again", help: "Help me",
+    en: { find: "Listen and find the letter", good: "Well done", again: "Play again", back: "Back", listen: "Listen again", help: "Help me",
       pull: "Pull the stone back and let go", keys: "Arrows aim, space shoots" },
-    ar: { find: "ابحث عن", good: "أحسنت", again: "مرة أخرى", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني",
+    ar: { find: "استمع وابحث عن الحرف", good: "أحسنت", again: "مرة أخرى", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني",
       pull: "اسحب الحجر إلى الخلف ثم اتركه", keys: "الأسهم للتوجيه والمسافة للإطلاق" },
-    tr: { find: "Bul", good: "Aferin", again: "Tekrar oyna", back: "Geri", listen: "Tekrar dinle", help: "Yardım et",
+    tr: { find: "Dinle ve harfi bul", good: "Aferin", again: "Tekrar oyna", back: "Geri", listen: "Tekrar dinle", help: "Yardım et",
       pull: "Taşı geri çek ve bırak", keys: "Oklar nişan alır, boşluk atar" },
   };
   const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
@@ -147,7 +147,7 @@
           <button id="slReplay" class="chase-replay" aria-label="${tt.listen}">🔊</button>
           <div class="chase-instr">
             <span class="chase-instr-text">${tt.find}</span>
-            <span class="chase-instr-letter" id="slTarget" lang="ar" dir="rtl">؟</span>
+            <span class="chase-instr-letter" id="slTarget" lang="ar" dir="rtl"></span>
           </div>
           <button id="slHelp" class="chase-replay sling-help" aria-label="${tt.help}">💡</button>
           <div class="chase-dots" id="slDots"></div>
@@ -187,7 +187,7 @@
   function startMission() {
     const m = missions[missionIdx];
     helped = false; wrongThisMission = 0; busy = false; missionStart = performance.now();
-    $("slTarget").textContent = m.target;
+    $("slTarget").textContent = ""; // de letter wordt niet getoond: het kind moet luisteren
     $("slHelp").classList.remove("is-used");
     scene.setupMission(m);
     // Eerste keer: eerst de uitleg van het spel, daarna de opdracht (letter).
