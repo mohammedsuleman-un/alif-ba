@@ -151,6 +151,8 @@
 
   function panelStaff() {
     const canResend = (u) => isSuper() || (S.me.role === "org_admin" && u.role === "teacher");
+    // definitief verwijderen: hoofdbeheerder alles (behalve jezelf); beheerder alleen docenten die nergens anders bij horen
+    const canDelete = (u) => u.id !== S.me.id && (isSuper() || (S.me.role === "org_admin" && u.role === "teacher" && Number(u.org_count) <= 1));
     const rows = S.staff.map((u) => {
       const st = staffStatus(u);
       const pending = st.key === "invited" || st.key === "pw";
@@ -159,7 +161,7 @@
       return `<tr><td><b>${esc(u.display_name)}</b><div class="muted small-t">${esc(u.username)}</div></td>
       <td><span class="tag">${esc(roleName(u.role))}</span>${Number(u.org_count) > 1 ? ` <span class="tag" title="${te("Hoort bij meerdere organisaties")}">${te("{n} organisaties", { n: Number(u.org_count) })}</span>` : ""}</td>
       <td><span class="status ${st.cls}">${te(st.text)}</span>${pending ? mail : seen}</td>
-      <td class="actions">${pending && canResend(u) ? `<button class="small" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}" data-resend="1">${te("Opnieuw sturen")}</button> ` : canResend(u) ? `<button class="small ghost" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}">${te("Nieuw wachtwoord")}</button> ` : ""}<button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? te("Aanzetten") : te("Uitzetten")}</button></td></tr>`;
+      <td class="actions">${pending && canResend(u) ? `<button class="small" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}" data-resend="1">${te("Opnieuw sturen")}</button> ` : canResend(u) ? `<button class="small ghost" data-act="staffreset" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}">${te("Nieuw wachtwoord")}</button> ` : ""}<button class="small ghost" data-act="staffoff" data-id="${esc(u.id)}" data-off="${Number(u.disabled) ? 0 : 1}">${Number(u.disabled) ? te("Aanzetten") : te("Uitzetten")}</button>${canDelete(u) ? ` <button class="small danger" data-act="staffdel" data-id="${esc(u.id)}" data-name="${esc(u.display_name)}">${te("Verwijderen")}</button>` : ""}</td></tr>`;
     }).join("");
     const counts = { invited: 0, pw: 0, active: 0 };
     S.staff.forEach((u) => { const k = staffStatus(u).key; if (counts[k] !== undefined) counts[k]++; });
@@ -394,6 +396,10 @@
       const r = await api("POST", `/users/${id}/reset-password`, {});
       S.secret = { title: t("Nieuw startwachtwoord voor {name}", { name }), userLabel: "Inloggen met e-mailadres", site: location.origin + location.pathname, rows: [{ name, username: r.username, password: r.password }], mailed: r.mailed };
       await loadStaff(); flash(null); render(); window.scrollTo(0, 0);
+    }),
+    staffdel: ({ id, name }) => guard(async () => {
+      if (!confirm(t("{name} definitief verwijderen? Dit kan niet ongedaan worden gemaakt.", { name }))) return;
+      await api("DELETE", `/users/${id}`); flash(t("{name} is verwijderd.", { name })); await loadStaff(); render();
     }),
     staffoff: ({ id, off }) => guard(async () => { await api("POST", `/users/${id}/disable`, { disabled: off === "1" }); flash(off === "1" ? t("Account uitgezet.") : t("Account aangezet.")); await loadStaff(); render(); }),
     reset: ({ id, name }) => guard(async () => {
