@@ -33,7 +33,7 @@
   function buildMissions() {
     // Alle nieuwe letters van het niveau + herhaling; afleiders komen uit de hele pool van het niveau.
     curLevel = MG.currentLevel(profileId);
-    return MG.missionTargets(curLevel).map((target, i) => ({ target, need: [1, 2, 3, 3, 3][Math.min(i, 4)] }));
+    return MG.missionTargets(curLevel).map((target, i) => ({ target, need: [1, 2, 2, 2, 2][Math.min(i, 4)] }));
   }
 
   // ---------- Illustraties (SVG, 2x resolutie) ----------
