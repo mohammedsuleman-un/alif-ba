@@ -148,7 +148,10 @@
     if (!isPreview()) { if (bar) bar.remove(); document.body.classList.remove("has-preview"); return; }
     if (!bar) { bar = document.createElement("div"); bar.id = "previewBar"; document.body.appendChild(bar); }
     const T = t();
-    bar.innerHTML = `<span>🧑‍🏫 ${T.pvBar}</span><a href="${new URL("beheer/", location.href).pathname}">${T.pvBack}</a>`;
+    // Slanke balk op één regel, zodat de vraag/het spel eronder in beeld blijft (volledige uitleg staat in de tooltip).
+    const SHORT = { nl: ["Voorbeeld", "← Beheer"], en: ["Preview", "← Admin"], ar: ["معاينة", "← الإدارة"], tr: ["Önizleme", "← Yönetim"] }[store.get("lang", "nl")] || ["Voorbeeld", "← Beheer"];
+    bar.title = T.pvBar;
+    bar.innerHTML = `<span>🧑‍🏫 ${SHORT[0]}</span><a href="${new URL("beheer/", location.href).pathname}" title="${T.pvBack}">${SHORT[1]}</a>`;
     document.body.classList.add("has-preview");
   }
   window.addEventListener("hashchange", mountBar);
