@@ -999,6 +999,9 @@
   }
 
   let runState = null; // { world, level, questions, i, correctFirstTry, newLetterShown }
+  // Zolang er een level loopt. Wie het level verlaat (terug naar de kaart, ander tabblad), stopt het: geen stem, geen timers, geen volgende vraag meer op de achtergrond.
+  let runActive = false;
+  function abortRun() { if (!runActive) return; runActive = false; AudioManager.stop(); }
 
   function renderLevel(worldId, levelN) {
     const t = GT();
@@ -1006,6 +1009,7 @@
     const world = G.worlds.find((w) => w.id === worldId) || G.worlds[0];
     const level = world.levels.find((lv) => lv.n === Number(levelN));
     if (!level) return gohash(`#/spel/wereld/${world.id}`);
+    runActive = true;
     runState = { world, level, questions: buildQuestions(world, level), i: 0, correctFirstTry: 0, attemptedFirst: true };
     // Alleen preloaden wat dit level ook echt gebruikt — niet de hele bibliotheek.
     const typeInstr = { AUDIO_TO_LETTER: "which-letter", VISUAL_MATCH: "find-letter", LETTER_MATCH: "match" };
@@ -1059,6 +1063,7 @@
   }
 
   function renderQuestion() {
+    if (!runActive) return;
     const { questions, i } = runState;
     if (i >= questions.length) return renderComplete();
     if (questions.length >= 4) {
@@ -1122,13 +1127,14 @@
       // Waarschuwing dat de tijd bijna om is: kleur verspringt naar oranje/rood
       // en pulseert, plus één zacht tikje — geen fel/eng alarm.
       warnHandle = setTimeout(() => {
+        if (!runActive) return;
         const timerEl = document.getElementById("gTimer");
         if (timerEl) timerEl.classList.add("warn");
         sfx.timeWarning();
       }, Math.max(0, QUESTION_TIME_MS - QUESTION_WARN_MS));
     }
     function onTimeout() {
-      if (locked) return;
+      if (locked || !runActive) return;
       timeoutStrikes++;
       sfx.wrong(); companionMood("encouraging", 1100);
       if (first) { updateMastery(q.letter, false); first = false; }
@@ -1197,6 +1203,7 @@
           lock = true;
           const match = open[0].dataset.l === open[1].dataset.l;
           setTimeout(() => {
+            if (!runActive) return;
             if (match) {
               open.forEach((c) => c.classList.add("matched"));
               solvedPairs++;
@@ -1501,13 +1508,14 @@
 
   function gameRoute() {
     const h = location.hash;
-    if (!h.startsWith("#/spel")) { scr.root.hidden = true; return; }
+    if (!h.startsWith("#/spel")) { abortRun(); scr.root.hidden = true; return; }
     scr.root.hidden = false;
     scr.complete.hidden = true;
     loadActive();
     const mWorld = h.match(/^#\/spel\/wereld\/([\w-]+)/);
     const mLevel = h.match(/^#\/spel\/level\/([\w-]+)\/(\d+)/);
     const mPersonage = h.startsWith("#/spel/personage");
+    if (!mLevel) abortRun();
     const mWardrobe = h.startsWith("#/spel/kledingkast");
     const mOverview = h.startsWith("#/spel/kaart");
     const mHub = h.match(/^#\/spel\/niveau\/([\w-]+)\/(\d+)/);

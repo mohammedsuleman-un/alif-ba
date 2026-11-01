@@ -108,20 +108,28 @@ window.GAME.chapters = [
   const baseKey = (s) => s.replace(/[\u064B-\u0652]/g, "").replace(/[أإآ]/g, "ا");
   const markOf = (s) => (s.match(/[\u064E\u064F\u0650]/) || [""])[0];
   const rnd = (arr) => arr.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
-  // Afleiders die het kind echt moeten laten luisteren: dezelfde letter met een ander teken, en een andere letter met hetzelfde teken.
+  // Letters die op elkaar lijken (zelfde vorm, andere puntjes of net een ander lijfje)
+  const SIMILAR = {
+    "ب": ["ت", "ث", "ن", "ي"], "ت": ["ب", "ث", "ن", "ي"], "ث": ["ب", "ت", "ن", "ي"], "ن": ["ب", "ت", "ث", "ي"], "ي": ["ب", "ت", "ث", "ن"],
+    "ج": ["ح", "خ"], "ح": ["ج", "خ"], "خ": ["ج", "ح"], "د": ["ذ", "ر"], "ذ": ["د", "ز"], "ر": ["ز", "د"], "ز": ["ر", "ذ"],
+    "س": ["ش", "ص"], "ش": ["س", "ص"], "ص": ["ض", "س"], "ض": ["ص", "ش"], "ط": ["ظ"], "ظ": ["ط"], "ع": ["غ"], "غ": ["ع"],
+    "ف": ["ق", "م"], "ق": ["ف", "ن"], "ك": ["ل"], "ل": ["ك", "ا"], "ا": ["ل"], "م": ["و", "ف"], "و": ["م", "ر"], "ه": ["و", "ح"],
+  };
+  // Afleiders die het kind echt moeten laten luisteren: dezelfde letter met de twee andere tekens, en één letter die erop lijkt (met hetzelfde teken).
   const distract = (letter, pool, avail) => {
     const src = avail.size >= 6 ? [...avail] : pool;
+    const base = baseKey(letter), mk = markOf(letter), looks = SIMILAR[base] || [];
+    const isLook = (x) => looks.includes(baseKey(x));
     const cands = rnd(src.filter((x) => x !== letter));
-    const sameLetter = cands.filter((x) => baseKey(x) === baseKey(letter));
-    const sameMark = cands.filter((x) => baseKey(x) !== baseKey(letter) && markOf(x) === markOf(letter));
-    const rest = cands.filter((x) => !sameLetter.includes(x) && !sameMark.includes(x));
+    const sameLetter = cands.filter((x) => baseKey(x) === base);
+    const everyone = rnd(pool.filter((x) => x !== letter));
+    const look = cands.find((x) => isLook(x) && markOf(x) === mk) || everyone.find((x) => isLook(x) && markOf(x) === mk) || cands.find(isLook);
+    const sameMark = cands.filter((x) => baseKey(x) !== base && markOf(x) === mk);
     const out = [];
-    const add = (arr, n) => { for (const x of arr) { if (out.length >= 3 || n <= 0) break; if (!out.includes(x)) { out.push(x); n--; } } };
-    add(sameLetter, Math.random() < 0.6 ? 2 : 1); add(sameMark, 2); add(rest, 3); add(cands, 3);
+    const add = (arr, n) => { for (const x of arr) { if (out.length >= 3 || n <= 0) break; if (x && !out.includes(x)) { out.push(x); n--; } } };
+    add(sameLetter, 2); add([look], 1); add(sameMark, 3); add(cands, 3); add(everyone, 3);
     return out.slice(0, 3);
   };
-  // Alle drie de tekens door elkaar vanaf het begin: elk level pakt 4 letters, elk met فتحة, ضمة en كسرة (12 klanken).
-  // Zo kan het kind het antwoord niet raden door op het teken van het level te letten; het moet echt luisteren.
   const ALL = range(0, 28), MARKS3 = ["fatha", "damma", "kasra"];
   const group = (idx) => idx.flatMap((i) => MARKS3.map((k) => item(i, k)));
   const GROUPS = [range(0, 4), range(4, 8), range(8, 12), range(12, 16), range(16, 20), range(20, 24), range(24, 28)];
