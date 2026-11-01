@@ -32,7 +32,7 @@
 
   let active = false, epoch = 0, profileId = null, raf = 0;
   let missions = [], missionIdx = 0, solved = [], helped = false, wrongThisMission = 0, missionStart = 0, busy = false;
-  let W = 0, H = 0, boat = { x: 0, y: 0, tx: 0, ty: 0 }, piers = [], islands = [], keys = {}, near = -1;
+  let W = 0, H = 0, minY = 0, boat = { x: 0, y: 0, tx: 0, ty: 0 }, piers = [], islands = [], keys = {}, near = -1;
 
   function activeProfile() {
     const pid = store.get("gp_active", null);
@@ -63,10 +63,7 @@
     let cfg = null; try { cfg = window.Character && Character.getConfig ? Character.getConfig(profileId) : null; } catch { cfg = null; }
     return cfg ? Character.svg(cfg, "happy") : "<span class=\"hb-emoji\">🧒</span>";
   };
-  const BOAT = `<svg viewBox="0 0 120 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <path d="M6 22 L114 22 Q106 54 78 56 L42 56 Q14 54 6 22Z" fill="#c8453a" stroke="#7a1f18" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M10 30 L110 30" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
-    <path d="M60 22 V2" stroke="#6b4a24" stroke-width="3"/><path d="M60 4 L90 14 L60 14Z" fill="#ffd54a" stroke="#b8860b" stroke-width="2"/></svg>`;
+  const BOAT = '<img class="hb-boat-img" src="assets/game/harbor/boat.png" alt="" draggable="false">';
 
   function renderChrome() {
     const tt = tx();
@@ -80,7 +77,6 @@
           <div class="chase-dots" id="hbDots"></div>
         </header>
         <div class="chase-field hb-field" id="hbField">
-          <div class="hb-shore" aria-hidden="true"></div>
           <div class="hb-sea-fx" aria-hidden="true"></div>
           <div class="hb-piers" id="hbPiers"></div>
           <div class="hb-islands" id="hbIslands"></div>
@@ -95,7 +91,7 @@
     $("hbHelp").onclick = () => onHelp();
     $("hbAnchor").onclick = () => moor();
     const f = $("hbField");
-    const toPoint = (e) => { const r = f.getBoundingClientRect(); boat.tx = Math.max(24, Math.min(W - 24, e.clientX - r.left)); boat.ty = Math.max(H * 0.28, Math.min(H - 30, e.clientY - r.top)); };
+    const toPoint = (e) => { const r = f.getBoundingClientRect(); boat.tx = Math.max(24, Math.min(W - 24, e.clientX - r.left)); boat.ty = Math.max(minY, Math.min(H - 30, e.clientY - r.top)); };
     f.onpointerdown = (e) => { if (e.target.closest("button")) return; toPoint(e); f.setPointerCapture(e.pointerId); f._down = true; };
     f.onpointermove = (e) => { if (f._down) toPoint(e); };
     f.onpointerup = f.onpointercancel = () => { f._down = false; };
@@ -123,8 +119,8 @@
     const m = missions[missionIdx];
     helped = false; wrongThisMission = 0; busy = false; missionStart = performance.now(); near = -1;
     $("hbHelp").classList.remove("is-used");
-    $("hbPiers").innerHTML = m.piers.map((l, i) => `<div class="hb-pier" data-i="${i}"><span class="hb-sign" lang="ar" dir="rtl">${l}</span><i class="hb-planks"></i></div>`).join("");
-    $("hbIslands").innerHTML = Array.from({ length: m.islands }, () => `<span class="hb-island">🏝️</span>`).join("");
+    $("hbPiers").innerHTML = m.piers.map((l, i) => `<div class="hb-pier" data-i="${i}"><img class="hb-pier-img" src="assets/game/harbor/pier.png" alt="" draggable="false"><span class="hb-sign" lang="ar" dir="rtl">${l}</span></div>`).join("");
+    $("hbIslands").innerHTML = Array.from({ length: m.islands }, () => `<img class="hb-island" src="assets/game/harbor/island.png" alt="" draggable="false">`).join("");
     layout(true);
     cancelAnimationFrame(raf); const my = epoch; let last = performance.now();
     const tick = (now) => { if (!active || my !== epoch) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; update(dt); raf = requestAnimationFrame(tick); };
@@ -138,15 +134,17 @@
     const n = missions[missionIdx] ? missions[missionIdx].piers.length : 3, pw = Math.min(150, W / (n + 0.6));
     piers = [];
     $("hbPiers").querySelectorAll(".hb-pier").forEach((el, i) => {
-      const x = W * ((i + 0.5) / n); el.style.width = pw + "px"; el.style.left = (x - pw / 2) + "px";
-      piers.push({ el, x, y: H * 0.26, letter: missions[missionIdx].piers[i], r: pw * 0.62 });
+      const x = W * ((i + 0.5) / n), ph = pw * 1.034, top = H * 0.03; // 1.034 = hoogte/breedte van het steigerplaatje
+      el.style.width = pw + "px"; el.style.left = (x - pw / 2) + "px"; el.style.top = top + "px";
+      piers.push({ el, x, y: top, ph, dockY: top + ph + 18, letter: missions[missionIdx].piers[i], r: pw * 0.62 });
     });
     islands = [];
     const spots = [[0.28, 0.52], [0.72, 0.58], [0.5, 0.42]];
     $("hbIslands").querySelectorAll(".hb-island").forEach((el, i) => {
       const s = spots[i % spots.length], x = W * s[0], y = H * s[1];
-      el.style.left = (x - 30) + "px"; el.style.top = (y - 30) + "px"; islands.push({ x, y, r: 34 });
+      el.style.width = "118px"; el.style.left = (x - 59) + "px"; el.style.top = (y - 44) + "px"; islands.push({ x, y, r: 44 });
     });
+    minY = piers.length ? Math.min(H * 0.6, piers[0].dockY + 8) : H * 0.3;
     if (reset || !boat.x) { boat.x = boat.tx = W / 2; boat.y = boat.ty = H - 56; }
     const a = $("hbAnchor"); if (a) { a.style.left = "50%"; }
   }
@@ -154,16 +152,16 @@
   function update(dt) {
     if (busy) return;
     let kx = 0, ky = 0; if (keys.ArrowLeft || keys.a) kx -= 1; if (keys.ArrowRight || keys.d) kx += 1; if (keys.ArrowUp || keys.w) ky -= 1; if (keys.ArrowDown || keys.s) ky += 1;
-    if (kx || ky) { boat.tx = Math.max(24, Math.min(W - 24, boat.x + kx * 80)); boat.ty = Math.max(H * 0.28, Math.min(H - 30, boat.y + ky * 80)); }
+    if (kx || ky) { boat.tx = Math.max(24, Math.min(W - 24, boat.x + kx * 80)); boat.ty = Math.max(minY, Math.min(H - 30, boat.y + ky * 80)); }
     const dx = boat.tx - boat.x, dy = boat.ty - boat.y, d = Math.hypot(dx, dy);
     if (d > 2) { const sp = Math.min(d, 190 * dt * Math.max(0.35, Math.min(1, d / 50))); boat.x += dx / d * sp; boat.y += dy / d * sp; }
     // eilandjes duwen de boot zacht weg
     islands.forEach((is) => { const ex = boat.x - is.x, ey = boat.y - is.y, ed = Math.hypot(ex, ey), min = is.r + 26; if (ed < min && ed > 0) { boat.x = is.x + ex / ed * min; boat.y = is.y + ey / ed * min; } });
-    const b = $("hbBoat"); b.style.transform = `translate(${boat.x - 46}px, ${boat.y - 62}px) rotate(${Math.max(-8, Math.min(8, dx * 0.04))}deg)`;
+    const b = $("hbBoat"); b.style.transform = `translate(${boat.x - 56}px, ${boat.y - 72}px) rotate(${Math.max(-8, Math.min(8, dx * 0.04))}deg)`;
     b.classList.toggle("is-sailing", d > 4);
     // dichtstbijzijnde steiger: lichtt op en maakt het anker beschikbaar
     let best = -1, bd = 1e9;
-    piers.forEach((p, i) => { const dd = Math.hypot(boat.x - p.x, boat.y - (p.y + 56)); if (dd < bd) { bd = dd; best = i; } });
+    piers.forEach((p, i) => { const dd = Math.hypot(boat.x - p.x, boat.y - p.dockY); if (dd < bd) { bd = dd; best = i; } });
     const nearNow = bd < 78 ? best : -1;
     if (nearNow !== near) { near = nearNow; piers.forEach((p, i) => p.el.classList.toggle("is-near", i === near)); $("hbAnchor").disabled = near < 0; }
   }
@@ -171,7 +169,7 @@
   async function moor() {
     if (busy || near < 0 || !active) return;
     busy = true; const my = epoch, p = piers[near], m = missions[missionIdx], field = $("hbField");
-    boat.tx = boat.x = p.x; boat.ty = boat.y = p.y + 58; $("hbBoat").style.transform = `translate(${boat.x - 46}px, ${boat.y - 62}px)`;
+    boat.tx = boat.x = p.x; boat.ty = boat.y = p.dockY; $("hbBoat").style.transform = `translate(${boat.x - 56}px, ${boat.y - 72}px)`;
     const ok = p.letter === m.target;
     recordAttempt(profileId, {
       game: "harbor", target: m.target, selectedLetter: p.letter, correct: ok, helped,

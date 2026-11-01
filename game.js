@@ -717,7 +717,7 @@
   }
 
   // Wereld 1 heeft per level een keuzescherm met spelletjes; wereld 2 en verder gaat direct naar de vragen.
-  const levelHref = (world, n) => (world.id === "letter_oasis" ? `#/spel/niveau/${world.id}/${n}` : `#/spel/level/${world.id}/${n}`);
+  const levelHref = (world, n) => `#/spel/niveau/${world.id}/${n}`; // keuzescherm: de vragen of een van de spelletjes
 
   function renderMap(worldId) {
     const t = GT();
@@ -1229,6 +1229,16 @@
     });
   }
 
+  // XP en munten tellen op het levelscherm op (met tikjes), net als na een spelletje.
+  function animateRewards() {
+    const M = window.MiniGames; if (!M || !M.countUp) return;
+    [...scr.complete.querySelectorAll(".g-rewards span")].forEach((sp, k) => {
+      const m = sp.textContent.match(/\d+/); if (!m) return;
+      const pre = sp.textContent.slice(0, m.index), post = sp.textContent.slice(m.index + m[0].length);
+      sp.textContent = pre + "0" + post;
+      M.countUp(+m[0], { delay: 600 + k * 900, sound: k === 1, onStep: (v) => { sp.textContent = pre + v + post; } });
+    });
+  }
   function pickCorrectMsg() { const m = GT().correct; return m[(Math.random() * m.length) | 0]; }
   let toastTimer;
   function toast(msg) {
@@ -1313,6 +1323,7 @@
           <button id="gToMap" class="g-cta ghost">${t.toMap}</button>
         </div>
       </div>`;
+    animateRewards();
     $("gToMap").onclick = () => gohash(`#/spel/wereld/${world.id}`);
     const idx = world.levels.findIndex((lv) => lv.n === level.n);
     const nextLevel = world.levels[idx + 1];
@@ -1461,15 +1472,19 @@
     ["photographer", "📷", { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" }],
     ["diver", "🤿", { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" }],
     ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }],
+    ["bubbles", "🫧", { nl: "Feestbellen", en: "Festival Bubbles", ar: "فقاعات الاحتفال", tr: "Festival Balonları" }, true],
+    ["harbor", "⛵", { nl: "Havenloods", en: "Harbour Pilot", ar: "ربّان الميناء", tr: "Liman Kaptanı" }, true],
+    ["stones", "🪷", { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" }, true],
   ];
   function renderLevelHub(worldId, n) {
     const t = GT(), L = AF.deep(LHT[glang()] || LHT.nl), l = LHT[glang()] ? glang() : "nl";
     document.documentElement.dir = t.dir;
     const world = G.worlds.find((w) => w.id === worldId), level = world && world.levels.find((lv) => lv.n === +n);
     if (!level) return gohash(`#/spel/wereld/${worldId}`);
-    const MG = window.MiniGames, pid = activeProfile.id;
+    const MG = window.MiniGames, pid = activeProfile.id, w2 = world.id === "flowers_valley";
+    if (MG) MG.setWorld(w2 ? "harakat" : "oasis"); // de spelletjes volgen de wereld van dit level
     const stars = levelStars(world, level), letters = level.letters.length ? level.letters : world.letters;
-    const games = LH_GAMES.map(([key, icon, name]) => {
+    const games = LH_GAMES.filter((g) => !g[3] || w2).map(([key, icon, name]) => {
       const open = !MG || MG.gameOpen(pid, key);
       return open ? `<button type="button" class="lh-card" data-game="${key}"><span class="lh-icon">${icon}</span><b>${name[l]}</b></button>`
         : `<div class="lh-card is-locked"><span class="lh-icon">🔒</span><b>${name[l]}</b><small>${L.lock(MG.UNLOCKS[key])}</small></div>`;
@@ -1484,12 +1499,12 @@
         <button type="button" class="lh-quiz" id="lhQuiz"><span class="lh-icon">🌟</span><span><b>${L.quiz}</b><small>${L.quizSub}</small></span><span class="lh-stars">${stars ? "★".repeat(stars) + "☆".repeat(3 - stars) : ""}</span></button>
         <p class="lh-title">${L.games}</p>
         <div class="lh-grid">${games}</div>
-        <p class="lh-content">${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${letters.join(" ")}</span></p>
+        <p class="lh-content">${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${w2 && MG ? MG.labelOf(letters) : letters.join(" ")}</span></p>
       </div>`;
     sayOnceWhenFree("level-choose");
     $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
     scr.overview.querySelectorAll(".lh-card[data-game]").forEach((b) => (b.onclick = () => {
-      if (MG) { MG.setWorld("oasis"); MG.focusLevel(pid, level.n - 1); }
+      if (MG) { MG.setWorld(w2 ? "harakat" : "oasis"); MG.focusLevel(pid, level.n - 1); }
       gohash(`#/gamestage/${b.dataset.game}/1`);
     }));
   }

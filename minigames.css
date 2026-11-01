@@ -361,3 +361,49 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .st-stone.is-help { box-shadow: 0 0 0 6px rgba(255, 213, 74, .95), 0 7px 0 #6a6455; animation: brHelp .8s ease-in-out infinite; }
 .st-hero { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; will-change: transform; filter: drop-shadow(0 6px 4px rgba(0, 40, 70, .3)); }
 .st-emoji { font-size: 44px; }
+
+/* ---- Eigen foto's: zee, steiger, eiland, boot (Havenloods) en zee in Stapstenen en bij de Letterbrug ---- */
+.hb-field { background: linear-gradient(180deg, rgba(4, 60, 100, 0) 0%, rgba(4, 60, 100, .22) 100%), url("assets/game/harbor/sea.jpg") center / cover; }
+.hb-shore, .hb-sea-fx { display: none; }
+.hb-pier { height: auto; display: block; top: 3%; }
+.hb-pier-img { display: block; width: 100%; height: auto; filter: drop-shadow(0 8px 6px rgba(0, 30, 60, .38)); transition: filter .2s; user-select: none; }
+.hb-sign { position: absolute; left: 31.3%; top: 3%; width: 40.8%; height: 38%; min-width: 0; padding: 0; background: none; border: 0; box-shadow: none; display: flex; align-items: center; justify-content: center; font-size: clamp(26px, 5.6vw, 46px); line-height: 1.5; padding-top: .1em; }
+.hb-pier.is-near .hb-sign, .hb-pier.is-help .hb-sign, .hb-pier.is-ok .hb-sign, .hb-pier.is-wrong .hb-sign { box-shadow: none; background: none; border: 0; animation: none; }
+.hb-pier.is-near .hb-pier-img { filter: drop-shadow(0 0 4px #ffd54a) drop-shadow(0 0 12px #ffd54a) drop-shadow(0 8px 6px rgba(0, 30, 60, .38)); }
+.hb-pier.is-help .hb-pier-img { animation: hbGlow .8s ease-in-out infinite; }
+@keyframes hbGlow { 50% { filter: drop-shadow(0 0 4px #ffe58a) drop-shadow(0 0 18px #ffd54a) drop-shadow(0 8px 6px rgba(0, 30, 60, .38)); } }
+.hb-pier.is-ok .hb-pier-img { filter: drop-shadow(0 0 5px #5fdc3c) drop-shadow(0 0 14px #5fdc3c); }
+.hb-pier.is-wrong .hb-pier-img { filter: drop-shadow(0 0 5px #ff6a4a) drop-shadow(0 0 14px #ff6a4a); }
+.hb-island { position: absolute; width: 118px; height: auto; font-size: 0; filter: drop-shadow(0 6px 4px rgba(0, 30, 60, .3)); }
+.hb-boat { width: 112px; height: 100px; }
+.hb-hull { position: absolute; left: 0; right: 0; bottom: 0; }
+.hb-boat-img { display: block; width: 100%; height: auto; }
+.hb-hero { bottom: 30px; width: 44px; height: 60px; margin-left: -22px; }
+.st-river { background: linear-gradient(180deg, rgba(4, 60, 100, .12), rgba(4, 60, 100, .25)), url("assets/game/harbor/sea.jpg") center / cover; animation: none; }
+.st-field { background: #2c8bbb; }
+.br-waves::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(4, 60, 100, .05), rgba(4, 60, 100, .3)), url("assets/game/harbor/sea.jpg") center / cover; }
+
+/* ---- Eindscherm van de spelletjes: sterren één voor één, muntenteller met tikjes, muntenregen ---- */
+.chase-card { position: relative; overflow: hidden; }
+.mg-star { display: inline-block; opacity: 0; transform: scale(.2) rotate(-40deg); margin: 0 2px; }
+.mg-star.on { animation: mgStar .5s cubic-bezier(.3, 1.6, .5, 1) forwards; }
+@keyframes mgStar { to { opacity: 1; transform: scale(1) rotate(0); } }
+.mg-count { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0 2px; font-weight: 900; font-size: 38px; color: #b57a0a; text-shadow: 0 2px 0 rgba(255, 255, 255, .8); font-variant-numeric: tabular-nums; }
+.mg-count b { min-width: 1.4em; text-align: center; animation: mgNum .3s ease-out; } .mg-plus { opacity: .7; }
+.mg-coin, .mg-rainc { display: inline-block; width: 30px; height: 30px; border-radius: 50%; border: 3px solid #b97b0a; background: radial-gradient(circle at 35% 30%, #fff6b8 0, #ffd84a 45%, #e3a41a 100%); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .45), 0 2px 3px rgba(60, 30, 0, .35); }
+.mg-coin { animation: mgSpin 1.4s linear infinite; }
+@keyframes mgSpin { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(.25); } }
+@keyframes mgNum { 0% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.chase-card-total { min-height: 1.4em; margin: 2px 0 8px; font-weight: 800; color: var(--muted, #7a6a4a); }
+.mg-rain { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.mg-rainc { position: absolute; top: -34px; width: 22px; height: 22px; animation: mgFall 1.5s ease-in forwards; }
+@keyframes mgFall { 0% { transform: translateY(0) rotate(0) scaleX(1); opacity: 1; } 100% { transform: translateY(520px) rotate(540deg) scaleX(.4); opacity: .9; } }
+/* levelscherm: tellende beloningen */
+.g-rewards span { display: inline-block; font-variant-numeric: tabular-nums; }
+/* kist met munten aan de overkant van Stapstenen */
+.st-chest { position: absolute; z-index: 3; top: calc(15% - clamp(40px, 8vw, 60px) + 4px); left: 14%; width: clamp(48px, 9vw, 70px); filter: drop-shadow(0 4px 4px rgba(60, 30, 0, .35)); animation: brGlint 3.4s ease-in-out infinite; pointer-events: none; }
+.st-chest svg { display: block; width: 100%; height: auto; overflow: visible; }
+.st-chest .ch-lid { transform-box: fill-box; transform-origin: 14% 100%; transition: transform .45s cubic-bezier(.3, 1.6, .5, 1); }
+.st-chest.open .ch-lid { transform: rotate(-62deg); }
+.st-coins { position: absolute; z-index: 3; top: calc(15% - 14px); left: calc(14% + clamp(48px, 9vw, 70px) + 6px); display: flex; gap: 2px; align-items: flex-end; pointer-events: none; }
+.st-coins i { display: block; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #b97b0a; background: radial-gradient(circle at 35% 30%, #fff6b8 0, #ffd84a 45%, #e3a41a 100%); } .st-coins i:nth-child(2) { transform: translateY(-4px); } .st-coins i:nth-child(3) { transform: translate(-4px, -9px); }

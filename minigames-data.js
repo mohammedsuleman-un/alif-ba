@@ -169,8 +169,36 @@
     moor() { noiseBurst(0.32, "lowpass", 900, 120, 0.42); glide("sine", 120, 55, 0.3, 0.38); noiseBurst(0.3, "highpass", 3200, 7000, 0.1, 0.12); }, // aanleggen: bonk + ketting
     hop() { glide("sine", 360, 720, 0.14, 0.2); },                                                           // sprongetje
     landOk() { glide("triangle", 660, 990, 0.2, 0.2, 0.02); noiseBurst(0.1, "lowpass", 1200, 300, 0.2); },
+    tick(i) { glide("triangle", 700 + i * 28, 760 + i * 28, 0.07, 0.13); },                              // teller: muntje erbij
+    star(i) { glide("sine", 660 + i * 200, 990 + i * 300, 0.28, 0.2); glide("triangle", 1320 + i * 300, 1320 + i * 300, 0.2, 0.08, 0.05); },
+    cha() { [988, 1319, 1568, 2093].forEach((f, i) => glide("triangle", f, f * 1.01, 0.28, 0.13, i * 0.1)); noiseBurst(0.35, "highpass", 5000, 9000, 0.06, 0.1); }, // kassa-gerinkel
     splashSmall() { noiseBurst(0.45, "lowpass", 3000, 300, 0.33); glide("sine", 500, 200, 0.2, 0.12); },
   };
+  // Telt van 0 naar `to` met een tikje per stap; daarna een kassa-gerinkel. Voor de eindschermen.
+  function countUp(to, o = {}) {
+    const steps = Math.max(1, Math.min(to, 36)), ms = o.ms || Math.min(1400, 260 + steps * 38);
+    to = Math.max(0, to);
+    setTimeout(() => {
+      if (!to) { if (o.onStep) o.onStep(0); if (o.onDone) o.onDone(); return; }
+      for (let i = 1; i <= steps; i++) setTimeout(() => {
+        const v = Math.round((to * i) / steps);
+        if (o.onStep) o.onStep(v);
+        if (o.sound !== false) fx.tick(i);
+        if (i === steps) { if (o.sound !== false) setTimeout(() => fx.cha(), 120); if (o.onDone) setTimeout(o.onDone, 160); }
+      }, (ms * i) / steps);
+    }, o.delay || 0);
+  }
+  const TOTAL = { nl: "Totaal", en: "Total", ar: "المجموع", tr: "Toplam" };
+  const CHEST_SVG = `<svg viewBox="0 0 90 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs><linearGradient id="chW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7773a"/><stop offset="1" stop-color="#7d4a1e"/></linearGradient>
+    <linearGradient id="chG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".55" stop-color="#f6c744"/><stop offset="1" stop-color="#c98a10"/></linearGradient></defs>
+    <g class="ch-gold"><ellipse cx="45" cy="34" rx="30" ry="9" fill="#f6c744" stroke="#c98a10" stroke-width="2"/>
+      <circle cx="30" cy="30" r="7" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/><circle cx="46" cy="26" r="8" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/><circle cx="60" cy="31" r="7" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/></g>
+    <rect x="8" y="34" width="74" height="38" rx="6" fill="url(#chW)" stroke="#5a3112" stroke-width="3"/>
+    <rect x="8" y="46" width="74" height="7" fill="url(#chG)" stroke="#5a3112" stroke-width="2"/>
+    <rect x="38" y="42" width="14" height="18" rx="3" fill="url(#chG)" stroke="#5a3112" stroke-width="2.4"/><circle cx="45" cy="52" r="2.6" fill="#5a3112"/>
+    <g class="ch-lid"><path d="M8 34 Q8 8 45 8 Q82 8 82 34Z" fill="url(#chW)" stroke="#5a3112" stroke-width="3"/>
+      <path d="M8 34 H82" stroke="#5a3112" stroke-width="3"/><path d="M26 12 V34 M64 12 V34" stroke="url(#chG)" stroke-width="7"/><path d="M26 12 V34 M64 12 V34" stroke="#5a3112" stroke-width="1.4" fill="none"/></g></svg>`;
   const sfx = (kind) => (kind === "ok" ? tone([659, 880, 1175], 0.4, "sine") : tone([260, 207], 0.3, "triangle"));
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -200,13 +228,28 @@
         <h2>${e.good}</h2>
         <p class="chase-card-level">${say("level")} ${level + 1}</p>
         <span class="chase-card-letter" lang="ar" dir="rtl">${labelOf(groups()[level])}</span>
-        <p class="chase-card-score">${"⭐".repeat(Math.max(1, stars))}</p>
-        <p class="chase-card-coins">+${earned} 🪙</p>
+        <p class="chase-card-score" id="mgStars">${Array.from({ length: Math.max(1, stars) }, () => '<span class="mg-star">⭐</span>').join("")}</p>
+        <div class="mg-count"><span class="mg-plus">+</span><b id="mgCoinNum">0</b><span class="mg-coin" aria-hidden="true"></span></div>
+        <p class="chase-card-total" id="mgTotal" aria-live="polite"></p>
+        <div class="mg-rain" id="mgRain" aria-hidden="true"></div>
         ${fresh.length ? `<a class="chase-card-shop" href="#/spel/kledingkast">👕 ${SHOP[lang()] || SHOP.nl}</a>` : ""}
         ${hasNext ? `<button id="mgNext" class="chase-cta chase-cta-primary">${say("next")} →</button>` : ""}
         <button id="mgAgain" class="chase-cta ${hasNext ? "chase-cta-ghost" : "chase-cta-primary"}">${e.again}</button>
         <button id="mgBack" class="chase-cta chase-cta-ghost">${e.back}</button>
       </div>`;
+    // sterren verschijnen één voor één, daarna telt de teller de verdiende munten op met een tikje per munt
+    const nStars = Math.max(1, stars);
+    ov.querySelectorAll(".mg-star").forEach((el, i) => setTimeout(() => { el.classList.add("on"); fx.star(i); }, 260 + i * 330));
+    countUp(earned, {
+      delay: 260 + nStars * 330 + 260,
+      onStep: (v) => { const n = ov.querySelector("#mgCoinNum"); if (n) n.textContent = v; },
+      onDone: () => {
+        const r = ov.querySelector("#mgRain");
+        if (r) for (let k = 0; k < 18; k++) { const c = document.createElement("i"); c.className = "mg-rainc"; c.style.left = (4 + Math.random() * 92) + "%"; c.style.animationDelay = (Math.random() * 0.5) + "s"; r.appendChild(c); setTimeout(() => c.remove(), 1900); }
+        const tt = ov.querySelector("#mgTotal"), tot = Ch && Ch.coins ? Ch.coins(pid) : null;
+        if (tt && tot != null) tt.textContent = (TOTAL[lang()] || TOTAL.nl) + ": 🪙 " + tot;
+      },
+    });
     const go = () => { ov.hidden = true; onAgain(); };
     if (hasNext) ov.querySelector("#mgNext").onclick = go; // voortgang staat al op het volgende niveau
     ov.querySelector("#mgAgain").onclick = () => { setPlay(pid, level); go(); };
@@ -228,7 +271,7 @@
   const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
   const gameOpen = (pid, key) => !!(window.Account && window.Account.isPreview && window.Account.isPreview()) || oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
-    fx, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
+    fx, countUp, chestSvg: CHEST_SVG, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
     focusLevel, UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => groups()[n] || groups()[0],
   };

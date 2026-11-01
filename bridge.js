@@ -107,16 +107,7 @@
   }
 
   // Schatkist aan de overkant: gaat open met een regen van munten als het personage veilig is overgestoken.
-  const CHEST_SVG = `<svg viewBox="0 0 90 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs><linearGradient id="chW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7773a"/><stop offset="1" stop-color="#7d4a1e"/></linearGradient>
-    <linearGradient id="chG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".55" stop-color="#f6c744"/><stop offset="1" stop-color="#c98a10"/></linearGradient></defs>
-    <g class="ch-gold"><ellipse cx="45" cy="34" rx="30" ry="9" fill="#f6c744" stroke="#c98a10" stroke-width="2"/>
-      <circle cx="30" cy="30" r="7" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/><circle cx="46" cy="26" r="8" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/><circle cx="60" cy="31" r="7" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/></g>
-    <rect x="8" y="34" width="74" height="38" rx="6" fill="url(#chW)" stroke="#5a3112" stroke-width="3"/>
-    <rect x="8" y="46" width="74" height="7" fill="url(#chG)" stroke="#5a3112" stroke-width="2"/>
-    <rect x="38" y="42" width="14" height="18" rx="3" fill="url(#chG)" stroke="#5a3112" stroke-width="2.4"/><circle cx="45" cy="52" r="2.6" fill="#5a3112"/>
-    <g class="ch-lid"><path d="M8 34 Q8 8 45 8 Q82 8 82 34Z" fill="url(#chW)" stroke="#5a3112" stroke-width="3"/>
-      <path d="M8 34 H82" stroke="#5a3112" stroke-width="3"/><path d="M26 12 V34 M64 12 V34" stroke="url(#chG)" stroke-width="7"/><path d="M26 12 V34 M64 12 V34" stroke="#5a3112" stroke-width="1.4" fill="none"/></g></svg>`;
+  const CHEST_SVG = MG.chestSvg;
 
   // ---------- DOM ----------
   function renderChrome() {

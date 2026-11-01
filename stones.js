@@ -75,6 +75,7 @@
         </header>
         <div class="chase-field st-field" id="stField">
           <div class="st-bank st-bank-far" aria-hidden="true"><span>🌳</span><span>🌷</span><span>🌴</span></div>
+          <div class="st-chest" id="stChest" aria-hidden="true">${MG.chestSvg}</div><span class="st-coins" aria-hidden="true"><i></i><i></i><i></i></span>
           <div class="st-river" aria-hidden="true"></div>
           <div class="st-rows" id="stRows"></div>
           <div class="st-bank st-bank-near" aria-hidden="true"><span>🌼</span><span>🪨</span></div>
@@ -184,7 +185,9 @@
       if (!active || my !== epoch) return;
       if (finished) {
         $("stHero").innerHTML = heroHtml("celebrate");
-        await hop({ x: W / 2, y: H * 0.1 + 20 }, 650); await MG.wait(700);
+        const ch = $("stChest").getBoundingClientRect(), fr = field.getBoundingClientRect();
+        await hop({ x: ch.left - fr.left + ch.width + 40, y: H * 0.1 + 20 }, 650); await MG.wait(350);
+        openChest(); await MG.wait(1500);
         if (!active || my !== epoch) return;
         complete();
       } else { missionIdx++; startMission(); }
@@ -198,6 +201,17 @@
       busy = false; await window.AudioManager.playRandomRetryFeedback(); playMissionAudio();
     }
   }
+  // De schatkist op de overkant gaat open: munten en sterretjes vliegen eruit.
+  function openChest() {
+    const field = $("stField"), chest = $("stChest"); if (!chest) return;
+    chest.classList.add("open"); MG.fx.cha();
+    const fr = field.getBoundingClientRect(), cr = chest.getBoundingClientRect(), cx = cr.left - fr.left + cr.width / 2, cy = cr.top - fr.top + cr.height * 0.35;
+    for (let i = 0; i < 14; i++) {
+      const c = document.createElement("span"); c.className = "br-coin"; if (i % 4 === 0) c.textContent = "✨"; else c.className = "br-coin br-coin-gold";
+      c.style.left = cx + "px"; c.style.top = cy + "px"; c.style.setProperty("--dx", Math.round((Math.random() - 0.4) * 130) + "px"); c.style.setProperty("--dy", Math.round(-50 - Math.random() * 70) + "px"); c.style.animationDelay = (i * 40) + "ms";
+      field.appendChild(c); setTimeout(() => c.remove(), 1700);
+    }
+  }
   function onHelp(auto) {
     if (!active) return;
     if (!auto) helped = true;
@@ -209,7 +223,7 @@
   function complete() {
     MG.finish($("stOverlay"), {
       pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
-      onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; buildRows(); updateDots(); $("stHero").innerHTML = heroHtml("idle"); busy = false; layout(); startMission(); },
+      onAgain: () => { const ch = $("stChest"); if (ch) ch.classList.remove("open"); missions = buildMissions(); missionIdx = 0; solved = []; buildRows(); updateDots(); $("stHero").innerHTML = heroHtml("idle"); busy = false; layout(); startMission(); },
       onBack: () => { location.hash = MG.returnHash(); },
     });
   }
