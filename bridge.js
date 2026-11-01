@@ -15,7 +15,6 @@
   const D = window.MiniCore;
   const MG = window.MiniGames;
   const { store, dir, lang, recordAttempt } = D;
-  const RETURN_HASH = "#/gamestage/games";
   const shuffle = MG.shuffle;
 
   const ALPHA = ["ا", "ب", "ت", "ث", "ج", "ح", "خ", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ع", "غ", "ف", "ق", "ك", "ل", "م", "ن", "هـ", "و", "ي"];
@@ -31,7 +30,29 @@
 
   // ---------- Missies ----------
   // Drie rijen rond de gekozen letter-groep; steeds meer gaten.
+  // Wereld 2: de rij is het alfabet met steeds hetzelfde klinkerteken (بَ تَ ثَ ...); elke opdracht heeft een ander teken.
+  // De extra plank is dezelfde letter met een ander teken: het kind moet het teken horen.
+  function buildHarakatMissions() {
+    const H = window.GAME.harakat, level = MG.currentLevel(profileId), group = MG.group(level);
+    const s0 = Math.max(0, H.BASES.indexOf(MG.baseOf(group[0])));
+    const marks = shuffle(["fatha", "damma", "kasra"]);
+    const specs = [{ len: 5, gaps: 1, off: -1 }, { len: 5, gaps: 2, off: 0 }, { len: 6, gaps: 2, off: 1 }];
+    return specs.map((sp, k) => {
+      const mark = marks[k % 3], start = Math.max(0, Math.min(H.BASES.length - sp.len, s0 + sp.off));
+      const idx = Array.from({ length: sp.len }, (_, i) => start + i);
+      const seq = idx.map((i) => H.item(i, mark));
+      const cand = shuffle(seq.map((_, i) => i).filter((i) => i > 0));
+      const gaps = [];
+      cand.forEach((i) => { if (gaps.length < sp.gaps && gaps.every((g) => Math.abs(g - i) > 1)) gaps.push(i); });
+      gaps.sort((a, b) => a - b);
+      const needed = gaps.map((i) => seq[i]);
+      const other = shuffle(["fatha", "damma", "kasra"].filter((m) => m !== mark))[0];
+      const extra = H.item(idx[gaps[0]], other);
+      return { seq, gaps, tray: shuffle([...needed, extra]) };
+    });
+  }
   function buildMissions() {
+    if (MG.isHarakat() && window.GAME && window.GAME.harakat) return buildHarakatMissions();
     const group = MG.group(MG.currentLevel(profileId));
     const s0 = Math.max(0, ALPHA.indexOf(group[0]));
     const specs = [{ len: 5, gaps: 1, off: -1 }, { len: 5, gaps: 2, off: 0 }, { len: 6, gaps: 2, off: 1 }];
@@ -130,7 +151,7 @@
         <div class="sling-hint">${tt.hint}</div>
         <div class="chase-overlay" id="brOverlay" hidden></div>
       </div>`;
-    $("brBack").onclick = () => { location.hash = RETURN_HASH; };
+    $("brBack").onclick = () => { location.hash = MG.returnHash(); };
     $("brReplay").onclick = () => playMissionAudio();
     $("brHelp").onclick = () => onHelp();
     $("brCross").onclick = () => cross();
@@ -422,11 +443,11 @@
     MG.finish($("brOverlay"), {
       pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
       onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
-      onBack: () => { location.hash = RETURN_HASH; },
+      onBack: () => { location.hash = MG.returnHash(); },
     });
   }
 
-  function onKey(e) { if (active && e.key === "Escape") location.hash = RETURN_HASH; }
+  function onKey(e) { if (active && e.key === "Escape") location.hash = MG.returnHash(); }
 
   function route() {
     const h = location.hash;

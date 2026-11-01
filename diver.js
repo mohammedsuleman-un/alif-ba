@@ -17,7 +17,6 @@
   const D = window.MiniCore;
   const MG = window.MiniGames;
   const { store, dir, lang, recordAttempt } = D;
-  const RETURN_HASH = "#/gamestage/games";
   const shuffle = MG.shuffle;
 
   const TXT = {
@@ -210,7 +209,7 @@
         <div class="sling-hint">${tt.hint}</div>
         <div class="chase-overlay" id="dvOverlay" hidden></div>
       </div>`;
-    $("dvBack").onclick = () => { location.hash = RETURN_HASH; };
+    $("dvBack").onclick = () => { location.hash = MG.returnHash(); };
     $("dvReplay").onclick = () => playMissionAudio();
     $("dvHelp").onclick = () => onHelp();
     updateDots();
@@ -299,13 +298,13 @@
     MG.finish($("dvOverlay"), {
       pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
       onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
-      onBack: () => { location.hash = RETURN_HASH; },
+      onBack: () => { location.hash = MG.returnHash(); },
     });
   }
 
   function onKey(e) {
     if (!active) return;
-    if (e.key === "Escape") location.hash = RETURN_HASH;
+    if (e.key === "Escape") location.hash = MG.returnHash();
   }
 
   // ---------- Phaser-scène ----------

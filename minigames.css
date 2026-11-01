@@ -285,3 +285,56 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
   background: radial-gradient(circle at 35% 30%, #fff6b8 0, #ffd84a 45%, #e3a41a 100%); box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .45), 0 1px 2px rgba(60, 30, 0, .4); }
 .br-coins i:nth-child(2) { transform: translateY(-4px); } .br-coins i:nth-child(3) { transform: translate(-4px, -9px); }
 .br-coin-gold { width: 20px; height: 20px; font-size: 0; }
+
+/* ---- Feestbellen (wereld 2) ---- */
+.bb-field { position: relative; overflow: hidden; padding: 0; border-radius: 0; background: linear-gradient(180deg, #bfe9fa 0%, #e8f7ee 55%, #ffe9b8 100%); }
+.bb-sun { position: absolute; right: 7%; top: 7%; font-size: clamp(34px, 6vw, 54px); filter: drop-shadow(0 0 16px rgba(255, 214, 90, .9)); pointer-events: none; }
+.bb-bunting { position: absolute; left: 0; right: 0; top: 6px; pointer-events: none; z-index: 2; }
+.bb-rope { height: 3px; margin: 14px 4% 0; background: #8a5a2b; border-radius: 3px; transform: rotate(-.6deg); }
+.bb-flags { display: flex; justify-content: space-around; margin: 0 6%; transform: translateY(-3px); }
+.bb-flag { width: clamp(30px, 8vw, 46px); height: clamp(34px, 9vw, 52px); clip-path: polygon(0 0, 100% 0, 50% 100%); background: rgba(255, 255, 255, .55); display: grid; place-items: start center; padding-top: 4px; font-family: "Amiri", serif; font-weight: 700; font-size: clamp(14px, 3.4vw, 20px); color: #5a3a17; }
+.bb-flag.has { background: linear-gradient(180deg, #ffd54a, #f2a92a); animation: bbFlag .5s ease-out; }
+@keyframes bbFlag { 0% { transform: translateY(-14px) scale(.4); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.bb-layer { position: absolute; left: 0; right: 0; top: 64px; bottom: 120px; z-index: 3; }
+.bb-bubble { position: absolute; left: 0; top: 0; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .9); cursor: pointer; padding: 0; will-change: transform;
+  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, .95) 0, rgba(255, 255, 255, .35) 18%, rgba(190, 232, 255, .55) 60%, rgba(120, 190, 235, .6) 100%);
+  box-shadow: inset -6px -8px 16px rgba(80, 150, 210, .35), 0 6px 14px rgba(40, 90, 140, .25); color: #3a2410; font-family: "Amiri", serif; font-weight: 700; display: grid; place-items: center; }
+.bb-bubble span { line-height: 1.6; padding-top: .12em; pointer-events: none; }
+.bb-bubble.is-pop { animation: bbPop .35s ease-out forwards; pointer-events: none; }
+@keyframes bbPop { 0% { opacity: 1; filter: none; } 40% { opacity: 1; filter: brightness(1.4); } 100% { opacity: 0; filter: blur(3px); } }
+.bb-bubble.is-wrong { animation: bbShake .45s linear 2; background: radial-gradient(circle at 32% 28%, #fff 0, #ffd2c4 40%, #f59d86 100%); }
+@keyframes bbShake { 0%, 100% { margin-left: 0; } 25% { margin-left: -9px; } 75% { margin-left: 9px; } }
+.bb-bubble.is-help { box-shadow: 0 0 0 6px rgba(255, 213, 74, .9), 0 0 24px rgba(255, 213, 74, .9); animation: brHelp .8s ease-in-out infinite; }
+.bb-cannon { position: absolute; left: 50%; bottom: 12px; width: 92px; height: 92px; margin-left: -46px; z-index: 4; pointer-events: none; }
+.bb-barrel { position: absolute; left: 50%; bottom: 36px; width: 38px; height: 70px; margin-left: -19px; border-radius: 10px 10px 4px 4px; transform-origin: 50% 82%; transition: transform .25s;
+  background: linear-gradient(90deg, #5d6b7a, #9aa9b8 45%, #4a5663); border: 3px solid #2f3a45; }
+.bb-barrel::after { content: ""; position: absolute; left: -6px; right: -6px; top: -4px; height: 12px; border-radius: 6px; background: #2f3a45; }
+.bb-wheel { position: absolute; left: 50%; bottom: 0; width: 70px; height: 56px; margin-left: -35px; border-radius: 50% 50% 14px 14px; background: linear-gradient(180deg, #b3753a, #7a4a1e); border: 3px solid #4a2a0c; }
+.bb-ball { position: absolute; left: 0; top: 0; width: 18px; height: 18px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #ffd54a 55%, #e08a1c); box-shadow: 0 0 10px rgba(255, 190, 60, .9); z-index: 6; pointer-events: none; }
+.bb-spark { position: absolute; z-index: 7; font-size: 20px; pointer-events: none; animation: bbSpark .85s ease-out forwards; }
+@keyframes bbSpark { 0% { transform: translate(-50%, -50%) scale(.4); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.1); opacity: 0; } }
+
+/* ---- Havenloods (wereld 2) ---- */
+.hb-field { position: relative; overflow: hidden; padding: 0; background: linear-gradient(180deg, #8fd6ea 0%, #4fb0d6 40%, #2c8bbb 100%); touch-action: none; }
+.hb-shore { position: absolute; left: 0; right: 0; top: 0; height: 21%; background: linear-gradient(180deg, #a8d878 0, #78c957 55%, #c39a62 55%, #a47a46 100%); border-bottom: 4px solid #6b4a24; z-index: 1; }
+.hb-sea-fx { position: absolute; inset: 0; pointer-events: none; z-index: 1; opacity: .7;
+  background: radial-gradient(ellipse 22px 6px at 24px 10px, rgba(255, 255, 255, .55) 98%, transparent) 0 0 / 80px 44px; animation: brWave 7s linear infinite; }
+.hb-piers { position: absolute; left: 0; right: 0; top: 0; height: 100%; z-index: 2; pointer-events: none; }
+.hb-pier { position: absolute; top: 12%; height: 22%; display: flex; flex-direction: column; align-items: center; transition: transform .2s; }
+.hb-sign { min-width: 64%; padding: 4px 10px 8px; border-radius: 14px; background: linear-gradient(180deg, #fffaf0, #f7e2b0); border: 3px solid #b3803a; font-family: "Amiri", serif; font-weight: 700; font-size: clamp(34px, 7vw, 54px); line-height: 1.55; color: #3a2410; text-align: center; box-shadow: 0 4px 0 #8a5a2b; }
+.hb-planks { display: block; width: 76%; height: 100%; margin-top: 2px; border-radius: 4px; background: repeating-linear-gradient(90deg, #c68a49 0 14px, #a8702f 14px 17px); border: 2px solid #6b4a24; box-shadow: 0 6px 0 rgba(0, 0, 0, .12); }
+.hb-pier.is-near .hb-sign { box-shadow: 0 0 0 5px rgba(255, 213, 74, .95), 0 4px 0 #8a5a2b; }
+.hb-pier.is-help .hb-sign { animation: brHelp .8s ease-in-out infinite; box-shadow: 0 0 0 6px rgba(255, 213, 74, .95), 0 4px 0 #8a5a2b; }
+.hb-pier.is-ok .hb-sign { background: linear-gradient(180deg, #c8f5a6, #7dd653); border-color: #3f9a24; }
+.hb-pier.is-wrong { animation: bbShake .45s linear 2; } .hb-pier.is-wrong .hb-sign { background: linear-gradient(180deg, #ffd8c8, #f5a48c); border-color: #c0563b; }
+.hb-islands { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.hb-island { position: absolute; font-size: 56px; line-height: 1; filter: drop-shadow(0 5px 3px rgba(0, 40, 70, .3)); }
+.hb-boat { position: absolute; left: 0; top: 0; width: 92px; height: 84px; z-index: 4; pointer-events: none; will-change: transform; filter: drop-shadow(0 8px 5px rgba(0, 40, 70, .3)); }
+.hb-hull { position: absolute; left: 0; right: 0; bottom: 0; }
+.hb-hull svg { display: block; width: 100%; height: auto; }
+.hb-hero { position: absolute; left: 50%; bottom: 26px; width: 46px; height: 62px; margin-left: -23px; z-index: 2; }
+.hb-emoji { font-size: 40px; }
+.hb-boat.is-sailing .hb-hull { animation: hbBob .5s ease-in-out infinite; }
+@keyframes hbBob { 50% { transform: translateY(3px) rotate(1.5deg); } }
+.hb-anchor { position: absolute; z-index: 6; right: 12px; bottom: 12px; width: auto; margin: 0; padding: 12px 22px; font-size: 18px; }
+.hb-anchor:disabled { opacity: .45; }

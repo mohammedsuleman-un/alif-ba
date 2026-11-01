@@ -868,6 +868,7 @@
           <span>${t.levelsProgress(doneCount, levels.length)}</span>
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
+        ${world.id === "flowers_valley" ? `<a href="#/gamestage/games?w=2" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : ""}
         <a href="#/spel/kaart" class="g-icon-btn" aria-label="Kaart">🗺️</a>
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
@@ -1488,7 +1489,7 @@
     sayOnceWhenFree("level-choose");
     $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
     scr.overview.querySelectorAll(".lh-card[data-game]").forEach((b) => (b.onclick = () => {
-      if (MG) MG.focusLevel(pid, level.n - 1);
+      if (MG) { MG.setWorld("oasis"); MG.focusLevel(pid, level.n - 1); }
       gohash(`#/gamestage/${b.dataset.game}/1`);
     }));
   }

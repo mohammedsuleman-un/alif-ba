@@ -19,7 +19,6 @@
   const $ = (id) => document.getElementById(id);
   const D = window.MiniCore;
   const { store, dir, lang, recordAttempt } = D;
-  const RETURN_HASH = "#/gamestage/games";
 
   const TXT = {
     nl: { find: "Luister en zoek de letter", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
@@ -156,7 +155,7 @@
         <div class="sling-hint" id="slHint">${tt.pull}</div>
         <div class="chase-overlay" id="slOverlay" hidden></div>
       </div>`;
-    $("slBack").onclick = () => { location.hash = RETURN_HASH; };
+    $("slBack").onclick = () => { location.hash = MG.returnHash(); };
     $("slReplay").onclick = () => playMissionAudio();
     $("slHelp").onclick = () => onHelp();
     updateDots();
@@ -244,13 +243,13 @@
     MG.finish($("slOverlay"), {
       pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
       onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
-      onBack: () => { location.hash = RETURN_HASH; },
+      onBack: () => { location.hash = MG.returnHash(); },
     });
   }
 
   function onKey(e) {
     if (!active) return;
-    if (e.key === "Escape") { location.hash = RETURN_HASH; }
+    if (e.key === "Escape") { location.hash = MG.returnHash(); }
   }
 
   // ---------- Phaser-scène ----------

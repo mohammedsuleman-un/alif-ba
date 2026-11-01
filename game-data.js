@@ -104,6 +104,7 @@ window.GAME.chapters = [
   const item = (i, kind) => (i === 0 ? (kind === "kasra" ? "إ" : "أ") : BASES[i]) + MARKS[kind];
   const range = (a, b) => Array.from({ length: b - a }, (_, k) => a + k);
   const forms = (kind, idx) => idx.map((i) => item(i, kind));
+  G.harakat = { item, BASES, MARKS }; // voor de spelletjes van wereld 2
   ["fatha", "damma", "kasra"].forEach((kind) => BASES.forEach((_, i) => { G.letterAudio[item(i, kind)] = `audio/H2-${kind}-${String(i + 1).padStart(2, "0")}`; }));
   const baseKey = (s) => s.replace(/[\u064B-\u0652]/g, "").replace(/[أإآ]/g, "ا");
   const markOf = (s) => (s.match(/[\u064E\u064F\u0650]/) || [""])[0];

@@ -15,7 +15,6 @@
   const $ = (id) => document.getElementById(id);
   const D = window.MiniCore;
   const { store, dir, lang, recordAttempt } = D;
-  const RETURN_HASH = D.RETURN_HASH;
 
   const TXT = {
     nl: { find: "Luister en zoek de letter", good: "Goed gedaan", again: "Nog een keer", back: "Terug", listen: "Luister opnieuw", help: "Help mij",
@@ -171,7 +170,7 @@
         </div>
         <div class="chase-overlay" id="phOverlay" hidden></div>
       </div>`;
-    $("phBack").onclick = () => { location.hash = "#/gamestage/games"; };
+    $("phBack").onclick = () => { location.hash = MG.returnHash(); };
     $("phReplay").onclick = () => playMissionAudio();
     $("phHelp").onclick = () => onHelp();
     $("phShutter").onclick = () => shutter();
@@ -288,7 +287,7 @@
     MG.finish($("phOverlay"), {
       pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
       onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
-      onBack: () => { location.hash = "#/gamestage/games"; },
+      onBack: () => { location.hash = MG.returnHash(); },
     });
   }
 
@@ -298,7 +297,7 @@
     else if (e.key === "+" || e.key === "=") { scene && scene.stepZoom(1); }
     else if (e.key === "-" || e.key === "_") { scene && scene.stepZoom(-1); }
     else if (e.key.startsWith("Arrow")) { e.preventDefault(); scene && scene.panKey(e.key); }
-    else if (e.key === "Escape") { location.hash = "#/gamestage/games"; }
+    else if (e.key === "Escape") { location.hash = MG.returnHash(); }
   }
 
   // ---------- Phaser-scène ----------

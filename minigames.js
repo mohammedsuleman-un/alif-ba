@@ -20,6 +20,12 @@
     { key: "bridge", hash: "#/gamestage/bridge/1", icon: "🌉",
       title: { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" },
       sub: { nl: "Maak de alfabetrij af en steek over", en: "Complete the alphabet row and cross", ar: "أكمل صف الحروف واعبر", tr: "Alfabe sırasını tamamla ve geç" } },
+    { key: "bubbles", hash: "#/gamestage/bubbles/1", icon: "🫧", world2: true,
+      title: { nl: "Feestbellen", en: "Festival Bubbles", ar: "فقاعات الاحتفال", tr: "Festival Balonları" },
+      sub: { nl: "Hoor de klank en schiet de goede bel", en: "Hear the sound and pop the right bubble", ar: "اسمع الصوت وأصب الفقاعة الصحيحة", tr: "Sesi duy ve doğru balona at" } },
+    { key: "harbor", hash: "#/gamestage/harbor/1", icon: "⛵", world2: true,
+      title: { nl: "Havenloods", en: "Harbour Pilot", ar: "ربّان الميناء", tr: "Liman Kaptanı" },
+      sub: { nl: "Vaar naar de steiger met de goede klank", en: "Sail to the pier with the right sound", ar: "أبحر إلى الرصيف الذي عليه الصوت الصحيح", tr: "Doğru sesli iskeleye yanaş" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
   const GROUP_LABEL = { nl: "Jouw route", en: "Your path", ar: "مسارك", tr: "Yolun" };
@@ -29,7 +35,7 @@
   };
   const BACK = { nl: "Terug", en: "Back", ar: "رجوع", tr: "Geri" };
 
-  let active = false;
+  let active = false, activeWorld = null;
 
   function teardown() {
     active = false;
@@ -39,6 +45,11 @@
 
   function setup() {
     const section = $("gamestage"); if (!section) return;
+    const MG0 = window.MiniGames, w2 = /[?&]w=2\b/.test(location.hash);
+    if (MG0) MG0.setWorld(w2 ? "harakat" : "oasis"); // wereld 2 komt met ?w=2, anders wereld 1
+    activeWorld = w2;
+    const list = GAMES.filter((g) => !g.world2 || (MG0 && MG0.isHarakat()));
+    const back = MG0 && MG0.isHarakat() ? "#/spel/wereld/flowers_valley" : D.RETURN_HASH;
     const l = GAMES[0].title[lang()] ? lang() : "nl";
     section.hidden = false; section.dataset.owner = "games";
     active = true;
@@ -47,7 +58,7 @@
     section.innerHTML = `
       <div class="chase-screen games-screen">
         <header class="chase-head">
-          <a href="${D.RETURN_HASH}" class="g-icon-btn" aria-label="${AF.fem(BACK[l])}"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
+          <a href="${back}" class="g-icon-btn" aria-label="${AF.fem(BACK[l])}"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></a>
           <div class="chase-instr"><span class="chase-instr-text">${AF.fem(HEAD[l])}</span></div>
           <div class="games-top"><span class="games-coins" id="gamesCoins">🪙 0</span><a href="#/spel/kledingkast" class="g-icon-btn" aria-label="Kledingkast">👕</a></div>
         </header>
@@ -57,7 +68,7 @@
             <div class="games-levels" id="gamesLevels"></div>
           </div>
           <div class="games-grid">
-            ${GAMES.map((g) => {
+            ${list.map((g) => {
               const pid = store.get("gp_active", null), MG = window.MiniGames;
               const open = !MG || !pid || MG.gameOpen(pid, g.key), need = MG ? MG.UNLOCKS[g.key] : 0;
               return open ? `
@@ -97,15 +108,16 @@
       const state = i === cur ? "is-current" : done.includes(i) ? "is-done" : i <= unlocked ? "is-open" : "is-locked";
       const mark = state === "is-locked" ? "🔒" : done.includes(i) ? "✓" : "";
       return `<button class="route-node ${state}" data-i="${i}" ${i > unlocked ? "disabled" : ""} aria-label="${t.level} ${i + 1}">
-        <span class="route-num">${i + 1}</span><span class="route-letters" lang="ar" dir="rtl">${g.join(" ")}</span>${mark ? `<i>${mark}</i>` : ""}</button>`;
+        <span class="route-num">${i + 1}</span><span class="route-letters" lang="ar" dir="rtl">${MG.labelOf(g)}</span>${mark ? `<i>${mark}</i>` : ""}</button>`;
     }).join("");
-    el.innerHTML = `<p class="route-now">${t.level} ${cur + 1} ${t.of} ${total} · ${t.fresh}: <b lang="ar" dir="rtl">${MG.GROUPS[cur].join(" ")}</b>${cur > 0 ? " " + t.review : ""}</p><div class="route-path">${nodes}</div>`;
+    el.innerHTML = `<p class="route-now">${t.level} ${cur + 1} ${t.of} ${total} · ${t.fresh}: <b lang="ar" dir="rtl">${MG.labelOf(MG.GROUPS[cur])}</b>${cur > 0 ? " " + t.review : ""}</p><div class="route-path">${nodes}</div>`;
     el.querySelectorAll(".route-node:not([disabled])").forEach((b) => { b.onclick = () => { MG.setPlay(pid, +b.dataset.i); renderLevels(); }; });
   }
 
   function route() {
     const on = location.hash.startsWith("#/gamestage/games");
-    if (on) { if (!active) setup(); } else if (active) teardown();
+    const w2 = /[?&]w=2\b/.test(location.hash);
+    if (on) { if (!active || activeWorld !== w2) setup(); } else if (active) teardown();
   }
   window.addEventListener("hashchange", route);
   route();
