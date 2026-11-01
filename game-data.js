@@ -117,29 +117,31 @@ window.GAME.chapters = [
     const rest = cands.filter((x) => !sameLetter.includes(x) && !sameMark.includes(x));
     const out = [];
     const add = (arr, n) => { for (const x of arr) { if (out.length >= 3 || n <= 0) break; if (!out.includes(x)) { out.push(x); n--; } } };
-    add(sameLetter, 1); add(sameMark, 2); add(rest, 3); add(cands, 3);
+    add(sameLetter, Math.random() < 0.6 ? 2 : 1); add(sameMark, 2); add(rest, 3); add(cands, 3);
     return out.slice(0, 3);
   };
-  const A = range(0, 9), B = range(9, 18), C = range(18, 28), H1 = range(0, 14), H2 = range(14, 28), ALL = range(0, 28);
-  const all = [].concat(forms("fatha", ALL), forms("damma", ALL), forms("kasra", ALL));
+  // Alle drie de tekens door elkaar vanaf het begin: elk level pakt 4 letters, elk met فتحة, ضمة en كسرة (12 klanken).
+  // Zo kan het kind het antwoord niet raden door op het teken van het level te letten; het moet echt luisteren.
+  const ALL = range(0, 28), MARKS3 = ["fatha", "damma", "kasra"];
+  const group = (idx) => idx.flatMap((i) => MARKS3.map((k) => item(i, k)));
+  const GROUPS = [range(0, 4), range(4, 8), range(8, 12), range(12, 16), range(16, 20), range(20, 24), range(24, 28)];
+  const all = group(ALL);
   const T = (ar, nl, en, tr) => ({ ar, nl, en, tr });
   const ty = ["AUDIO_TO_LETTER", "VISUAL_MATCH"], tyP = ["AUDIO_TO_LETTER", "VISUAL_MATCH", "LETTER_MATCH"];
+  const levels = GROUPS.map((idx, k) => {
+    const bases = idx.map((i) => BASES[i]).join(" ");
+    return {
+      n: k + 1, letters: group(idx), review: k ? group(GROUPS.slice(0, k).flat()) : [], types: k < 2 ? ty : tyP, count: k ? 30 : 24,
+      title: T("اكتشف " + bases, "Ontdek " + bases, "Discover " + bases, bases + " harflerini keşfet"),
+    };
+  });
+  levels.push({ n: 8, letters: [], review: group(range(0, 16)), types: tyP, count: 24, title: T("الحركات الثلاث ١", "Alle klinkertekens 1", "All vowel marks 1", "Tüm harekeler 1") });
+  levels.push({ n: 9, letters: [], review: all, types: tyP, count: 30, challenge: true, badge: "harakat_master", title: T("تحدي الحركات", "Klinkerteken-uitdaging", "Vowel marks challenge", "Hareke meydan okuması") });
   G.worlds.push({
     id: "flowers_valley", theme: "flowers", requires: "letter_oasis", distract,
     title: T("الحركات", "Klinkertekens", "Vowel marks", "Harekeler"),
     subtitle: T("الفتحة والضمة والكسرة", "Fatha, damma en kasra", "Fatha, damma and kasra", "Fetha, damme ve kesre"),
-    letters: all, badge: "harakat_master",
-    levels: [
-      { n: 1, letters: forms("fatha", A), review: [], types: ty, count: 20, title: T("الفتحة ١", "Fatha 1", "Fatha 1", "Fetha 1") },
-      { n: 2, letters: forms("fatha", B), review: forms("fatha", A), types: ty, count: 24, title: T("الفتحة ٢", "Fatha 2", "Fatha 2", "Fetha 2") },
-      { n: 3, letters: forms("fatha", C), review: forms("fatha", [...A, ...B]), types: ty, count: 26, title: T("الفتحة ٣", "Fatha 3", "Fatha 3", "Fetha 3") },
-      { n: 4, letters: forms("damma", H1), review: forms("fatha", H1), types: tyP, count: 30, title: T("الضمة ١", "Damma 1", "Damma 1", "Damme 1") },
-      { n: 5, letters: forms("damma", H2), review: [].concat(forms("damma", H1), forms("fatha", H2)), types: tyP, count: 30, title: T("الضمة ٢", "Damma 2", "Damma 2", "Damme 2") },
-      { n: 6, letters: forms("kasra", H1), review: [].concat(forms("fatha", H1), forms("damma", H1)), types: tyP, count: 30, title: T("الكسرة ١", "Kasra 1", "Kasra 1", "Kesre 1") },
-      { n: 7, letters: forms("kasra", H2), review: [].concat(forms("kasra", H1), forms("fatha", H2), forms("damma", H2)), types: tyP, count: 30, title: T("الكسرة ٢", "Kasra 2", "Kasra 2", "Kesre 2") },
-      { n: 8, letters: [], review: [].concat(forms("fatha", H1), forms("damma", H1), forms("kasra", H1)), types: tyP, count: 24, title: T("الحركات الثلاث", "Alle drie de tekens", "All three marks", "Üç hareke") },
-      { n: 9, letters: [], review: all, types: tyP, count: 30, challenge: true, badge: "harakat_master", title: T("تحدي الحركات", "Klinkerteken-uitdaging", "Vowel marks challenge", "Hareke meydan okuması") },
-    ],
+    letters: all, badge: "harakat_master", levels,
   });
   G.badges.harakat_master = { icon: "🌻", ar: "بطل الحركات", nl: "Klinkertekenmeester", en: "Vowel marks master", tr: "Hareke ustası" };
 })();
