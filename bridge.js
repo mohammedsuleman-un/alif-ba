@@ -85,6 +85,18 @@
     startMission();
   }
 
+  // Schatkist aan de overkant: gaat open met een regen van munten als het personage veilig is overgestoken.
+  const CHEST_SVG = `<svg viewBox="0 0 90 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs><linearGradient id="chW" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b7773a"/><stop offset="1" stop-color="#7d4a1e"/></linearGradient>
+    <linearGradient id="chG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2a8"/><stop offset=".55" stop-color="#f6c744"/><stop offset="1" stop-color="#c98a10"/></linearGradient></defs>
+    <g class="ch-gold"><ellipse cx="45" cy="34" rx="30" ry="9" fill="#f6c744" stroke="#c98a10" stroke-width="2"/>
+      <circle cx="30" cy="30" r="7" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/><circle cx="46" cy="26" r="8" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/><circle cx="60" cy="31" r="7" fill="url(#chG)" stroke="#c98a10" stroke-width="1.6"/></g>
+    <rect x="8" y="34" width="74" height="38" rx="6" fill="url(#chW)" stroke="#5a3112" stroke-width="3"/>
+    <rect x="8" y="46" width="74" height="7" fill="url(#chG)" stroke="#5a3112" stroke-width="2"/>
+    <rect x="38" y="42" width="14" height="18" rx="3" fill="url(#chG)" stroke="#5a3112" stroke-width="2.4"/><circle cx="45" cy="52" r="2.6" fill="#5a3112"/>
+    <g class="ch-lid"><path d="M8 34 Q8 8 45 8 Q82 8 82 34Z" fill="url(#chW)" stroke="#5a3112" stroke-width="3"/>
+      <path d="M8 34 H82" stroke="#5a3112" stroke-width="3"/><path d="M26 12 V34 M64 12 V34" stroke="url(#chG)" stroke-width="7"/><path d="M26 12 V34 M64 12 V34" stroke="#5a3112" stroke-width="1.4" fill="none"/></g></svg>`;
+
   // ---------- DOM ----------
   function renderChrome() {
     const tt = tx();
@@ -99,9 +111,16 @@
         </header>
         <div class="chase-field br-field" id="brField">
           <div class="br-scene" id="brScene">
+            <div class="br-sky" aria-hidden="true"><span class="br-sun">☀️</span><span class="br-cloud c1">☁️</span><span class="br-cloud c2">☁️</span></div>
             <div class="br-waves" aria-hidden="true"></div>
-            <div class="br-bank br-bank-r" id="brBankR" aria-hidden="true"><span class="br-deco">🌴</span></div>
-            <div class="br-bank br-bank-l" id="brBankL" aria-hidden="true"><span class="br-deco">🌷</span></div>
+            <span class="br-lily l1" aria-hidden="true">🪷</span><span class="br-lily l2" aria-hidden="true">🪷</span>
+            <div class="br-bank br-bank-r" id="brBankR" aria-hidden="true"><span class="br-deco">🌴</span><span class="br-deco2">🪨</span><span class="br-deco3">🌼</span></div>
+            <div class="br-bank br-bank-l" id="brBankL" aria-hidden="true">
+              <span class="br-coins"><i></i><i></i><i></i></span>
+              <span class="br-chest" id="brChest">${CHEST_SVG}</span>
+              <span class="br-deco3 l">🌷</span>
+            </div>
+            <i class="br-post br-post-r" aria-hidden="true"></i><i class="br-post br-post-l" aria-hidden="true"></i>
             <div class="br-row" id="brRow" dir="rtl"></div>
             <div class="br-explorer" id="brExplorer"></div>
           </div>
@@ -182,8 +201,8 @@
     scene.style.setProperty("--bank-wr", Math.max(44, Math.round(right + 22)) + "px");
     geo = {
       water, top,
-      startX: Math.min(sr.width - 26, rr.right - sr.left + Math.max(30, right / 2)), startY: top + 2,
-      endX: Math.max(26, left - Math.max(30, left / 2)), endY: top + 2,
+      startX: Math.min(sr.width - 26, rr.right - sr.left + Math.min(70, Math.max(30, right / 2))), startY: top + 2,
+      endX: Math.max(26, left - Math.min(70, Math.max(30, left / 2))), endY: top + 2,
     };
     const ex = $("brExplorer");
     if (ex && !busy && !ex.classList.contains("is-grabbed")) standAt(geo.startX, geo.startY);
@@ -193,25 +212,84 @@
     const ex = $("brExplorer"); if (!ex) return;
     layoutScene();
     ex.className = "br-explorer";
+    const chest = $("brChest"); if (chest) chest.classList.remove("open");
     ex.style.transition = "none"; ex.style.opacity = 1; setMood("idle");
     if (geo) standAt(geo.startX, geo.startY);
     requestAnimationFrame(() => { ex.style.transition = ""; });
   }
-  const SHARK_SVG = `<svg viewBox="0 0 170 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs><linearGradient id="brSh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6f93b3"/><stop offset="1" stop-color="#4a6f90"/></linearGradient></defs>
-    <path d="M10 62 Q40 18 98 24 Q132 28 160 58 L132 56 Q118 82 70 84 Q30 86 10 62Z" fill="url(#brSh)" stroke="#34506b" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M84 24 L98 -2 L112 26Z" fill="#5a7f9f" stroke="#34506b" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M12 62 Q40 80 70 84 Q118 82 132 56 Q80 70 12 62Z" fill="#eaf4fa"/>
-    <path d="M12 62 Q46 70 92 62" fill="#fff" stroke="#34506b" stroke-width="3"/>
-    <path d="M22 60 L30 66 L38 61 L46 67 L54 62 L62 67 L70 62 L78 66 L86 62" fill="#fff" stroke="#34506b" stroke-width="1.6" stroke-linejoin="round"/>
-    <circle cx="48" cy="44" r="7" fill="#fff" stroke="#34506b" stroke-width="2.5"/><circle cx="50" cy="45" r="3.2" fill="#1b2a38"/>
-    <path d="M150 58 L168 34 L168 80 L142 62Z" fill="#5a7f9f" stroke="#34506b" stroke-width="3" stroke-linejoin="round"/></svg>`;
+  const SHARK_SVG = `<svg viewBox="0 0 130 170" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="brSh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4d6f8f"/><stop offset=".5" stop-color="#7ea2c2"/><stop offset="1" stop-color="#4d6f8f"/></linearGradient>
+      <radialGradient id="brMo" cx=".5" cy=".55" r=".6"><stop offset="0" stop-color="#3a0710"/><stop offset="1" stop-color="#a1182e"/></radialGradient>
+    </defs>
+    <path d="M40 112 L10 166 L50 146 L65 160 L80 146 L120 166 L90 112Z" fill="#46688a" stroke="#2d4660" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M28 70 L2 108 L40 96Z" fill="#46688a" stroke="#2d4660" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M102 70 L128 108 L90 96Z" fill="#46688a" stroke="#2d4660" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M26 62 Q24 118 52 142 L78 142 Q106 118 104 62 Q104 6 65 6 Q26 6 26 62Z" fill="url(#brSh)" stroke="#2d4660" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M44 100 Q65 150 86 100 Q65 118 44 100Z" fill="#eef6fb"/>
+    <path d="M36 104 L46 110 M36 114 L48 119 M94 104 L84 110 M94 114 L82 119" stroke="#2d4660" stroke-width="3" stroke-linecap="round"/>
+    <path d="M32 40 Q65 -14 98 40 Q98 74 65 80 Q32 74 32 40Z" fill="url(#brMo)" stroke="#2d4660" stroke-width="3.5" stroke-linejoin="round"/>
+    <path d="M52 62 Q65 52 78 62 Q65 74 52 62Z" fill="#e0556b"/>
+    <path d="M35 36 L41 52 L47 30 L54 49 L60 24 L66 47 L72 24 L78 49 L84 30 L90 52 L95 36 Q65 8 35 36Z" fill="#fff" stroke="#2d4660" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M38 62 L45 48 L52 64 L59 50 L65 66 L71 50 L78 64 L85 48 L92 62 Q65 84 38 62Z" fill="#fff" stroke="#2d4660" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="29" cy="30" r="9" fill="#fff" stroke="#2d4660" stroke-width="3"/><circle cx="101" cy="30" r="9" fill="#fff" stroke="#2d4660" stroke-width="3"/>
+    <circle cx="31" cy="32" r="4.4" fill="#16212c"/><circle cx="99" cy="32" r="4.4" fill="#16212c"/>
+    <path d="M17 17 L40 26 M113 17 L90 26" stroke="#16212c" stroke-width="5.5" stroke-linecap="round"/>
+    </svg>`;
+  // ---------- Geluidseffecten (zelf gemaakt met Web Audio, geen bestanden): water, hap, schreeuw, plons, munten ----------
+  let actx = null;
+  const audioCtx = () => {
+    try {
+      if (window.AudioManager && window.AudioManager.settings && !window.AudioManager.settings.sfxOn) return null;
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+      return actx;
+    } catch { return null; }
+  };
+  function noiseBurst(dur, type, f0, f1, gain, delay = 0) {
+    const c = audioCtx(); if (!c) return;
+    const n = Math.max(1, Math.floor(c.sampleRate * dur)), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t0 = c.currentTime + delay;
+    src.buffer = buf; f.type = type; f.Q.value = 1.2;
+    f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain, t0 + Math.min(0.06, dur / 3)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(t0); src.stop(t0 + dur + 0.05);
+  }
+  function glide(type, f0, f1, dur, gain, delay = 0, vib = 0) {
+    const c = audioCtx(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime + delay;
+    o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    if (vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 13; lg.gain.value = vib; l.connect(lg); lg.connect(o.frequency); l.start(t0); l.stop(t0 + dur + 0.05); }
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain, t0 + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+  const FX = {
+    swoosh() { noiseBurst(0.5, "bandpass", 250, 1900, 0.2); },                       // haai breekt door het water
+    chomp() { noiseBurst(0.14, "lowpass", 1400, 260, 0.45); glide("sine", 150, 55, 0.2, 0.4); }, // hap
+    scream() { glide("sawtooth", 1050, 330, 0.85, 0.13, 0, 60); glide("square", 520, 165, 0.85, 0.05, 0, 30); }, // "aaaaah!" van het personage
+    splash() { noiseBurst(0.75, "lowpass", 3400, 260, 0.38); noiseBurst(0.3, "highpass", 2600, 5200, 0.1, 0.05); },
+    coins() { [988, 1319, 1568, 2093].forEach((f, i) => glide("triangle", f, f * 1.01, 0.28, 0.13, i * 0.1)); noiseBurst(0.35, "highpass", 5000, 9000, 0.06, 0.1); },
+  };
+  function openChest() {
+    const scene = $("brScene"), chest = $("brChest"); if (!scene || !chest) return;
+    chest.classList.add("open"); FX.coins();
+    const sr = scene.getBoundingClientRect(), cr = chest.getBoundingClientRect();
+    const cx = cr.left - sr.left + cr.width / 2, cy = cr.top - sr.top + cr.height * 0.35;
+    for (let i = 0; i < 14; i++) {
+      const c = document.createElement("span"); c.className = "br-coin"; if (i % 4 === 0) c.textContent = "✨"; else c.className = "br-coin br-coin-gold";
+      c.style.left = cx + "px"; c.style.top = cy + "px";
+      c.style.setProperty("--dx", Math.round((Math.random() - 0.35) * 120) + "px"); c.style.setProperty("--dy", Math.round(-50 - Math.random() * 70) + "px");
+      c.style.animationDelay = (i * 40) + "ms";
+      scene.appendChild(c); setTimeout(() => c.remove(), 1700);
+    }
+  }
   // Een verkeerde plank: de haai springt uit het water, pakt het personage en ze vallen met een plons terug in het water.
   async function sharkAttack(plank) {
     const scene = $("brScene"), ex = $("brExplorer"); if (!scene || !ex || !geo) return;
     const sr = scene.getBoundingClientRect(), pr = plank.getBoundingClientRect();
     const x = pr.left - sr.left + pr.width / 2, exY = pr.top - sr.top - 1;
-    const rise = Math.max(60, geo.water - exY + 20), fall = Math.max(60, geo.water - exY + 24);
+    const rise = Math.max(70, geo.water - exY + 46), fall = Math.max(60, geo.water - exY + 24);
     const shark = document.createElement("div"); shark.className = "br-shark"; shark.innerHTML = SHARK_SVG;
     shark.style.left = x + "px"; shark.style.top = geo.water + "px"; shark.style.setProperty("--rise", rise + "px");
     const splash = document.createElement("div"); splash.className = "br-splash"; splash.style.left = x + "px"; splash.style.top = geo.water + "px";
@@ -219,6 +297,9 @@
     scene.append(shark, splash);
     setMood("surprised"); ex.style.setProperty("--fall", fall + "px");
     shark.classList.add("is-jump"); ex.classList.add("is-grabbed"); splash.classList.add("is-go");
+    // geluid volgt de animatie: water, hap, schreeuw tijdens de val, plons bij het water
+    const at = (ms, fn) => setTimeout(() => { if (active) fn(); }, ms);
+    at(60, FX.swoosh); at(640, FX.chomp); at(720, FX.scream); at(1250, FX.splash);
     await MG.wait(1750);
     shark.remove(); splash.remove();
   }
@@ -301,7 +382,7 @@
       if (!right) { badIndex = i; break; }
       planks[i].classList.add("is-ok");
     }
-    if (badIndex < 0 && geo) { setMood("celebrate"); standAt(geo.endX, geo.endY); await MG.wait(900); } // veilig aan de overkant
+    if (badIndex < 0 && geo) { setMood("celebrate"); standAt(geo.endX, geo.endY); await MG.wait(850); openChest(); await MG.wait(700); } // veilig aan de overkant: de schatkist gaat open
     const gapLetters = m.gaps.map((i) => m.seq[i]);
     const wrongLetter = badIndex >= 0 ? slots[badIndex] : null;
     recordAttempt(profileId, {
