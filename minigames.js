@@ -26,6 +26,9 @@
     { key: "harbor", hash: "#/gamestage/harbor/1", icon: "⛵", world2: true,
       title: { nl: "Havenloods", en: "Harbour Pilot", ar: "ربّان الميناء", tr: "Liman Kaptanı" },
       sub: { nl: "Vaar naar de steiger met de goede klank", en: "Sail to the pier with the right sound", ar: "أبحر إلى الرصيف الذي عليه الصوت الصحيح", tr: "Doğru sesli iskeleye yanaş" } },
+    { key: "stones", hash: "#/gamestage/stones/1", icon: "🪷", world2: true,
+      title: { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" },
+      sub: { nl: "Hoor de klank en spring op de goede steen", en: "Hear the sound and jump on the right stone", ar: "اسمع الصوت واقفز على الحجر الصحيح", tr: "Sesi duy ve doğru taşa zıpla" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
   const GROUP_LABEL = { nl: "Jouw route", en: "Your path", ar: "مسارك", tr: "Yolun" };

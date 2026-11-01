@@ -338,3 +338,26 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 @keyframes hbBob { 50% { transform: translateY(3px) rotate(1.5deg); } }
 .hb-anchor { position: absolute; z-index: 6; right: 12px; bottom: 12px; width: auto; margin: 0; padding: 12px 22px; font-size: 18px; }
 .hb-anchor:disabled { opacity: .45; }
+
+/* ---- Stapstenen (wereld 2) ---- */
+.st-field { position: relative; overflow: hidden; padding: 0; background: linear-gradient(180deg, #8fd6ea 0%, #4fb0d6 45%, #2c8bbb 100%); touch-action: manipulation; }
+.st-river { position: absolute; left: 0; right: 0; top: 14%; bottom: 10%; z-index: 0;
+  background: radial-gradient(ellipse 24px 7px at 26px 10px, rgba(255, 255, 255, .5) 98%, transparent) 0 0 / 90px 46px, linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(0, 40, 80, .12)); animation: brWave 8s linear infinite; }
+.st-bank { position: absolute; left: 0; right: 0; z-index: 1; display: flex; justify-content: space-around; align-items: flex-end; font-size: clamp(26px, 5vw, 40px); }
+.st-bank-far { top: 0; height: 15%; background: linear-gradient(180deg, #a8d878, #78c957 70%, #5eae3d); border-bottom: 4px solid #6b4a24; }
+.st-bank-near { bottom: 0; height: 11%; background: linear-gradient(180deg, #78c957, #5eae3d 40%, #b08455 40%, #8d6538); border-top: 4px solid #6b4a24; align-items: flex-start; }
+.st-rows { position: absolute; inset: 0; z-index: 2; }
+.st-row { position: absolute; inset: 0; pointer-events: none; transition: opacity .4s; }
+.st-row.is-future { opacity: .35; } .st-row.is-done { opacity: .7; }
+.st-row.is-current .st-stone { pointer-events: auto; }
+.st-stone { position: absolute; border-radius: 48% 52% 50% 50% / 60% 58% 42% 40%; border: 3px solid #7a7468; cursor: pointer; padding: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 36% 28%, #f4efe4 0, #cfc7b6 45%, #a79f8e 100%); box-shadow: inset 0 -6px 0 rgba(70, 60, 45, .22), 0 7px 0 #6a6455, 0 12px 12px rgba(0, 40, 70, .28);
+  font-family: "Amiri", serif; font-weight: 700; color: #33260f; display: grid; place-items: center; transition: transform .2s; }
+.st-stone span { line-height: 1.6; padding-top: .1em; pointer-events: none; }
+.st-row.is-current .st-stone:active { transform: scale(.96); }
+.st-stone.is-ok { background: radial-gradient(ellipse at 36% 28%, #eaffd8 0, #a8ec7c 50%, #6fcd4c 100%); border-color: #3f9a24; }
+.st-stone.is-wrong { animation: stWob .6s ease-in-out; background: radial-gradient(ellipse at 36% 28%, #fff1ea 0, #f5b9a6 55%, #e8836a 100%); border-color: #c0563b; }
+@keyframes stWob { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(10px) rotate(-5deg); } 60% { transform: translateY(6px) rotate(4deg); } }
+.st-stone.is-help { box-shadow: 0 0 0 6px rgba(255, 213, 74, .95), 0 7px 0 #6a6455; animation: brHelp .8s ease-in-out infinite; }
+.st-hero { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; will-change: transform; filter: drop-shadow(0 6px 4px rgba(0, 40, 70, .3)); }
+.st-emoji { font-size: 44px; }

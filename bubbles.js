@@ -159,6 +159,7 @@
     const sx = cr.left - fr.left + cr.width / 2, sy = cr.top - fr.top + 14;
     const tgt = () => ({ x: lr.left - fr.left + b.x, y: lr.top - fr.top + b.y });
     const a0 = tgt(); barrel.style.transform = `rotate(${Math.atan2(a0.x - sx, sy - a0.y) * 180 / Math.PI}deg)`;
+    MG.fx.shoot();
     const ball = document.createElement("div"); ball.className = "bb-ball"; field.appendChild(ball);
     const D0 = 430, t0 = performance.now();
     await new Promise((res) => {
@@ -178,7 +179,7 @@
       mission: missionIdx + 1, responseTimeMs: Math.round(performance.now() - missionStart), timestamp: Date.now(),
     });
     if (ok) {
-      b.gone = true; b.el.classList.add("is-pop"); confetti(b);
+      b.gone = true; b.el.classList.add("is-pop"); confetti(b); MG.fx.pop();
       solved.push({ helped, wrong: wrongThisMission }); garland.push(m.target); drawBunting(); updateDots();
       MG.sfx("ok"); MG.banner(field, { ok: true, letter: m.target });
       const finished = missionIdx + 1 >= missions.length;
@@ -187,7 +188,7 @@
       if (!active || my !== epoch) return;
       if (finished) complete(); else { missionIdx++; startMission(); }
     } else {
-      wrongThisMission++; b.el.classList.add("is-wrong");
+      wrongThisMission++; b.el.classList.add("is-wrong"); MG.fx.boing();
       MG.sfx("no"); MG.banner(field, { ok: false, letter: b.letter });
       await MG.wait(1100); MG.hideBanner(field); b.el.classList.remove("is-wrong");
       if (!active || my !== epoch) return;

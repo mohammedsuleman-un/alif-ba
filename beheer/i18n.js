@@ -143,6 +143,9 @@
     [", {n} overgeslagen", ", {n} skipped", "، وتم تخطّي {n}", ", {n} atlandı"],
     // voortgang
     ["Wereld 1", "World 1", "العالم 1", "Dünya 1"],
+    ["Wereld 2", "World 2", "العالم 2", "Dünya 2"],
+    ["Niveaus Wereld 2", "Levels World 2", "مستويات العالم 2", "Dünya 2 seviyeleri"],
+    ["Spelniveaus Wereld 2", "Game levels World 2", "مستويات ألعاب العالم 2", "Dünya 2 oyun seviyeleri"],
     ["Sterren", "Stars", "النجوم", "Yıldızlar"],
     ["Spellen", "Games", "الألعاب", "Oyunlar"],
     ["Munten", "Coins", "العملات", "Jetonlar"],

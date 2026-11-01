@@ -71,7 +71,7 @@
   // ---------- Voortgang ----------
   // unlocked = hoogste vrijgespeelde niveau; play = niveau dat nu gespeeld wordt (standaard = unlocked,
   // of een eerder behaald niveau dat het kind opnieuw speelt). Wereld 2 heeft zijn eigen opslag.
-  const key = (pid) => (isHarakat() ? "gp_mini2_" + pid : "gp_mini_" + pid);
+  const key = (pid) => (isHarakat() ? "gp_minih_" + pid : "gp_mini_" + pid);
   const lastLevel = () => groups().length - 1;
   function load(pid) {
     const LAST = lastLevel();
@@ -134,6 +134,43 @@
       });
     } catch {}
   }
+  // ---------- Eigen geluidseffecten voor de spelletjes van wereld 2 (Web Audio, geen bestanden) ----------
+  const actx = () => {
+    try {
+      if (window.AudioManager && window.AudioManager.settings && !window.AudioManager.settings.sfxOn) return null;
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      if (ac.state === "suspended") ac.resume();
+      return ac;
+    } catch { return null; }
+  };
+  function noiseBurst(dur, type, f0, f1, gain, delay = 0) {
+    const c = actx(); if (!c) return;
+    const n = Math.max(1, Math.floor(c.sampleRate * dur)), buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain(), t0 = c.currentTime + delay;
+    src.buffer = buf; f.type = type; f.Q.value = 1.1;
+    f.frequency.setValueAtTime(f0, t0); f.frequency.exponentialRampToValueAtTime(f1, t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain, t0 + Math.min(0.05, dur / 3)); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    src.connect(f); f.connect(g); g.connect(c.destination); src.start(t0); src.stop(t0 + dur + 0.05);
+  }
+  function glide(type, f0, f1, dur, gain, delay = 0, vib = 0) {
+    const c = actx(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime + delay;
+    o.type = type; o.frequency.setValueAtTime(f0, t0); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t0 + dur);
+    if (vib) { const l = c.createOscillator(), lg = c.createGain(); l.frequency.value = 12; lg.gain.value = vib; l.connect(lg); lg.connect(o.frequency); l.start(t0); l.stop(t0 + dur + 0.05); }
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(gain, t0 + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+  }
+  const fx = {
+    shoot() { noiseBurst(0.25, "lowpass", 1100, 180, 0.5); glide("sine", 200, 55, 0.28, 0.42); },            // kanonschot
+    pop() { noiseBurst(0.16, "highpass", 1800, 6500, 0.38); glide("sine", 1000, 1900, 0.1, 0.18); },         // bel knapt
+    boing() { glide("triangle", 420, 150, 0.38, 0.26, 0, 22); },                                             // verkeerd antwoord, zacht
+    horn() { glide("sawtooth", 196, 196, 0.5, 0.09); glide("sawtooth", 247, 247, 0.5, 0.07, 0.02); },       // scheepshoorn
+    moor() { noiseBurst(0.32, "lowpass", 900, 120, 0.42); glide("sine", 120, 55, 0.3, 0.38); noiseBurst(0.3, "highpass", 3200, 7000, 0.1, 0.12); }, // aanleggen: bonk + ketting
+    hop() { glide("sine", 360, 720, 0.14, 0.2); },                                                           // sprongetje
+    landOk() { glide("triangle", 660, 990, 0.2, 0.2, 0.02); noiseBurst(0.1, "lowpass", 1200, 300, 0.2); },
+    splashSmall() { noiseBurst(0.45, "lowpass", 3000, 300, 0.33); glide("sine", 500, 200, 0.2, 0.12); },
+  };
   const sfx = (kind) => (kind === "ok" ? tone([659, 880, 1175], 0.4, "sine") : tone([260, 207], 0.3, "triangle"));
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -187,11 +224,11 @@
   }
 
   // Spellen komen vrij naarmate Wereld 1 (Letter Oase) vordert: aantal voltooide oase-niveaus.
-  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0, bubbles: 0, harbor: 0 }; // alle vier de spelletjes staan open vanaf level 1
+  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0, bubbles: 0, harbor: 0, stones: 0 }; // alle vier de spelletjes staan open vanaf level 1
   const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
   const gameOpen = (pid, key) => !!(window.Account && window.Account.isPreview && window.Account.isPreview()) || oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
-    get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
+    fx, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
     focusLevel, UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => groups()[n] || groups()[0],
   };

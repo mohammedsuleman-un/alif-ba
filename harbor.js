@@ -177,17 +177,17 @@
       game: "harbor", target: m.target, selectedLetter: p.letter, correct: ok, helped,
       mission: missionIdx + 1, responseTimeMs: Math.round(performance.now() - missionStart), timestamp: Date.now(),
     });
-    $("hbAnchor").disabled = true;
+    $("hbAnchor").disabled = true; MG.fx.moor();
     if (ok) {
       solved.push({ helped, wrong: wrongThisMission }); updateDots(); p.el.classList.add("is-ok");
-      MG.sfx("ok"); MG.banner(field, { ok: true, letter: m.target });
+      MG.sfx("ok"); MG.fx.horn(); MG.banner(field, { ok: true, letter: m.target });
       const finished = missionIdx + 1 >= missions.length;
       await MG.wait(450); await window.AudioManager.playRandomCorrectFeedback(); await MG.wait(900);
       MG.hideBanner(field);
       if (!active || my !== epoch) return;
       if (finished) complete(); else { missionIdx++; startMission(); }
     } else {
-      wrongThisMission++; p.el.classList.add("is-wrong");
+      wrongThisMission++; p.el.classList.add("is-wrong"); MG.fx.boing();
       MG.sfx("no"); MG.banner(field, { ok: false, letter: p.letter });
       await MG.wait(1100); MG.hideBanner(field); p.el.classList.remove("is-wrong");
       if (!active || my !== epoch) return;

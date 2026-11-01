@@ -8,6 +8,7 @@
   const APP_URL = onDomain ? "https://app.alifbakids.nl" : "https://mohammedsuleman-un.github.io/alif-ba/";
   const MAX_BULK = 40;
   const WORLD1_LEVELS = 9, MINI_LEVELS = 8; // aantal niveaus in Wereld 1 en in de spelletjesroute
+  const WORLD2_LEVELS = 9, MINI2_LEVELS = 7; // idem voor Wereld 2 (klinkertekens)
   const ROLE_NL = { superadmin: "Hoofdbeheerder", org_admin: "Beheerder", teacher: "Docent", student: "Leerling" };
 
   // ---------- taal: NL, EN, AR, TR (zelfde keuze als in het spel) ----------
@@ -284,20 +285,22 @@
     const active7 = list.filter((s) => { const a = lastSeen(s); return a && a.days <= 7; }).length;
     const avg = withData.length ? (withData.reduce((n, s) => n + (s.progress.worlds.letter_oasis || 0), 0) / withData.length) : 0;
     const rows = list.map((s) => {
-      const p = s.progress, a = lastSeen(s), done = p ? (p.worlds.letter_oasis || 0) : 0;
+      const p = s.progress, a = lastSeen(s), done = p ? (p.worlds.letter_oasis || 0) : 0, done2 = p ? ((p.worlds && p.worlds.flowers_valley) || 0) : 0;
       const bar = `<div class="bar" title="${te("{done} van {total}", { done, total: WORLD1_LEVELS })}"><i style="width:${Math.round((done / WORLD1_LEVELS) * 100)}%"></i></div>`;
+      const bar2 = `<div class="bar" title="${te("{done} van {total}", { done: done2, total: WORLD2_LEVELS })}"><i style="width:${Math.round((done2 / WORLD2_LEVELS) * 100)}%"></i></div>`;
       const weak = p && p.weak_letters.length ? p.weak_letters.map((l) => `<span class="ar" lang="ar" dir="rtl">${esc(l)}</span>`).join(" ") : (p && p.practiced_letters ? `<span class="muted">${te("geen")}</span>` : `<span class="muted">-</span>`);
       return `<tr><td>${s.student_number ? `<span class="nr">${esc(s.student_number)}</span> ` : ""}<b>${esc(s.display_name)}</b>${s.disabled ? ` <span class="tag off">${te("uit")}</span>` : ""}<div class="muted small-t mono">${esc(s.username)}</div></td>
         <td>${p ? `<bdi dir="ltr">${done} / ${WORLD1_LEVELS}</bdi>${bar}` : `<span class="muted">${te("nog niet gespeeld")}</span>`}</td>
-        <td>${p ? `${p.stars} ★` : ""}</td><td>${p ? `<bdi dir="ltr">${p.mini_done} / ${MINI_LEVELS}</bdi>` : ""}</td><td>${p ? `${p.coins}` : ""}</td>
+        <td>${p ? (done2 ? `<bdi dir="ltr">${done2} / ${WORLD2_LEVELS}</bdi>${bar2}` : `<span class="muted">-</span>`) : ""}</td>
+        <td>${p ? `${p.stars} ★` : ""}</td><td>${p ? `<bdi dir="ltr">${p.mini_done} / ${MINI_LEVELS}</bdi>${p.mini2_done ? `<div class="muted small-t">${te("Wereld 2")}: <bdi dir="ltr">${p.mini2_done} / ${MINI2_LEVELS}</bdi></div>` : ""}` : ""}</td><td>${p ? `${p.coins}` : ""}</td>
         <td>${a ? `<span class="${a.days > 7 ? "stale" : ""}">${esc(a.text)}</span>` : `<span class="muted">${te("nog nooit")}</span>`}</td><td>${weak}</td></tr>`;
     }).join("");
     return `<div class="card"><div class="row"><h2 style="margin:0">${te("Voortgang")}</h2>
         <div class="right"><label>${te("Klas")}</label><select data-change="progclass"><option value="">${te("Alle leerlingen")}</option>${S.classes.map((c) => `<option value="${esc(c.id)}" ${c.id === S.progClass ? "selected" : ""}>${esc(c.name)}</option>`).join("")}<option value="none" ${S.progClass === "none" ? "selected" : ""}>${te("Zonder klas")}</option></select></div>
         <button class="ghost small" data-act="progcsv" ${list.length ? "" : "disabled"}>${te("Download CSV")}</button></div>
       <div class="stats"><div><b>${list.length}</b><span>${te("leerlingen")}</span></div><div><b>${active7}</b><span>${te("actief afgelopen 7 dagen")}</span></div><div><b>${avg.toFixed(1)}</b><span>${te("gemiddeld niveau van {n}", { n: WORLD1_LEVELS })}</span></div></div>
-      <div class="scroll"><table><tr><th>${te("Leerling")}</th><th>${te("Wereld 1")}</th><th>${te("Sterren")}</th><th>${te("Spellen")}</th><th>${te("Munten")}</th><th>${te("Laatst actief")}</th><th>${te("Aandacht voor")}</th></tr>
-        ${rows || `<tr><td colspan="7" class="muted">${te("Nog geen leerlingen. Voeg ze toe bij het tabblad Leerlingen.")}</td></tr>`}</table></div>
+      <div class="scroll"><table><tr><th>${te("Leerling")}</th><th>${te("Wereld 1")}</th><th>${te("Wereld 2")}</th><th>${te("Sterren")}</th><th>${te("Spellen")}</th><th>${te("Munten")}</th><th>${te("Laatst actief")}</th><th>${te("Aandacht voor")}</th></tr>
+        ${rows || `<tr><td colspan="8" class="muted">${te("Nog geen leerlingen. Voeg ze toe bij het tabblad Leerlingen.")}</td></tr>`}</table></div>
       <p class="muted small-t">${t("De voortgang komt binnen zodra het kind is ingelogd en speelt (een paar seconden na elke wijziging). <b>Aandacht voor</b> toont letters die het kind vaker fout dan goed heeft.")}</p></div>`;
   }
 
@@ -463,9 +466,9 @@
     closesecret: () => { S.secret = null; render(); },
     progcsv: () => {
       const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const head = ["Naam", "Gebruikersnaam", "Niveaus Wereld 1", "Sterren", "Spelniveaus", "Munten", "Laatst actief", "Aandacht voor letters"].map((h) => t(h));
+      const head = ["Naam", "Gebruikersnaam", "Niveaus Wereld 1", "Niveaus Wereld 2", "Sterren", "Spelniveaus", "Spelniveaus Wereld 2", "Munten", "Laatst actief", "Aandacht voor letters"].map((h) => t(h));
       const lines = [head.map(q).join(";"), ...S.progress.map((s) => { const p = s.progress, a = lastSeen(s);
-        return [s.display_name, s.username, p ? p.worlds.letter_oasis || 0 : "", p ? p.stars : "", p ? p.mini_done : "", p ? p.coins : "", a ? a.text : t("nog nooit"), p ? p.weak_letters.join(" ") : ""].map(q).join(";"); })];
+        return [s.display_name, s.username, p ? p.worlds.letter_oasis || 0 : "", p ? (p.worlds.flowers_valley || 0) : "", p ? p.stars : "", p ? p.mini_done : "", p ? (p.mini2_done || 0) : "", p ? p.coins : "", a ? a.text : t("nog nooit"), p ? p.weak_letters.join(" ") : ""].map(q).join(";"); })];
       const url = URL.createObjectURL(new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" }));
       const a = document.createElement("a"); a.href = url; a.download = "voortgang.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
     },
