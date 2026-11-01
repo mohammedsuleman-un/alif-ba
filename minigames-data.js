@@ -163,7 +163,7 @@
   }
 
   // Spellen komen vrij naarmate Wereld 1 (Letter Oase) vordert: aantal voltooide oase-niveaus.
-  const UNLOCKS = { slingshot: 0, photographer: 3, diver: 5, bridge: 7 };
+  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0 }; // alle vier de spelletjes staan open vanaf level 1
   const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
   const gameOpen = (pid, key) => !!(window.Account && window.Account.isPreview && window.Account.isPreview()) || oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
