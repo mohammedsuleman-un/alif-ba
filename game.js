@@ -1044,7 +1044,7 @@
       ${levelHeader()}
       <div class="g-intro">
         <span class="g-intro-kicker">${t.newLetter}</span>
-        <button id="gIntroLetter" class="g-big-letter" lang="ar">${letter}</button>
+        <button id="gIntroLetter" class="g-big-letter${/[ً-ْ]/.test(letter) ? " has-mark" : ""}" lang="ar">${letter}</button>
         <p class="g-intro-hint">👆 ${t.listen}</p>
         <button id="gIntroGo" class="g-cta">${t.play} →</button>
       </div>
@@ -1089,7 +1089,7 @@
         </div>
         ${isAudio
           ? `<button id="gQPlay" class="g-play-big" aria-label="${t.listen}">🔊</button>`
-          : `<div class="g-q-ref" lang="ar">${q.letter}</div>`}
+          : `<div class="g-q-ref${/[ً-ْ]/.test(q.letter) ? " has-mark" : ""}" lang="ar">${q.letter}</div>`}
         <div class="g-q-options">
           ${q.options.map((o, idx) => `<button class="g-opt" data-i="${idx}" lang="ar">${o}</button>`).join("")}
         </div>
