@@ -1,4 +1,4 @@
-﻿const VERSION = "v107";
+﻿const VERSION = "v108";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
@@ -46,9 +46,6 @@ const CORE = [
   "pages/p-45.jpg",
   "pages/p-46.jpg",
   "pages/p-47.jpg",
-  "pages/p-48.jpg",
-  "pages/p-49.jpg",
-  "pages/p-50.jpg",
 ];
 
 // Strategie:
