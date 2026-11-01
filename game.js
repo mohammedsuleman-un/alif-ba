@@ -608,6 +608,16 @@
         { x: 0.8141, y: 0.3913 }, { x: 0.8876, y: 0.3470 }, { x: 0.9302, y: 0.2472 },
       ],
     },
+    // Wereld 2 (Bloemenvallei): de negen ronde stenen op het geschilderde pad, van onder-links naar de poort rechtsboven.
+    flowers_valley: {
+      bg: "assets/worlds/flowers/map-wide.jpg",
+      w: 1619, h: 971,
+      path: [
+        { x: 0.1464, y: 0.8424 }, { x: 0.1921, y: 0.4840 }, { x: 0.3873, y: 0.5561 },
+        { x: 0.6776, y: 0.6560 }, { x: 0.7572, y: 0.5458 }, { x: 0.8153, y: 0.4449 },
+        { x: 0.8289, y: 0.3059 }, { x: 0.8314, y: 0.2286 }, { x: 0.8968, y: 0.1885 },
+      ],
+    },
   };
 
   const oasisScale = (sceneWpx) => sceneWpx / OASIS_IMG_W;
@@ -705,6 +715,9 @@
       ${lv.challenge ? `<span class="g-node-trophy">🏆</span>` : ""}
       ${current ? `<span class="g-node-pulse" aria-hidden="true"></span><span class="g-node-sparkle">✨</span>` : ""}`;
   }
+
+  // Wereld 1 heeft per level een keuzescherm met spelletjes; wereld 2 en verder gaat direct naar de vragen.
+  const levelHref = (world, n) => (world.id === "letter_oasis" ? `#/spel/niveau/${world.id}/${n}` : `#/spel/level/${world.id}/${n}`);
 
   function renderMap(worldId) {
     const t = GT();
@@ -818,7 +831,7 @@
 
     $("gSwitchProfile").onclick = () => gohash("#/spel");
     scr.map.querySelectorAll(".g-node-btn2.on").forEach((b) => {
-      b.onclick = () => gohash(`#/spel/niveau/${world.id}/${b.dataset.n}`);
+      b.onclick = () => gohash(levelHref(world, b.dataset.n));
     });
     const cpBtn = $("gCheckpoint");
     if (cpBtn) cpBtn.onclick = () => {
@@ -884,7 +897,7 @@
 
     $("gSwitchProfile").onclick = () => gohash("#/spel");
     scr.map.querySelectorAll(".g-node-btn2.on").forEach((b) => {
-      b.onclick = () => gohash(`#/spel/niveau/${world.id}/${b.dataset.n}`);
+      b.onclick = () => gohash(levelHref(world, b.dataset.n));
     });
 
     // Camera: de "wereld" (stage) wordt geschaald zodat ze de viewport in
@@ -949,7 +962,7 @@
     const targets = [];
     if (level.letters.length) {
       // ongeveer 60% van de vragen over de nieuwe letters, gelijk verdeeld; de rest over de herhalingsletters (zwakste eerst)
-      const share = Math.max(2, Math.round((count * 0.6) / level.letters.length));
+      const share = Math.max(1, Math.round((count * 0.6) / level.letters.length));
       level.letters.forEach((l) => { for (let k = 0; k < share && targets.length < count; k++) targets.push(l); });
       const review = weakLetters(level.review, level.review.length);
       for (let k = 0; targets.length < count; k++) targets.push(review.length ? review[k % review.length] : level.letters[k % level.letters.length]);
@@ -981,7 +994,7 @@
     return order.map((letter, i) => ({
       type: pairAt.has(i) ? "LETTER_MATCH" : plain[p++ % plain.length],
       letter,
-      options: shuffle([letter, ...pick(pool.filter((l) => l !== letter), 3)]),
+      options: shuffle([letter, ...(world.distract ? world.distract(letter, pool, new Set([...level.letters, ...level.review])) : pick(pool.filter((l) => l !== letter), 3))]),
     }));
   }
 
@@ -1301,7 +1314,7 @@
     if (nextLevel) {
       nextBtn.hidden = false;
       nextBtn.querySelector("span").textContent = t.next;
-      nextBtn.onclick = () => gohash(`#/spel/niveau/${world.id}/${nextLevel.n}`);
+      nextBtn.onclick = () => gohash(levelHref(world, nextLevel.n));
     } else if (nextWorld) {
       nextBtn.hidden = false;
       nextBtn.querySelector("span").textContent = gsub(nextWorld.title);

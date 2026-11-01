@@ -66,7 +66,7 @@ window.GAME.chapters = [
   { n: 1, id: "ch1", theme: "oasis", icon: "🌴", stage: 1, areas: ["letter_oasis"], pos: { x: .341, y: .303 }, c: ["#f2c14e", "#e08a2a"],
     title: { ar: "الحروف الهجائية", nl: "Letters", en: "Letters", tr: "Harfler" },
     land: { ar: "واحة الحروف", nl: "Oase", en: "Oasis", tr: "Vaha" } },
-  { n: 2, id: "ch2", theme: "flowers", icon: "🌻", stage: 1, areas: [], pos: { x: .504, y: .309 }, c: ["#8fd36a", "#3fa14a"],
+  { n: 2, id: "ch2", theme: "flowers", icon: "🌻", stage: 1, areas: ["flowers_valley"], pos: { x: .504, y: .309 }, c: ["#8fd36a", "#3fa14a"],
     title: { ar: "الحركات", nl: "Klinkertekens", en: "Vowel marks", tr: "Harekeler" },
     land: { ar: "وادي الزهور", nl: "Bloemenvallei", en: "Flower valley", tr: "Çiçek vadisi" } },
   { n: 3, id: "ch3", theme: "river", icon: "🌊", stage: 1, areas: [], pos: { x: .661, y: .309 }, c: ["#5fc8e8", "#2a8ac0"],
@@ -91,3 +91,55 @@ window.GAME.chapters = [
     title: { ar: "رموز القرآن", nl: "Koransymbolen", en: "Qur'an symbols", tr: "Kur'an işaretleri" },
     land: { ar: "مكتبة القرآن", nl: "Koranbibliotheek", en: "Qur'an library", tr: "Kur'an kütüphanesi" } },
 ];
+
+// ---------- Wereld 2: de klinkertekens (فتحة، ضمة، كسرة) ----------
+// Elke opname is een letter met een klinkerteken (bijv. بَ = "ba"), 28 letters x 3 tekens, in alfabetvolgorde
+// (audio/H2-fatha-01 t/m 28, H2-damma-.., H2-kasra-..). De vraagteksten krijgen het teken erbij; de opname is de uitspraak.
+(() => {
+  const G = window.GAME;
+  const FATHA = "\u064E", DAMMA = "\u064F", KASRA = "\u0650";
+  const BASES = ["ا", "ب", "ت", "ث", "ج", "ح", "خ", "د", "ذ", "ر", "ز", "س", "ش", "ص", "ض", "ط", "ظ", "ع", "غ", "ف", "ق", "ك", "ل", "م", "ن", "ه", "و", "ي"];
+  const MARKS = { fatha: FATHA, damma: DAMMA, kasra: KASRA };
+  // alif krijgt de hamza: أَ أُ إِ (zoals in de opnames)
+  const item = (i, kind) => (i === 0 ? (kind === "kasra" ? "إ" : "أ") : BASES[i]) + MARKS[kind];
+  const range = (a, b) => Array.from({ length: b - a }, (_, k) => a + k);
+  const forms = (kind, idx) => idx.map((i) => item(i, kind));
+  ["fatha", "damma", "kasra"].forEach((kind) => BASES.forEach((_, i) => { G.letterAudio[item(i, kind)] = `audio/H2-${kind}-${String(i + 1).padStart(2, "0")}`; }));
+  const baseKey = (s) => s.replace(/[\u064B-\u0652]/g, "").replace(/[أإآ]/g, "ا");
+  const markOf = (s) => (s.match(/[\u064E\u064F\u0650]/) || [""])[0];
+  const rnd = (arr) => arr.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+  // Afleiders die het kind echt moeten laten luisteren: dezelfde letter met een ander teken, en een andere letter met hetzelfde teken.
+  const distract = (letter, pool, avail) => {
+    const src = avail.size >= 6 ? [...avail] : pool;
+    const cands = rnd(src.filter((x) => x !== letter));
+    const sameLetter = cands.filter((x) => baseKey(x) === baseKey(letter));
+    const sameMark = cands.filter((x) => baseKey(x) !== baseKey(letter) && markOf(x) === markOf(letter));
+    const rest = cands.filter((x) => !sameLetter.includes(x) && !sameMark.includes(x));
+    const out = [];
+    const add = (arr, n) => { for (const x of arr) { if (out.length >= 3 || n <= 0) break; if (!out.includes(x)) { out.push(x); n--; } } };
+    add(sameLetter, 1); add(sameMark, 2); add(rest, 3); add(cands, 3);
+    return out.slice(0, 3);
+  };
+  const A = range(0, 9), B = range(9, 18), C = range(18, 28), H1 = range(0, 14), H2 = range(14, 28), ALL = range(0, 28);
+  const all = [].concat(forms("fatha", ALL), forms("damma", ALL), forms("kasra", ALL));
+  const T = (ar, nl, en, tr) => ({ ar, nl, en, tr });
+  const ty = ["AUDIO_TO_LETTER", "VISUAL_MATCH"], tyP = ["AUDIO_TO_LETTER", "VISUAL_MATCH", "LETTER_MATCH"];
+  G.worlds.push({
+    id: "flowers_valley", theme: "flowers", requires: "letter_oasis", distract,
+    title: T("الحركات", "Klinkertekens", "Vowel marks", "Harekeler"),
+    subtitle: T("الفتحة والضمة والكسرة", "Fatha, damma en kasra", "Fatha, damma and kasra", "Fetha, damme ve kesre"),
+    letters: all, badge: "harakat_master",
+    levels: [
+      { n: 1, letters: forms("fatha", A), review: [], types: ty, count: 20, title: T("الفتحة ١", "Fatha 1", "Fatha 1", "Fetha 1") },
+      { n: 2, letters: forms("fatha", B), review: forms("fatha", A), types: ty, count: 24, title: T("الفتحة ٢", "Fatha 2", "Fatha 2", "Fetha 2") },
+      { n: 3, letters: forms("fatha", C), review: forms("fatha", [...A, ...B]), types: ty, count: 26, title: T("الفتحة ٣", "Fatha 3", "Fatha 3", "Fetha 3") },
+      { n: 4, letters: forms("damma", H1), review: forms("fatha", H1), types: tyP, count: 30, title: T("الضمة ١", "Damma 1", "Damma 1", "Damme 1") },
+      { n: 5, letters: forms("damma", H2), review: [].concat(forms("damma", H1), forms("fatha", H2)), types: tyP, count: 30, title: T("الضمة ٢", "Damma 2", "Damma 2", "Damme 2") },
+      { n: 6, letters: forms("kasra", H1), review: [].concat(forms("fatha", H1), forms("damma", H1)), types: tyP, count: 30, title: T("الكسرة ١", "Kasra 1", "Kasra 1", "Kesre 1") },
+      { n: 7, letters: forms("kasra", H2), review: [].concat(forms("kasra", H1), forms("fatha", H2), forms("damma", H2)), types: tyP, count: 30, title: T("الكسرة ٢", "Kasra 2", "Kasra 2", "Kesre 2") },
+      { n: 8, letters: [], review: [].concat(forms("fatha", H1), forms("damma", H1), forms("kasra", H1)), types: tyP, count: 24, title: T("الحركات الثلاث", "Alle drie de tekens", "All three marks", "Üç hareke") },
+      { n: 9, letters: [], review: all, types: tyP, count: 30, challenge: true, badge: "harakat_master", title: T("تحدي الحركات", "Klinkerteken-uitdaging", "Vowel marks challenge", "Hareke meydan okuması") },
+    ],
+  });
+  G.badges.harakat_master = { icon: "🌻", ar: "بطل الحركات", nl: "Klinkertekenmeester", en: "Vowel marks master", tr: "Hareke ustası" };
+})();
