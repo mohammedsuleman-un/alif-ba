@@ -1,7 +1,7 @@
 ﻿const VERSION = "v123";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
-  "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest",
+  "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest", "assets/fonts/amiri-arabic-400.woff2", "assets/fonts/amiri-arabic-700.woff2",
   "icons/icon-192.png", "icons/icon-512.png",
   "pages/p-05.jpg",
   "pages/p-06.jpg",
