@@ -73,6 +73,12 @@
     if (isSuper() && !S.orgId) { S.progress = []; return; }
     S.progress = (await api("GET", "/students/progress" + scopeQ(S.progClass))).students;
   }
+  // Alle meldingen, ongeacht het gekozen filter (voor de downloads).
+  async function loadAllFeedback() { return (await api("GET", "/feedback" + (isSuper() && S.orgId ? `?org_id=${encodeURIComponent(S.orgId)}` : ""))).items; }
+  function downloadText(name, text, type) {
+    const url = URL.createObjectURL(new Blob([text], { type }));
+    const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
   async function loadFeedback() { S.feedback = (await api("GET", "/feedback" + (S.fbFilter ? `?status=${S.fbFilter}` : "") + (isSuper() && S.orgId ? `${S.fbFilter ? "&" : "?"}org_id=${encodeURIComponent(S.orgId)}` : ""))).items; }
   async function loadFor(tab) {
     if (tab === "feedback") return loadFeedback();
@@ -320,6 +326,7 @@
     }).join("");
     return `<div class="card"><div class="row"><h2 style="margin:0">${te("Feedback en defecten")}</h2>
       <div class="right">${filters.map(([k, l]) => `<button class="small ${S.fbFilter === k ? "" : "ghost"}" data-act="fbfilter" data-f="${k}">${te(l)}</button>`).join(" ")}</div></div>
+      <p class="fb-tools"><button class="ghost small" data-act="fbcsv">${te("Alle feedback downloaden (CSV)")}</button> <button class="ghost small" data-act="fbmd">${te("Alle feedback downloaden (overzicht)")}</button></p>
       ${rows || `<p class="muted">${te("Geen meldingen.")}</p>`}</div>`;
   }
   // Formulier om zelf iets door te geven (alle rollen)
@@ -430,6 +437,29 @@
     fbclose: () => { S.fbOpen = false; render(); },
     fbfilter: ({ f }) => guard(async () => { S.fbFilter = f; await loadFeedback(); render(); }),
     fbstatus: ({ id, status }) => guard(async () => { await api("POST", `/feedback/${id}/status`, { status }); await loadFeedback(); render(); }),
+    // Alle meldingen in één keer downloaden (ongeacht het gekozen filter): als spreadsheet (CSV) of als leesbaar overzicht.
+    fbcsv: () => guard(async () => {
+      const items = await loadAllFeedback();
+      const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const head = ["Datum", "Soort", "Status", "Naam", "Rol", "Melding", "Scherm", "Taal", "Toestel", "Versie", "Laatste fouten"].map((h) => t(h === "Datum" ? "Datum" : h));
+      const lines = [head.map(q).join(";"), ...items.map((f) => { const c = f.context || {}; return [f.created_at, t(KIND_TXT[f.kind] || f.kind), t(ST_TXT[f.status] || f.status), f.user_name, roleName(f.role), f.message, c.screen, c.lang, c.device, c.version, Array.isArray(c.errors) ? c.errors.join(" | ") : c.errors].map(q).join(";"); })];
+      downloadText("feedback.csv", "﻿" + lines.join("\r\n"), "text/csv;charset=utf-8");
+    }),
+    fbmd: () => guard(async () => {
+      const items = await loadAllFeedback();
+      const count = (key) => items.reduce((m, f) => { const k = typeof key === "function" ? key(f) : f[key]; m[k] = (m[k] || 0) + 1; return m; }, {});
+      const fmt = (o, tr) => Object.entries(o).map(([k, n]) => `${tr ? tr(k) : k}: ${n}`).join(", ");
+      const out = [`# Feedback Alif Ba (${new Date().toISOString().slice(0, 10)})`, "",
+        `Totaal: ${items.length} meldingen`, `Soort: ${fmt(count("kind"), (k) => t(KIND_TXT[k] || k))}`, `Status: ${fmt(count("status"), (k) => t(ST_TXT[k] || k))}`,
+        `Wie: ${fmt(count((f) => roleName(f.role)))}`, `Schermen: ${fmt(count((f) => (f.context && f.context.screen) || "onbekend"))}`, ""];
+      for (const kind of ["defect", "idea", "question"]) {
+        const list = items.filter((f) => f.kind === kind); if (!list.length) continue;
+        out.push(`## ${t(KIND_TXT[kind])} (${list.length})`, "");
+        list.forEach((f) => { const c = f.context || {}; out.push(`- [${t(ST_TXT[f.status] || f.status)}] ${String(f.created_at).slice(0, 10)} · ${f.user_name} (${roleName(f.role)}) · ${c.screen || "?"}${c.lang ? " · taal " + c.lang : ""}${c.device ? " · " + String(c.device).slice(0, 60) : ""}`, `  ${String(f.message).replace(/\s+/g, " ")}`); });
+        out.push("");
+      }
+      downloadText("feedback-overzicht.md", out.join("\n"), "text/markdown;charset=utf-8");
+    }),
     more: () => { S.limit += 100; render(); },
     doimport: () => guard(async () => {
       // De server rekent per leerling (veilig wachtwoord opslaan) en mag op het gratis Cloudflare-abonnement maar kort rekenen.
