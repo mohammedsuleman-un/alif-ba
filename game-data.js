@@ -230,9 +230,13 @@ window.GAME.chapters = [
       title: T("اكتشف " + bases, "Ontdek " + bases, "Discover " + bases, bases + " harflerini keşfet"),
     };
   });
-  const w1 = wordsOf(14, 16), wAll = wordsOf(14, 16, 17);
-  levels.push({ n: 8, letters: [], review: w1, types: ["AUDIO_TO_LETTER"], count: 20, title: T("كلمات المدّ", "Woorden met lange klinkers", "Words with long vowels", "Med harfli kelimeler") });
-  levels.push({ n: 9, letters: [], review: wAll, types: ["AUDIO_TO_LETTER"], count: 24, challenge: true, badge: "long_vowel_master", title: T("تحدي الكلمات", "Woorden-uitdaging", "Word challenge", "Kelime meydan okuması") });
+  const wA = wordsOf(14), wY = wordsOf(16), wW = wordsOf(17), wAll = wordsOf(14, 16, 17), wOnly = ["AUDIO_TO_LETTER"];
+  levels.push({ n: 8, letters: [], review: group(range(0, 16)), types: tyP, count: 24, title: T("المدود ١", "Lange klinkers herhalen", "Long vowels review", "Med tekrarı") });
+  levels.push({ n: 9, letters: [], review: wA, types: wOnly, count: 16, title: T("كلمات بالألف المدية", "Woorden met lange alif", "Words with long alif", "Uzun elifli kelimeler") });
+  levels.push({ n: 10, letters: [], review: wY, types: wOnly, count: 16, title: T("كلمات بالياء المدية", "Woorden met lange yaa", "Words with long yaa", "Uzun yeli kelimeler") });
+  levels.push({ n: 11, letters: [], review: wW, types: wOnly, count: 14, title: T("كلمات بالواو المدية", "Woorden met lange waw", "Words with long waw", "Uzun vavlı kelimeler") });
+  levels.push({ n: 12, letters: [], review: wAll, types: wOnly, count: 24, title: T("كلمات المدّ", "Alle woorden", "All the words", "Tüm kelimeler") });
+  levels.push({ n: 13, letters: [], review: [...forms, ...wAll], types: wOnly, count: 30, challenge: true, badge: "long_vowel_master", title: T("تحدي المدود", "Lange-klinkers-uitdaging", "Long vowels challenge", "Med meydan okuması") });
   G.worlds.push({
     id: "river_long", theme: "river", requires: "flowers_valley", distract, noGames: true,
     title: T("المدود", "Lange klinkers", "Long vowels", "Med harfleri"),

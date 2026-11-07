@@ -618,14 +618,16 @@
         { x: 0.8289, y: 0.3059 }, { x: 0.8314, y: 0.2286 }, { x: 0.8968, y: 0.1885 },
       ],
     },
-    // Wereld 3 (de lange rivier): de negen gouden sokkels langs het pad, over de brug naar de berg rechtsboven.
+    // Wereld 3 (de lange rivier): de dertien gouden sokkels langs het pad, over de brug naar de berg rechtsboven.
     river_long: {
       bg: "assets/worlds/river/map-wide.jpg",
       w: 1536, h: 1024,
       path: [
         { x: 0.3822, y: 0.6670 }, { x: 0.3223, y: 0.6172 }, { x: 0.2747, y: 0.5762 },
         { x: 0.2096, y: 0.5615 }, { x: 0.3125, y: 0.5273 }, { x: 0.3997, y: 0.4834 },
-        { x: 0.6348, y: 0.5400 }, { x: 0.7012, y: 0.4932 }, { x: 0.7832, y: 0.3613 },
+        { x: 0.4444, y: 0.4550 }, { x: 0.5921, y: 0.5367 }, { x: 0.6348, y: 0.5400 },
+        { x: 0.7012, y: 0.4932 }, { x: 0.7270, y: 0.4370 }, { x: 0.7677, y: 0.3967 },
+        { x: 0.7832, y: 0.3613 },
       ],
     },
   };
