@@ -64,6 +64,7 @@
 .cc-preview-big { width: 190px; height: 300px; }
 .cc-preview-wardrobe.wd-preview { width: 190px; height: 290px; margin: 6px auto 8px; }
 .cc-swatch.sel, .cc-pick.sel { outline: 4px solid var(--gold, #c9973a); outline-offset: 2px; }
+.wd-gender { justify-self: end; margin-right: 8px; border: 2px solid #f0cf6a; background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 15px; font-weight: 800; cursor: pointer; }
 .wd-coins { justify-self: end; background: #fff3c2; border: 2px solid #f0cf6a; color: #7a5410; font-weight: 900; border-radius: 999px; padding: 6px 12px; font-size: 15px; }
 .wardrobe-tab span { font-size: 16px; }
 .wd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; padding-bottom: 90px; }
