@@ -113,7 +113,7 @@
   // ---------- Layout: rij 0 ligt vlak bij de oever onderaan, de laatste rij vlak bij de overkant ----------
   function layout() {
     const f = $("stField"); if (!f) return;
-    const r = f.getBoundingClientRect(); if (!r.width) return; W = r.width; H = r.height;
+    const r = f.getBoundingClientRect(); if (!r.width) { requestAnimationFrame(() => active && layout()); return; } W = r.width; H = r.height;
     const n = missions.length || 1, top = H * 0.17, bottom = H * 0.82;
     const size = Math.max(64, Math.min(104, W / 3.6, (bottom - top) / (n + 0.6)));
     rows = [];

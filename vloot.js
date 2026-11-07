@@ -123,7 +123,7 @@
   let W = 0, H = 0;
   function layout() {
     const layer = $("vlLayer"); if (!layer) return;
-    const r = layer.getBoundingClientRect(); W = r.width; H = r.height;
+    const r = layer.getBoundingClientRect(); if (!r.width) { requestAnimationFrame(() => active && layout()); return; } W = r.width; H = r.height;
     const n = boats.length || 1, rows = Math.ceil(n / 2);
     const bw = Math.max(130, Math.min(210, W / 2.25)), bh = Math.max(84, Math.min(120, H / (rows + 0.5)));
     boats.forEach((b, i) => {

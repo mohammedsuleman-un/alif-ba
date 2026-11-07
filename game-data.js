@@ -176,6 +176,15 @@ window.GAME.chapters = [
     G.letterAudio[f] = `audio/H3-${kind}-${String(i + 1).padStart(2, "0")}`;
   }));
   const group = (idx) => idx.flatMap((i) => KIND_KEYS.map((k) => form(i, k)));
+  // Dezelfde letter met een korte haraka (بَ) hoort bij het lange broertje (بَا): het kind hoort dat de haraka korter is.
+  // De korte opnames zijn die van wereld 2 (letterAudio staat er al voor).
+  const SHORT_KIND = { alif: "fatha", waw: "damma", yaa: "kasra" };
+  const shortOf = (i, kind) => H.item(i, SHORT_KIND[kind]);
+  const shortInfo = new Map(); // korte vorm -> { i, kind }
+  KIND_KEYS.forEach((kind) => H.BASES.forEach((_, i) => shortInfo.set(shortOf(i, kind), { i, kind })));
+  const shortGroup = (idx) => idx.flatMap((i) => KIND_KEYS.map((k) => shortOf(i, k)));
+  // zowel de lange (بَا) als de korte (بَ) vorm van deze letters, om het verschil te oefenen
+  const bothGroup = (idx) => idx.flatMap((i) => KIND_KEYS.flatMap((k) => [form(i, k), shortOf(i, k)]));
 
   // Woorden uit de boekpagina's: [pagina n, tegelnummer, woord]. Geluid = audio/Page<volgnr van de pagina>-<tegel>.
   const BOOK_PAGE = { 14: 10, 16: 12, 17: 13 }; // n -> volgnummer van de pagina in het boek (1-based)
@@ -207,10 +216,18 @@ window.GAME.chapters = [
       const { i, kind } = info.get(item);
       const looks = H.SIMILAR[i === 0 ? "ا" : H.BASES[i]] || [];
       const src = rnd(pool.filter((x) => info.has(x) && x !== item));
-      const sameBase = KIND_KEYS.filter((k) => k !== kind).map((k) => form(i, k));
+      const sameBase = rnd(KIND_KEYS.filter((k) => k !== kind).map((k) => form(i, k)));
       const isLook = (x) => looks.includes(H.BASES[info.get(x).i]);
-      add(sameBase, 2); add([src.find((x) => isLook(x) && info.get(x).kind === kind) || src.find(isLook)], 1);
-      add(src.filter((x) => info.get(x).kind === kind), 3); add(src, 3);
+      // eerst het korte broertje (بَ naast بَا), dan dezelfde letter met een andere lange klinker, dan een letter die erop lijkt
+      add([shortOf(i, kind)], 1); add(sameBase, 1); add([src.find((x) => isLook(x) && info.get(x).kind === kind) || src.find(isLook)], 1);
+      add(sameBase, 2); add(src.filter((x) => info.get(x).kind === kind), 3); add(src, 3);
+    } else if (shortInfo.has(item)) {
+      const { i, kind } = shortInfo.get(item);
+      const looks = (H.SIMILAR[i === 0 ? "ا" : H.BASES[i]] || []).map((b) => H.BASES.indexOf(b)).filter((k) => k >= 0);
+      const otherShort = rnd(KIND_KEYS.filter((k) => k !== kind).map((k) => shortOf(i, k)));
+      const lookShort = rnd(looks).map((k) => shortOf(k, kind));
+      add([form(i, kind)], 1); add(otherShort, 1); add(lookShort, 1);
+      add(otherShort, 2); add(rnd([...shortInfo.keys()].filter((x) => shortInfo.get(x).kind === kind)), 3);
     } else {
       const src = rnd(pool.filter((x) => wordInfo.has(x) && x !== item));
       const len = bare(item).length, first = bare(item)[0], page = wordInfo.get(item);
@@ -231,12 +248,12 @@ window.GAME.chapters = [
     };
   });
   const wA = wordsOf(14), wY = wordsOf(16), wW = wordsOf(17), wAll = wordsOf(14, 16, 17), wOnly = ["AUDIO_TO_LETTER"];
-  levels.push({ n: 8, letters: [], review: group(range(0, 16)), types: tyP, count: 24, title: T("المدود ١", "Lange klinkers herhalen", "Long vowels review", "Med tekrarı") });
+  levels.push({ n: 8, letters: [], review: bothGroup(range(0, 16)), types: tyP, count: 24, title: T("الحركة والمدّ ١", "Kort en lang", "Short and long", "Kısa ve uzun") });
   levels.push({ n: 9, letters: [], review: wA, types: wOnly, count: 16, title: T("كلمات بالألف المدية", "Woorden met lange alif", "Words with long alif", "Uzun elifli kelimeler") });
   levels.push({ n: 10, letters: [], review: wY, types: wOnly, count: 16, title: T("كلمات بالياء المدية", "Woorden met lange yaa", "Words with long yaa", "Uzun yeli kelimeler") });
   levels.push({ n: 11, letters: [], review: wW, types: wOnly, count: 14, title: T("كلمات بالواو المدية", "Woorden met lange waw", "Words with long waw", "Uzun vavlı kelimeler") });
   levels.push({ n: 12, letters: [], review: wAll, types: wOnly, count: 24, title: T("كلمات المدّ", "Alle woorden", "All the words", "Tüm kelimeler") });
-  levels.push({ n: 13, letters: [], review: forms, types: tyP, count: 30, title: T("المدود ٢", "Alle lange klinkers", "All long vowels", "Tüm med harfleri") });
+  levels.push({ n: 13, letters: [], review: bothGroup(range(0, 28)), types: tyP, count: 30, title: T("الحركة والمدّ ٢", "Kort en lang: alle letters", "Short and long: all letters", "Kısa ve uzun: tüm harfler") });
   levels.push({ n: 14, letters: [], review: [...forms, ...wAll], types: wOnly, count: 30, challenge: true, badge: "long_vowel_master", title: T("تحدي المدود", "Lange-klinkers-uitdaging", "Long vowels challenge", "Med meydan okuması") });
   // voor de spelletjes van wereld 3 (minigames-data.js, bridge.js, vloot.js, klank.js)
   G.longVowels = { form, kinds: KIND_KEYS, words: WORDS.map(([n, , w]) => ({ word: w, kind: n === 14 ? "alif" : n === 16 ? "yaa" : "waw" })) };

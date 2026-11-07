@@ -130,7 +130,7 @@
 
   function layout(reset) {
     const f = $("hbField"); if (!f) return;
-    const r = f.getBoundingClientRect(); if (!r.width) return; W = r.width; H = r.height;
+    const r = f.getBoundingClientRect(); if (!r.width) { requestAnimationFrame(() => active && layout(reset)); return; } W = r.width; H = r.height;
     const n = missions[missionIdx] ? missions[missionIdx].piers.length : 3, pw = Math.min(150, W / (n + 0.6));
     piers = [];
     $("hbPiers").querySelectorAll(".hb-pier").forEach((el, i) => {

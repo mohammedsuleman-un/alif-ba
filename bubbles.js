@@ -125,7 +125,7 @@
   let W = 0, H = 0;
   function layout() {
     const layer = $("bbLayer"); if (!layer) return;
-    const r = layer.getBoundingClientRect(); W = r.width; H = r.height;
+    const r = layer.getBoundingClientRect(); if (!r.width) { requestAnimationFrame(() => active && layout()); return; } W = r.width; H = r.height;
     const n = bubbles.length || 1;
     const size = Math.max(70, Math.min(124, W / (n + 0.8), H * 0.34));
     bubbles.forEach((b, i) => {

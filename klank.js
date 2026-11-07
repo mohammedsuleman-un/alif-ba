@@ -18,13 +18,20 @@
   };
   const AF = window.ArF || { fem: (s) => s, deep: (t) => t };
   const tx = () => AF.deep(TXT[lang()] || TXT.nl);
-  // de drie keuzes: een voorbeeldletter (ب) met de drie lange klinkers
-  const CHOICES = [{ kind: "alif", text: "بَا" }, { kind: "waw", text: "بُو" }, { kind: "yaa", text: "بِي" }];
+  const KINDS = ["alif", "waw", "yaa"];
+  // de lange klinker zoals hij in het woord staat: letter + teken + alif/waw/yaa
+  const MADD = { alif: /(.)َا/, waw: /(.)ُو/, yaa: /(.)ِي/ };
+  const TAIL = { alif: "َا", waw: "ُو", yaa: "ِي" };
+  const isOne = (w) => KINDS.filter((k) => MADD[k].test(w.word)).length === 1; // woorden met twee soorten lange klinkers slaan we over
+  const choicesFor = (letter) => KINDS.map((kind) => ({ kind, text: (kind === "yaa" && letter === "أ" ? "إ" : letter) + TAIL[kind] }));
 
-  // ---------- Missies: 6 woorden, van elke klinker twee ----------
+  // ---------- Missies: 6 woorden, van elke klinker twee; de keuzes zijn de letter uit het woord met de drie klinkers (kaa/kuu/kii) ----------
   function buildMissions() {
-    const words = window.GAME.longVowels.words;
-    return shuffle(CHOICES.flatMap((c) => shuffle(words.filter((w) => w.kind === c.kind)).slice(0, 2))).map((w) => ({ target: w.kind, word: w.word }));
+    const words = window.GAME.longVowels.words.filter(isOne);
+    return shuffle(KINDS.flatMap((k) => shuffle(words.filter((w) => w.kind === k && MADD[k].test(w.word))).slice(0, 2))).map((w) => {
+      const letter = w.word.match(MADD[w.kind])[1];
+      return { target: w.kind, word: w.word, choices: choicesFor(letter) };
+    });
   }
 
   let active = false, epoch = 0, profileId = null;
@@ -68,9 +75,7 @@
         </header>
         <div class="chase-field kd-field" id="kdField">
           <button id="kdWord" class="kd-word" type="button" lang="ar" dir="rtl"></button>
-          <div class="kd-choices" id="kdChoices">
-            ${CHOICES.map((c) => `<button class="kd-choice" type="button" data-kind="${c.kind}" lang="ar" dir="rtl">${c.text}</button>`).join("")}
-          </div>
+          <div class="kd-choices" id="kdChoices"></div>
         </div>
         <div class="sling-hint">${tt.hint}</div>
         <div class="chase-overlay" id="kdOverlay" hidden></div>
@@ -79,7 +84,6 @@
     $("kdReplay").onclick = () => playMissionAudio();
     $("kdWord").onclick = () => playMissionAudio();
     $("kdHelp").onclick = () => onHelp();
-    $("kdChoices").querySelectorAll(".kd-choice").forEach((b) => { b.onclick = () => pick(b); });
     updateDots();
   }
   function updateDots() {
@@ -104,7 +108,8 @@
     helped = false; wrongThisMission = 0; busy = false; missionStart = performance.now();
     $("kdWord").textContent = m.word;
     $("kdHelp").classList.remove("is-used");
-    $("kdChoices").querySelectorAll(".kd-choice").forEach((b) => b.classList.remove("is-help", "is-wrong", "is-right"));
+    $("kdChoices").innerHTML = m.choices.map((c) => `<button class="kd-choice" type="button" data-kind="${c.kind}" lang="ar" dir="rtl">${c.text}</button>`).join("");
+    $("kdChoices").querySelectorAll(".kd-choice").forEach((b) => { b.onclick = () => pick(b); });
     playMissionAudio();
   }
 

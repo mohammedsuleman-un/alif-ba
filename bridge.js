@@ -25,6 +25,12 @@
     ar: { instr: "أكمل الصف", back: "رجوع", listen: "استمع مرة أخرى", help: "ساعدني", cross: "اعبر", hint: "ضع الحروف الناقصة على الجسر. الأبجدية تسير من اليمين إلى اليسار." },
     tr: { instr: "Sırayı tamamla", back: "Geri", listen: "Tekrar dinle", help: "Yardım et", cross: "Geç", hint: "Eksik harfleri köprüye koy. Alfabe sağdan sola gider." },
   };
+  const WORD_TXT = {
+    nl: { instr: "Bouw het woord", hint: "Luister naar het woord en zet de ontbrekende letters op de brug. Het woord loopt van rechts naar links." },
+    en: { instr: "Build the word", hint: "Listen to the word and put the missing letters on the bridge. The word runs from right to left." },
+    ar: { instr: "ابنِ الكلمة", hint: "استمع إلى الكلمة وضع الحروف الناقصة على الجسر. تُقرأ الكلمة من اليمين إلى اليسار." },
+    tr: { instr: "Kelimeyi kur", hint: "Kelimeyi dinle ve eksik harfleri köprüye koy. Kelime sağdan sola okunur." },
+  };
   const AF = window.ArF || { fem: (s) => s, deep: (t) => t }; // Arabisch: vrouwelijke vorm voor meisjes (ar-gender.js)
   const tx = () => AF.deep(TXT[lang()] || TXT.nl);
 
@@ -51,23 +57,30 @@
       return { seq, gaps, tray: shuffle([...needed, extra]) };
     });
   }
-  // Wereld 3: dezelfde rij, maar met de lange klinker erbij (بَا تَا ثَا ...); de extra plank heeft een andere klinker.
+  // Wereld 3: het kind hoort een woord (uit hoofdstuk 3) en bouwt het van losse letters: elke plank is een letter met haar tekens.
+  // De rij loopt van rechts naar links, net als het woord. De extra plank is dezelfde letter met een ander teken of een letter die erop lijkt.
+  const MARKS = ["َ", "ُ", "ِ"];
+  const unitsOf = (w) => { const u = []; for (const ch of w) { if (/[ً-ْ]/.test(ch) && u.length) u[u.length - 1] += ch; else u.push(ch); } return u; };
   function buildLongMissions() {
-    const L = window.GAME.longVowels, H = window.GAME.harakat, level = MG.currentLevel(profileId), group = MG.group(level);
-    const s0 = Math.max(0, H.BASES.indexOf(MG.baseOf(group[0])));
-    const kinds = shuffle(L.kinds);
-    const specs = [{ len: 5, gaps: 1, off: -1 }, { len: 5, gaps: 2, off: 0 }, { len: 6, gaps: 2, off: 1 }];
-    return specs.map((sp, k) => {
-      const kind = kinds[k % 3], start = Math.max(0, Math.min(H.BASES.length - sp.len, s0 + sp.off));
-      const idx = Array.from({ length: sp.len }, (_, i) => start + i);
-      const seq = idx.map((i) => L.form(i, kind));
+    const G = window.GAME, words = G.longVowels.words.map((w) => w.word).map((w) => ({ word: w, units: unitsOf(w) })).filter((w) => w.units.length >= 3 && w.units.length <= 6);
+    const specs = [{ min: 3, max: 4, gaps: 1 }, { min: 4, max: 5, gaps: 1 }, { min: 5, max: 6, gaps: 2 }];
+    const used = new Set();
+    return specs.map((sp) => {
+      const w = shuffle(words.filter((x) => x.units.length >= sp.min && x.units.length <= sp.max && !used.has(x.word)))[0] || shuffle(words)[0];
+      used.add(w.word);
+      const seq = w.units;
       const cand = shuffle(seq.map((_, i) => i).filter((i) => i > 0));
       const gaps = [];
       cand.forEach((i) => { if (gaps.length < sp.gaps && gaps.every((g) => Math.abs(g - i) > 1)) gaps.push(i); });
       gaps.sort((a, b) => a - b);
       const needed = gaps.map((i) => seq[i]);
-      const other = shuffle(L.kinds.filter((m) => m !== kind))[0];
-      return { seq, gaps, tray: shuffle([...needed, L.form(idx[gaps[0]], other)]) };
+      // extra plank: dezelfde letter met een ander teken (of een andere lange klinkerletter) / een letter die erop lijkt
+      const g0 = seq[gaps[0]], base = g0[0], mark = (g0.match(/[َُِ]/) || [""])[0];
+      let extra;
+      if (mark) extra = base + shuffle(MARKS.filter((m) => m !== mark))[0];
+      else { const alt = ["ا", "و", "ي"].filter((c) => c !== base); extra = shuffle(alt)[0]; }
+      if (seq.includes(extra) || needed.includes(extra)) extra = shuffle(Object.keys(G.letterAudio).length ? ["ا", "و", "ي", "م", "ن", "ل"] : ["ا"]).find((c) => !seq.includes(c)) || "ن";
+      return { seq, gaps, word: w.word, tray: shuffle([...needed, extra]) };
     });
   }
   function buildMissions() {
@@ -131,7 +144,7 @@
 
   // ---------- DOM ----------
   function renderChrome() {
-    const tt = tx();
+    const tt = Object.assign({}, tx(), MG.isLong() ? AF.deep(WORD_TXT[lang()] || WORD_TXT.nl) : {}); // wereld 3: woorden bouwen
     $("gamestage").innerHTML = `
       <div class="chase-screen">
         <header class="chase-head">
@@ -178,9 +191,11 @@
     return base ? window.AudioManager.playLearningAudio(base) : Promise.resolve(true);
   }
   function playMissionAudio() {
-    const btn = $("brReplay");
+    const btn = $("brReplay"), m = missions[missionIdx];
     if (btn) { btn.disabled = true; btn.classList.add("is-playing"); }
     const done = () => { if (btn) { btn.disabled = false; btn.classList.remove("is-playing"); } };
+    // wereld 3: het hele woord laten horen (daarna kan het kind het bouwen)
+    if (m && m.word) return window.AudioManager.playInstruction("listen").then((ok) => (ok === false ? false : letterAudio(m.word))).then(done, done);
     return window.AudioManager.playInstruction("missing-letter").then(done, done);
   }
 
@@ -409,7 +424,7 @@
       if (!active || myEpoch !== epoch) return;
       place(planks[i]);
       const right = slots[i] === m.seq[i];
-      await Promise.all([MG.wait(900), letterAudio(slots[i] || m.seq[i])]);
+      await Promise.all([MG.wait(m.word ? 600 : 900), m.word ? Promise.resolve() : letterAudio(slots[i] || m.seq[i])]); // woord: de planken zijn stil, het hele woord klinkt aan het eind
       await MG.wait(220); // even ademruimte: de letter klinkt helemaal uit voor de volgende plank
       if (!right) { badIndex = i; break; }
       planks[i].classList.add("is-ok");
@@ -425,7 +440,8 @@
       solved.push({ helped, wrong: wrongThisMission });
       updateDots();
       MG.sfx("ok");
-      MG.banner(field, { ok: true, letter: m.seq[m.seq.length - 1] });
+      MG.banner(field, { ok: true, letter: m.word || m.seq[m.seq.length - 1] });
+      if (m.word) await letterAudio(m.word);
       const finished = missionIdx + 1 >= missions.length;
       await MG.wait(400); await window.AudioManager.playRandomCorrectFeedback(); await MG.wait(1100);
       MG.hideBanner(field);
