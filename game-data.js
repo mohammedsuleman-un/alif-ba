@@ -236,7 +236,8 @@ window.GAME.chapters = [
   levels.push({ n: 10, letters: [], review: wY, types: wOnly, count: 16, title: T("كلمات بالياء المدية", "Woorden met lange yaa", "Words with long yaa", "Uzun yeli kelimeler") });
   levels.push({ n: 11, letters: [], review: wW, types: wOnly, count: 14, title: T("كلمات بالواو المدية", "Woorden met lange waw", "Words with long waw", "Uzun vavlı kelimeler") });
   levels.push({ n: 12, letters: [], review: wAll, types: wOnly, count: 24, title: T("كلمات المدّ", "Alle woorden", "All the words", "Tüm kelimeler") });
-  levels.push({ n: 13, letters: [], review: [...forms, ...wAll], types: wOnly, count: 30, challenge: true, badge: "long_vowel_master", title: T("تحدي المدود", "Lange-klinkers-uitdaging", "Long vowels challenge", "Med meydan okuması") });
+  levels.push({ n: 13, letters: [], review: forms, types: tyP, count: 30, title: T("المدود ٢", "Alle lange klinkers", "All long vowels", "Tüm med harfleri") });
+  levels.push({ n: 14, letters: [], review: [...forms, ...wAll], types: wOnly, count: 30, challenge: true, badge: "long_vowel_master", title: T("تحدي المدود", "Lange-klinkers-uitdaging", "Long vowels challenge", "Med meydan okuması") });
   G.worlds.push({
     id: "river_long", theme: "river", requires: "flowers_valley", distract, noGames: true,
     title: T("المدود", "Lange klinkers", "Long vowels", "Med harfleri"),
