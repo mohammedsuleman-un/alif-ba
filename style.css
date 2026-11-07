@@ -1076,6 +1076,7 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
 /* Geen lege strook boven een scherm: de bovenmarge van het eerste element mag niet door het scherm heen naar buiten lekken. */
 #appHome, #rewards, #profileHub, #gOverview { display: flow-root; }
 #appHome[hidden], #rewards[hidden], #profileHub[hidden], #gOverview[hidden] { display: none !important; }
+.g-theme-river { background: linear-gradient(160deg, #123a5c, #2a8ac0 55%, #f2b86a 130%); }
 .g-theme-flowers { background: linear-gradient(160deg, #1f4d2c, #3fa14a 55%, #f0a8c8 130%); }
 /* Letters met klinkerteken (بَ بُ بِ, أَ): hoger dan een kale letter, dus kleiner en midden in het vierkant */
 .g-big-letter.has-mark { display: grid; place-items: center; font-size: calc(var(--arabic-hero) * .78); line-height: 1.45; padding-top: .12em; overflow: hidden; }

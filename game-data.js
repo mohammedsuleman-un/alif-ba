@@ -69,7 +69,7 @@ window.GAME.chapters = [
   { n: 2, id: "ch2", theme: "flowers", icon: "🌻", stage: 1, areas: ["flowers_valley"], pos: { x: .504, y: .309 }, c: ["#8fd36a", "#3fa14a"],
     title: { ar: "الحركات", nl: "Klinkertekens", en: "Vowel marks", tr: "Harekeler" },
     land: { ar: "وادي الزهور", nl: "Bloemenvallei", en: "Flower valley", tr: "Çiçek vadisi" } },
-  { n: 3, id: "ch3", theme: "river", icon: "🌊", stage: 1, areas: [], pos: { x: .661, y: .309 }, c: ["#5fc8e8", "#2a8ac0"],
+  { n: 3, id: "ch3", theme: "river", icon: "🌊", stage: 1, areas: ["river_long"], pos: { x: .661, y: .309 }, c: ["#5fc8e8", "#2a8ac0"],
     title: { ar: "المدود", nl: "Lange klinkers", en: "Long vowels", tr: "Med harfleri" },
     land: { ar: "النهر الطويل", nl: "De lange rivier", en: "The long river", tr: "Uzun nehir" } },
   { n: 4, id: "ch4", theme: "mountains", icon: "⛰️", stage: 2, areas: [], pos: { x: .337, y: .50 }, c: ["#b9a6e8", "#7a5fc0"],
@@ -116,6 +116,7 @@ window.GAME.chapters = [
     "س": ["ش", "ص"], "ش": ["س", "ص"], "ص": ["ض", "س"], "ض": ["ص", "ش"], "ط": ["ظ"], "ظ": ["ط"], "ع": ["غ"], "غ": ["ع"],
     "ف": ["ق", "م"], "ق": ["ف", "ن"], "ك": ["ل"], "ل": ["ك", "ا"], "ا": ["ل"], "م": ["و", "ف"], "و": ["م", "ر"], "ه": ["و", "ح"],
   };
+  G.harakat.SIMILAR = SIMILAR; // ook voor wereld 3
   // Afleiders die het kind echt moeten laten luisteren: dezelfde letter met de twee andere tekens, en één letter die erop lijkt (met hetzelfde teken).
   const distract = (letter, pool, avail) => {
     const src = avail.size >= 6 ? [...avail] : pool;
@@ -153,4 +154,90 @@ window.GAME.chapters = [
     letters: all, badge: "harakat_master", levels,
   });
   G.badges.harakat_master = { icon: "🌻", ar: "بطل الحركات", nl: "Klinkertekenmeester", en: "Vowel marks master", tr: "Hareke ustası" };
+})();
+
+// ---------- Wereld 3: de lange klinkers (مدّ: ـَا، ـُو، ـِي) ----------
+// Deel 1: elke opname is een letter met een lange klinker (bijv. بَا = "baa"), 28 letters x 3 (alif, waw, yaa), in alfabetvolgorde
+// (audio/H3-alif-01 t/m 28, H3-waw-.., H3-yaa-..). Deel 2: woorden uit hoofdstuk 3 van het boek (pagina 14, 16 en 17);
+// het kind hoort het woord (de bestaande boekopname Page<volgnr>-<tegel>) en kiest het juiste woord uit vier.
+(() => {
+  const G = window.GAME, H = G.harakat;
+  const T = (ar, nl, en, tr) => ({ ar, nl, en, tr });
+  const KINDS = { alif: [H.MARKS.fatha, "ا"], waw: [H.MARKS.damma, "و"], yaa: [H.MARKS.kasra, "ي"] };
+  const KIND_KEYS = Object.keys(KINDS);
+  const range = (a, b) => Array.from({ length: b - a }, (_, k) => a + k);
+  const rnd = (arr) => arr.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+  // alif krijgt de hamza: أَا أُو إِي
+  const form = (i, kind) => (i === 0 ? (kind === "yaa" ? "إ" : "أ") : H.BASES[i]) + KINDS[kind][0] + KINDS[kind][1];
+  const info = new Map(); // vorm -> { i, kind }
+  KIND_KEYS.forEach((kind) => H.BASES.forEach((_, i) => {
+    const f = form(i, kind);
+    info.set(f, { i, kind });
+    G.letterAudio[f] = `audio/H3-${kind}-${String(i + 1).padStart(2, "0")}`;
+  }));
+  const group = (idx) => idx.flatMap((i) => KIND_KEYS.map((k) => form(i, k)));
+
+  // Woorden uit de boekpagina's: [pagina n, tegelnummer, woord]. Geluid = audio/Page<volgnr van de pagina>-<tegel>.
+  const BOOK_PAGE = { 14: 10, 16: 12, 17: 13 }; // n -> volgnummer van de pagina in het boek (1-based)
+  const WORDS = [
+    [14, 1, "قَالَ"], [14, 2, "زَاغَ"], [14, 3, "ضَاقَ"], [14, 4, "تَابَ"], [14, 5, "كَانَ"],
+    [14, 6, "حَاقَ"], [14, 7, "خَابَ"], [14, 8, "ذَاتِ"], [14, 9, "عَاصِمَ"], [14, 10, "يَكَادُ"],
+    [14, 11, "جَاهَدَ"], [14, 12, "عَالِمُ"], [14, 13, "غَالِبَ"], [14, 14, "فَاطِرِ"], [14, 15, "مَالِكِ"],
+    [16, 1, "قِيلَ"], [16, 4, "نُرِيدُ"], [16, 9, "يُرِيدُ"], [16, 10, "دِينُكُمْ"], [16, 11, "عِبَادِي"],
+    [16, 12, "أَخِيهِ"], [16, 14, "أَبَابِيلَ"], [16, 16, "يُصِيبُ"], [16, 17, "مِيعَادُ"], [16, 18, "يَضِيقُ"],
+    [16, 19, "لِسَانِي"], [16, 21, "كِتَابِي"], [16, 26, "أَمْرِي"], [16, 29, "تَجْرِي"], [16, 30, "خَالِدِينَ"],
+    [17, 1, "وَيَقُولُ"], [17, 2, "تَعْلَمُونَ"], [17, 4, "تَعْبُدُونَ"], [17, 6, "يَقُومُ"], [17, 9, "سَيَقُولُ"],
+    [17, 12, "فَيَكُونُ"], [17, 13, "يَتْلُو"], [17, 14, "يَشْهَدُونَ"], [17, 16, "مُسْرِفُونَ"], [17, 20, "بِذُنُوبِ"],
+    [17, 22, "وَيَعْقُوبَ"], [17, 23, "يَنْطِقُونَ"], [17, 29, "فَرِحُونَ"],
+  ];
+  const wordInfo = new Map(); // woord -> pagina (n)
+  WORDS.forEach(([n, tile, w]) => {
+    wordInfo.set(w, n);
+    G.letterAudio[w] = `audio/Page${BOOK_PAGE[n]}-${String(tile).padStart(2, "0")}`;
+  });
+  const wordsOf = (...pages) => WORDS.filter((x) => pages.includes(x[0])).map((x) => x[2]);
+  const bare = (w) => w.replace(/[ً-ْ]/g, "");
+
+  // Afleiders bij een vorm: dezelfde letter met de twee andere klinkers, plus één letter die erop lijkt met dezelfde klinker.
+  // Afleiders bij een woord: woorden die er qua lengte en beginletter op lijken, liefst van dezelfde pagina.
+  const distract = (item, pool) => {
+    const out = [];
+    const add = (arr, n) => { for (const x of arr) { if (out.length >= 3 || n <= 0) break; if (x && x !== item && !out.includes(x)) { out.push(x); n--; } } };
+    if (info.has(item)) {
+      const { i, kind } = info.get(item);
+      const looks = H.SIMILAR[i === 0 ? "ا" : H.BASES[i]] || [];
+      const src = rnd(pool.filter((x) => info.has(x) && x !== item));
+      const sameBase = KIND_KEYS.filter((k) => k !== kind).map((k) => form(i, k));
+      const isLook = (x) => looks.includes(H.BASES[info.get(x).i]);
+      add(sameBase, 2); add([src.find((x) => isLook(x) && info.get(x).kind === kind) || src.find(isLook)], 1);
+      add(src.filter((x) => info.get(x).kind === kind), 3); add(src, 3);
+    } else {
+      const src = rnd(pool.filter((x) => wordInfo.has(x) && x !== item));
+      const len = bare(item).length, first = bare(item)[0], page = wordInfo.get(item);
+      const score = (x) => (bare(x)[0] === first ? 2 : 0) + (Math.abs(bare(x).length - len) <= 1 ? 2 : 0) + (wordInfo.get(x) === page ? 1 : 0);
+      add(src.sort((a, b) => score(b) - score(a)), 3);
+    }
+    return out.slice(0, 3);
+  };
+
+  const GROUPS = [range(0, 4), range(4, 8), range(8, 12), range(12, 16), range(16, 20), range(20, 24), range(24, 28)];
+  const forms = group(range(0, 28));
+  const ty = ["AUDIO_TO_LETTER", "VISUAL_MATCH"], tyP = ["AUDIO_TO_LETTER", "VISUAL_MATCH", "LETTER_MATCH"];
+  const levels = GROUPS.map((idx, k) => {
+    const bases = idx.map((i) => H.BASES[i]).join(" ");
+    return {
+      n: k + 1, letters: group(idx), review: k ? group(GROUPS.slice(0, k).flat()) : [], types: k < 2 ? ty : tyP, count: k ? 30 : 24,
+      title: T("اكتشف " + bases, "Ontdek " + bases, "Discover " + bases, bases + " harflerini keşfet"),
+    };
+  });
+  const w1 = wordsOf(14, 16), wAll = wordsOf(14, 16, 17);
+  levels.push({ n: 8, letters: [], review: w1, types: ["AUDIO_TO_LETTER"], count: 20, title: T("كلمات المدّ", "Woorden met lange klinkers", "Words with long vowels", "Med harfli kelimeler") });
+  levels.push({ n: 9, letters: [], review: wAll, types: ["AUDIO_TO_LETTER"], count: 24, challenge: true, badge: "long_vowel_master", title: T("تحدي الكلمات", "Woorden-uitdaging", "Word challenge", "Kelime meydan okuması") });
+  G.worlds.push({
+    id: "river_long", theme: "river", requires: "flowers_valley", distract, noGames: true,
+    title: T("المدود", "Lange klinkers", "Long vowels", "Med harfleri"),
+    subtitle: T("الألف والواو والياء المدية", "Alif, waw en yaa als lange klinker", "Alif, waw and yaa as long vowels", "Med olan elif, vav ve ye"),
+    letters: [...forms, ...wAll], badge: "long_vowel_master", levels,
+  });
+  G.badges.long_vowel_master = { icon: "🌊", ar: "بطل المدود", nl: "Meester van de lange klinkers", en: "Long vowels master", tr: "Med ustası" };
 })();

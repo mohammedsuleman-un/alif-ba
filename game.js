@@ -618,6 +618,16 @@
         { x: 0.8289, y: 0.3059 }, { x: 0.8314, y: 0.2286 }, { x: 0.8968, y: 0.1885 },
       ],
     },
+    // Wereld 3 (de lange rivier): de negen gouden sokkels langs het pad, over de brug naar de berg rechtsboven.
+    river_long: {
+      bg: "assets/worlds/river/map-wide.jpg",
+      w: 1536, h: 1024,
+      path: [
+        { x: 0.3822, y: 0.6670 }, { x: 0.3223, y: 0.6172 }, { x: 0.2747, y: 0.5762 },
+        { x: 0.2096, y: 0.5615 }, { x: 0.3125, y: 0.5273 }, { x: 0.3997, y: 0.4834 },
+        { x: 0.6348, y: 0.5400 }, { x: 0.7012, y: 0.4932 }, { x: 0.7832, y: 0.3613 },
+      ],
+    },
   };
 
   const oasisScale = (sceneWpx) => sceneWpx / OASIS_IMG_W;
@@ -717,7 +727,7 @@
   }
 
   // Wereld 1 heeft per level een keuzescherm met spelletjes; wereld 2 en verder gaat direct naar de vragen.
-  const levelHref = (world, n) => `#/spel/niveau/${world.id}/${n}`; // keuzescherm: de vragen of een van de spelletjes
+  const levelHref = (world, n) => (world.noGames ? `#/spel/level/${world.id}/${n}` : `#/spel/niveau/${world.id}/${n}`); // wereld 3: meteen de vragen; keuzescherm: de vragen of een van de spelletjes
 
   function renderMap(worldId) {
     const t = GT();
@@ -1076,12 +1086,14 @@
     renderChoiceQuestion(q);
   }
 
+  const WORD_SOUND = { nl: "Tik op het woord dat je hoorde", en: "Tap the word you heard", ar: "اضغط على الكلمة التي سمعتها", tr: "Duyduğun kelimeye dokun" };
   const QUESTION_TIME_MS = 10000;
   const QUESTION_WARN_MS = 3000; // laatste 3 seconden: waarschuwing (kleur + zacht geluid)
 
   function renderChoiceQuestion(q) {
     const t = GT();
     const isAudio = q.type === "AUDIO_TO_LETTER";
+    const isWord = q.letter.replace(/[ً-ْ]/g, "").length > 2; // wereld 3: een heel woord i.p.v. een letter
     scr.level.innerHTML = `
       ${levelHeader()}
       <div class="g-timer" id="gTimer"><i id="gTimerBar"></i></div>
@@ -1090,7 +1102,7 @@
           <span class="g-instr-icon">${isAudio ? "🔊" : "👆"}</span>
           <div class="g-instr-text">
             ${isAudio ? `<span class="g-instr-kicker">${t.listen}</span>` : ""}
-            <span class="g-instr-main">${isAudio ? t.chooseSound : t.chooseMatch}</span>
+            <span class="g-instr-main">${isAudio ? (isWord ? WORD_SOUND[glang()] || WORD_SOUND.nl : t.chooseSound) : t.chooseMatch}</span>
           </div>
         </div>
         ${isAudio
@@ -1482,6 +1494,7 @@
     const world = G.worlds.find((w) => w.id === worldId), level = world && world.levels.find((lv) => lv.n === +n);
     if (!level) return gohash(`#/spel/wereld/${worldId}`);
     const MG = window.MiniGames, pid = activeProfile.id, w2 = world.id === "flowers_valley";
+    if (world.noGames) return location.replace(`#/spel/level/${worldId}/${level.n}`); // (vangnet: wereld 3 heeft nog geen spelletjes)
     if (MG) MG.setWorld(w2 ? "harakat" : "oasis"); // de spelletjes volgen de wereld van dit level
     const stars = levelStars(world, level), letters = level.letters.length ? level.letters : world.letters;
     const games = LH_GAMES.filter((g) => !g[3] || w2).map(([key, icon, name]) => {
