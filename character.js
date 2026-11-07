@@ -27,7 +27,7 @@
   const stateKey = (pid) => `gp_state_${pid}`;
   const seenKey = (pid) => `gp_shelf_seen_${pid}`;
 
-  const SLOTS = ["hijab", "outfit", "shoes", "kufi", "head", "face", "neck", "hand", "back", "pet"];
+  const SLOTS = ["hijab", "outfit", "shoes", "kufi", "head", "face", "neck", "necklace", "bracelet", "hand", "back", "pet"];
   const itemById = (id) => C.items.find((i) => i.id === id) || null;
   const forType = (i, type) => i.characterType === "both" || i.characterType === type;
   const starters = (type) => C.items.filter((i) => i.price === 0 && forType(i, type));
@@ -323,6 +323,25 @@
   };
   const OUT = "#3a2a1e";
 
+  const METAL = { gold: ["#fff0a0", "#e0a01a", "#a8730d"], silver: ["#ffffff", "#aab6c6", "#6b7686"] };
+  // Ketting: een dun kettinkje om de hals, eventueel met een hartje
+  function necklace(A, u, m, heart) {
+    const [x, y] = A.neck, [, cy] = A.chest, d = Math.max(60, (cy - y) * 0.55);
+    const l = x - 150, r = x + 150, by = y + d;
+    return `<defs>${grad(u + "n", m[0], m[1])}</defs><g transform="rotate(${A.tilt * 0.25} ${x} ${y})">
+      <path d="M${l} ${y - 6} Q${x} ${by + 40} ${r} ${y - 6}" fill="none" stroke="${m[2]}" stroke-width="26" stroke-linecap="round"/>
+      <path d="M${l} ${y - 6} Q${x} ${by + 40} ${r} ${y - 6}" fill="none" stroke="url(#${u}n)" stroke-width="15" stroke-linecap="round" stroke-dasharray="22 7"/>
+      ${heart
+        ? `<g transform="translate(${x} ${by + 40}) scale(1.6) translate(${-x} ${-(by + 40)})"><path d="M${x} ${by + 112} C${x - 72} ${by + 58} ${x - 40} ${by + 6} ${x} ${by + 40} C${x + 40} ${by + 6} ${x + 72} ${by + 58} ${x} ${by + 112}Z" fill="url(#${u}n)" stroke="${m[2]}" stroke-width="7" stroke-linejoin="round"/><path d="M${x - 30} ${by + 46} Q${x - 44} ${by + 62} ${x - 34} ${by + 74}" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".8"/></g>`
+        : `<circle cx="${x}" cy="${by + 52}" r="38" fill="url(#${u}n)" stroke="${m[2]}" stroke-width="9"/><circle cx="${x - 12}" cy="${by + 40}" r="10" fill="#fff" opacity=".8"/>`}
+    </g>`;
+  }
+  // Armband: een of drie ringetjes om de pols (zelfde plek als het horloge)
+  function bracelet(A, u, m, n) {
+    const [x, y] = A.handL;
+    const bands = Array.from({ length: n }, (_, i) => { const o = (i - (n - 1) / 2) * 30; return `<rect x="-44" y="${o - 12}" width="88" height="24" rx="12" fill="url(#${u}a)" stroke="${m[2]}" stroke-width="5"/><rect x="-32" y="${o - 7}" width="40" height="6" rx="3" fill="#fff" opacity=".75"/>`; }).join("");
+    return `<defs>${grad(u + "a", m[0], m[1], true)}</defs><g transform="translate(${x + 78} ${y - 38}) rotate(-28)">${bands}</g>`;
+  }
   const ART_FN = {
     starband(A, u) {
       const [x, y] = A.hat, w = A.hatW;
@@ -454,6 +473,15 @@
         front: strap(-1) + strap(1),
       };
     },
+    // Sieraden: zilver of goud
+    chain_silver(A, u) { return necklace(A, u, METAL.silver, false); },
+    chain_gold(A, u) { return necklace(A, u, METAL.gold, false); },
+    heart_silver(A, u) { return necklace(A, u, METAL.silver, true); },
+    heart_gold(A, u) { return necklace(A, u, METAL.gold, true); },
+    bangle_silver(A, u) { return bracelet(A, u, METAL.silver, 1); },
+    bangle_gold(A, u) { return bracelet(A, u, METAL.gold, 1); },
+    bangles_silver(A, u) { return bracelet(A, u, METAL.silver, 3); },
+    bangles_gold(A, u) { return bracelet(A, u, METAL.gold, 3); },
     duck(A) {
       const x = A.petX, y = A.H - 95;
       return `<g transform="translate(${x - 20} ${y - 40}) scale(1.55)"><ellipse cx="0" cy="62" rx="88" ry="14" fill="#000" opacity=".12"/>
@@ -478,7 +506,7 @@
   function layer(cfg, which, u) {
     const A = artOf(cfg).a;
     const parts = [];
-    ["back", "pet", "hand", "neck", "face", "head"].forEach((slot) => {
+    ["back", "pet", "hand", "bracelet", "neck", "necklace", "face", "head"].forEach((slot) => {
       const it = cfg[slot] ? itemById(cfg[slot]) : null;
       if (!it || !ART_FN[it.art]) return;
       const out = ART_FN[it.art](A, u + slot);

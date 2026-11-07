@@ -130,6 +130,16 @@ window.CHARACTER = {
   acc("pet_duck",     "pet",  "duck",      "🦆", 100, 4, L("بطة صغيرة", "Eendje", "Little duck", "Ördek"), "both", [1]);
   acc("pet_cat",      "pet",  "cat",       "🐱", 150, 7, L("قطة", "Katje", "Kitten", "Kedi"), "both", [1, 2, 3]);
 
+  // Sieraden (alleen meisjes): ketting en armband, in zilver en goud
+  acc("necklace_silver",       "necklace", "chain_silver",  "📿", 60,  2, L("سلسلة فضية", "Zilveren ketting", "Silver necklace", "Gümüş kolye"), "girl");
+  acc("necklace_gold",         "necklace", "chain_gold",    "📿", 80,  4, L("سلسلة ذهبية", "Gouden ketting", "Gold necklace", "Altın kolye"), "girl");
+  acc("necklace_silver_heart", "necklace", "heart_silver",  "🤍", 100, 6, L("قلادة قلب فضية", "Zilveren hartje", "Silver heart necklace", "Gümüş kalpli kolye"), "girl");
+  acc("necklace_gold_heart",   "necklace", "heart_gold",    "💛", 130, 8, L("قلادة قلب ذهبية", "Gouden hartje", "Gold heart necklace", "Altın kalpli kolye"), "girl");
+  acc("bracelet_silver",       "bracelet", "bangle_silver", "⚪", 50,  2, L("سوار فضي", "Zilveren armband", "Silver bracelet", "Gümüş bilezik"), "girl");
+  acc("bracelet_gold",         "bracelet", "bangle_gold",   "🟡", 70,  4, L("سوار ذهبي", "Gouden armband", "Gold bracelet", "Altın bilezik"), "girl");
+  acc("bracelet_silver_set",   "bracelet", "bangles_silver","⚪", 90,  6, L("أساور فضية", "Zilveren armbandjes", "Silver bangles", "Gümüş bilezikler"), "girl");
+  acc("bracelet_gold_set",     "bracelet", "bangles_gold",  "🟡", 120, 8, L("أساور ذهبية", "Gouden armbandjes", "Gold bangles", "Altın bilezikler"), "girl");
+
   // Abaya-icoontje (lange wijde mantel met mouwen en een riem), want er is geen emoji voor.
   const ABAYA = '<svg viewBox="0 0 24 24" width="1.15em" height="1.15em" aria-hidden="true" style="vertical-align:-0.2em"><path d="M9 2.5 12 4l3-1.5 3.2 2.6-1 4.2-1.2-.5L18.4 22H5.6l1.4-13.7-1.2.5-1-4.2z" fill="#8b5fd6"/><path d="M12 4v18" stroke="#6d44b8" stroke-width=".9" fill="none"/><path d="M7.2 11.5h9.6" stroke="#f2c542" stroke-width="1.3" stroke-linecap="round"/><path d="M10 2.8 12 5l2-2.2" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".9"/></svg>';
 
@@ -143,6 +153,8 @@ window.CHARACTER = {
     { id: "head",   icon: "👑", types: ["girl", "boy"], label: L("الرأس", "Hoofd", "Head", "Baş") },
     { id: "face",   icon: "👓", types: ["girl", "boy"], label: L("الوجه", "Gezicht", "Face", "Yüz") },
     { id: "neck",   icon: "🎀", icons: { boy: "🧣" }, types: ["girl", "boy"], label: L("الرقبة", "Hals", "Neck", "Boyun") },
+    { id: "necklace", icon: "📿", types: ["girl"],      label: L("القلادة", "Ketting", "Necklace", "Kolye") },
+    { id: "bracelet", icon: "⚪", types: ["girl"],      label: L("السوار", "Armband", "Bracelet", "Bilezik") },
     { id: "hand",   icon: "🎈", types: ["girl", "boy"], label: L("اليد", "Hand", "Hand", "El") },
     { id: "back",   icon: "🦋", icons: { boy: "🎒" }, types: ["girl", "boy"], label: L("الظهر", "Rug", "Back", "Sırt") },
     { id: "pet",    icon: "🐱", types: ["girl", "boy"], label: L("رفيق", "Maatje", "Buddy", "Arkadaş") },

@@ -484,11 +484,11 @@
     const t = GT(), w = WTx(), pid = activeProfile.id;
     document.documentElement.dir = t.dir;
     let cfg = Character.getConfig(pid);
-    const cats = Character.categoriesFor(cfg.type);
+    let cats = Character.categoriesFor(cfg.type);
     let activeCat = "outfit";
     let tryItem = null;           // item dat je past maar nog niet bezit
     let mood = "wave", moodTimer = null;
-    const REMOVABLE = ["head", "face", "neck", "hand", "back", "pet"];
+    const REMOVABLE = ["head", "face", "neck", "necklace", "bracelet", "hand", "back", "pet"];
 
     function setMood(m, ms) {
       mood = m; clearTimeout(moodTimer);
@@ -527,6 +527,7 @@
         <div class="g-profile-head">
           <a href="#/spel/wereld/letter_oasis" class="g-back-book">←</a>
           <h2 class="g-who" style="margin:0;font-size:18px;">${t.wardrobeTitle}</h2>
+          ${PV() ? `<button type="button" id="wdGender" class="wd-gender" aria-label="${cfg.type === "girl" ? "👦" : "👧"}">${cfg.type === "girl" ? "👧 → 👦" : "👦 → 👧"}</button>` : ""}
           <span class="wd-coins">🪙 ${coins}</span>
         </div>
         <div class="cc-preview cc-preview-wardrobe wd-preview">${Character.svg(prevCfg, mood)}</div>
@@ -542,6 +543,13 @@
         else if (st === "shop") { tryItem = it; sfx.tap(); setMood("happy", 1600); render(); }
         else { b.classList.add("shake"); setTimeout(() => b.classList.remove("shake"), 400); }
       }));
+      // Docent-voorbeeld: wissel tussen jongen en meisje om beide kledingkasten te kunnen bekijken.
+      const gb = $("wdGender");
+      if (gb) gb.onclick = () => {
+        cfg = Character.saveConfig(pid, { type: cfg.type === "girl" ? "boy" : "girl" });
+        cats = Character.categoriesFor(cfg.type); if (!cats.some((x) => x.id === activeCat)) activeCat = "outfit";
+        tryItem = null; sfx.tap(); render();
+      };
       const buy = $("wdBuy");
       if (buy) buy.onclick = () => {
         const r = Character.buy(pid, tryItem.id);
