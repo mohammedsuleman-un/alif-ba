@@ -729,7 +729,7 @@
   }
 
   // Wereld 1 heeft per level een keuzescherm met spelletjes; wereld 2 en verder gaat direct naar de vragen.
-  const levelHref = (world, n) => (world.noGames ? `#/spel/level/${world.id}/${n}` : `#/spel/niveau/${world.id}/${n}`); // wereld 3: meteen de vragen; keuzescherm: de vragen of een van de spelletjes
+  const levelHref = (world, n) => `#/spel/niveau/${world.id}/${n}`; // keuzescherm: de vragen of een van de spelletjes
 
   function renderMap(worldId) {
     const t = GT();
@@ -880,7 +880,7 @@
           <span>${t.levelsProgress(doneCount, levels.length)}</span>
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
-        ${world.id === "flowers_valley" ? `<a href="#/gamestage/games?w=2" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : ""}
+        ${world.id === "flowers_valley" ? `<a href="#/gamestage/games?w=2" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : world.id === "river_long" ? `<a href="#/gamestage/games?w=3" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : ""}
         <a href="#/spel/kaart" class="g-icon-btn" aria-label="Kaart">🗺️</a>
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
@@ -1485,21 +1485,23 @@
     ["slingshot", "🎯", { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" }],
     ["photographer", "📷", { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" }],
     ["diver", "🤿", { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" }],
-    ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }],
-    ["bubbles", "🫧", { nl: "Feestbellen", en: "Festival Bubbles", ar: "فقاعات الاحتفال", tr: "Festival Balonları" }, true],
+    ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }, false, true],
+    ["bubbles", "🫧", { nl: "Feestbellen", en: "Festival Bubbles", ar: "فقاعات الاحتفال", tr: "Festival Balonları" }, true, true],
     ["harbor", "⛵", { nl: "Havenloods", en: "Harbour Pilot", ar: "ربّان الميناء", tr: "Liman Kaptanı" }, true],
-    ["stones", "🪷", { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" }, true],
+    ["stones", "🪷", { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" }, true, true],
+    ["vloot", "⛵", { nl: "Woordenvloot", en: "Word Fleet", ar: "أسطول الكلمات", tr: "Kelime Filosu" }, true, true, true],
+    ["klank", "🎵", { nl: "Klankdrie", en: "Sound Three", ar: "ثلاثية الصوت", tr: "Üçlü Ses" }, true, true, true],
   ];
   function renderLevelHub(worldId, n) {
     const t = GT(), L = AF.deep(LHT[glang()] || LHT.nl), l = LHT[glang()] ? glang() : "nl";
     document.documentElement.dir = t.dir;
     const world = G.worlds.find((w) => w.id === worldId), level = world && world.levels.find((lv) => lv.n === +n);
     if (!level) return gohash(`#/spel/wereld/${worldId}`);
-    const MG = window.MiniGames, pid = activeProfile.id, w2 = world.id === "flowers_valley";
-    if (world.noGames) return location.replace(`#/spel/level/${worldId}/${level.n}`); // (vangnet: wereld 3 heeft nog geen spelletjes)
-    if (MG) MG.setWorld(w2 ? "harakat" : "oasis"); // de spelletjes volgen de wereld van dit level
+    const MG = window.MiniGames, pid = activeProfile.id, w2 = world.id === "flowers_valley", w3 = world.id === "river_long";
+    const mgWorld = w3 ? "long" : w2 ? "harakat" : "oasis";
+    if (MG) MG.setWorld(mgWorld); // de spelletjes volgen de wereld van dit level
     const stars = levelStars(world, level), letters = level.letters.length ? level.letters : world.letters;
-    const games = LH_GAMES.filter((g) => !g[3] || w2).map(([key, icon, name]) => {
+    const games = LH_GAMES.filter((g) => (w3 ? g[4] : !g[5] && (!g[3] || w2))).map(([key, icon, name]) => {
       const open = !MG || MG.gameOpen(pid, key);
       return open ? `<button type="button" class="lh-card" data-game="${key}"><span class="lh-icon">${icon}</span><b>${name[l]}</b></button>`
         : `<div class="lh-card is-locked"><span class="lh-icon">🔒</span><b>${name[l]}</b><small>${L.lock(MG.UNLOCKS[key])}</small></div>`;
@@ -1514,12 +1516,12 @@
         <button type="button" class="lh-quiz" id="lhQuiz"><span class="lh-icon">🌟</span><span><b>${L.quiz}</b><small>${L.quizSub}</small></span><span class="lh-stars">${stars ? "★".repeat(stars) + "☆".repeat(3 - stars) : ""}</span></button>
         <p class="lh-title">${L.games}</p>
         <div class="lh-grid">${games}</div>
-        <p class="lh-content">${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${w2 && MG ? MG.labelOf(letters) : letters.join(" ")}</span></p>
+        <p class="lh-content">${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${(w2 || w3) && MG && level.letters.length ? MG.labelOf(letters) : letters.join(" ")}</span></p>
       </div>`;
     sayOnceWhenFree("level-choose");
     $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
     scr.overview.querySelectorAll(".lh-card[data-game]").forEach((b) => (b.onclick = () => {
-      if (MG) { MG.setWorld(w2 ? "harakat" : "oasis"); MG.focusLevel(pid, level.n - 1); }
+      if (MG) { MG.setWorld(mgWorld); MG.focusLevel(pid, level.n - 1); }
       gohash(`#/gamestage/${b.dataset.game}/1`);
     }));
   }

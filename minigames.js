@@ -17,18 +17,24 @@
     { key: "diver", hash: "#/gamestage/diver/1", icon: "🤿",
       title: { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" },
       sub: { nl: "Verzamel de parels met de goede letter", en: "Collect the pearls with the right letter", ar: "اجمع اللآلئ التي عليها الحرف الصحيح", tr: "Doğru harfli incileri topla" } },
-    { key: "bridge", hash: "#/gamestage/bridge/1", icon: "🌉",
+    { key: "bridge", hash: "#/gamestage/bridge/1", icon: "🌉", world3: true,
       title: { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" },
       sub: { nl: "Maak de alfabetrij af en steek over", en: "Complete the alphabet row and cross", ar: "أكمل صف الحروف واعبر", tr: "Alfabe sırasını tamamla ve geç" } },
-    { key: "bubbles", hash: "#/gamestage/bubbles/1", icon: "🫧", world2: true,
+    { key: "bubbles", hash: "#/gamestage/bubbles/1", icon: "🫧", world2: true, world3: true,
       title: { nl: "Feestbellen", en: "Festival Bubbles", ar: "فقاعات الاحتفال", tr: "Festival Balonları" },
       sub: { nl: "Hoor de klank en schiet de goede bel", en: "Hear the sound and pop the right bubble", ar: "اسمع الصوت وأصب الفقاعة الصحيحة", tr: "Sesi duy ve doğru balona at" } },
     { key: "harbor", hash: "#/gamestage/harbor/1", icon: "⛵", world2: true,
       title: { nl: "Havenloods", en: "Harbour Pilot", ar: "ربّان الميناء", tr: "Liman Kaptanı" },
       sub: { nl: "Vaar naar de steiger met de goede klank", en: "Sail to the pier with the right sound", ar: "أبحر إلى الرصيف الذي عليه الصوت الصحيح", tr: "Doğru sesli iskeleye yanaş" } },
-    { key: "stones", hash: "#/gamestage/stones/1", icon: "🪷", world2: true,
+    { key: "stones", hash: "#/gamestage/stones/1", icon: "🪷", world2: true, world3: true,
       title: { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" },
       sub: { nl: "Hoor de klank en spring op de goede steen", en: "Hear the sound and jump on the right stone", ar: "اسمع الصوت واقفز على الحجر الصحيح", tr: "Sesi duy ve doğru taşa zıpla" } },
+    { key: "vloot", hash: "#/gamestage/vloot/1", icon: "⛵", world3: true, only3: true,
+      title: { nl: "Woordenvloot", en: "Word Fleet", ar: "أسطول الكلمات", tr: "Kelime Filosu" },
+      sub: { nl: "Hoor het woord en tik het goede bootje", en: "Hear the word and tap the right boat", ar: "اسمع الكلمة والمس القارب الصحيح", tr: "Kelimeyi duy ve doğru tekneye dokun" } },
+    { key: "klank", hash: "#/gamestage/klank/1", icon: "🎵", world3: true, only3: true,
+      title: { nl: "Klankdrie", en: "Sound Three", ar: "ثلاثية الصوت", tr: "Üçlü Ses" },
+      sub: { nl: "Welke lange klinker hoor je in het woord?", en: "Which long vowel do you hear in the word?", ar: "أيّ مدٍّ تسمع في الكلمة؟", tr: "Kelimede hangi med harfini duyuyorsun?" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
   const GROUP_LABEL = { nl: "Jouw route", en: "Your path", ar: "مسارك", tr: "Yolun" };
@@ -39,6 +45,7 @@
   const BACK = { nl: "Terug", en: "Back", ar: "رجوع", tr: "Geri" };
 
   let active = false, activeWorld = null;
+  const worldNr = () => { const m = location.hash.match(/[?&]w=(\d)\b/); return m ? +m[1] : 1; };
 
   function teardown() {
     active = false;
@@ -48,11 +55,11 @@
 
   function setup() {
     const section = $("gamestage"); if (!section) return;
-    const MG0 = window.MiniGames, w2 = /[?&]w=2\b/.test(location.hash);
-    if (MG0) MG0.setWorld(w2 ? "harakat" : "oasis"); // wereld 2 komt met ?w=2, anders wereld 1
-    activeWorld = w2;
-    const list = GAMES.filter((g) => !g.world2 || (MG0 && MG0.isHarakat()));
-    const back = MG0 && MG0.isHarakat() ? "#/spel/wereld/flowers_valley" : D.RETURN_HASH;
+    const MG0 = window.MiniGames, wn = worldNr();
+    if (MG0) MG0.setWorld(wn === 3 ? "long" : wn === 2 ? "harakat" : "oasis"); // wereld 2/3 komen met ?w=2 / ?w=3, anders wereld 1
+    activeWorld = wn;
+    const list = GAMES.filter((g) => wn === 3 ? g.world3 : !g.only3 && (!g.world2 || (MG0 && MG0.isHarakat())));
+    const back = wn === 3 ? "#/spel/wereld/river_long" : MG0 && MG0.isHarakat() ? "#/spel/wereld/flowers_valley" : D.RETURN_HASH;
     const l = GAMES[0].title[lang()] ? lang() : "nl";
     section.hidden = false; section.dataset.owner = "games";
     active = true;
@@ -119,7 +126,7 @@
 
   function route() {
     const on = location.hash.startsWith("#/gamestage/games");
-    const w2 = /[?&]w=2\b/.test(location.hash);
+    const w2 = worldNr();
     if (on) { if (!active || activeWorld !== w2) setup(); } else if (active) teardown();
   }
   window.addEventListener("hashchange", route);

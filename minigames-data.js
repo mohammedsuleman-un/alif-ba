@@ -19,18 +19,23 @@
     ["هـ", "و", "ي"],
   ];
   const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [r[i], r[j]] = [r[j], r[i]]; } return r; };
-  const gameWorld = () => ((window.GAME && window.GAME.worlds) || []).find((x) => x.id === "flowers_valley") || null;
-  const harakatGroups = () => { const w = gameWorld(); return w ? w.levels.filter((l) => l.letters.length).map((l) => l.letters) : []; };
-  const baseOf = (x) => String(x).replace(/[ً-ْ]/g, "").replace(/[أإآ]/g, "ا");
+  const worldById = (id) => ((window.GAME && window.GAME.worlds) || []).find((x) => x.id === id) || null;
+  const gameWorld = () => worldById(getWorldKey() === "long" ? "river_long" : "flowers_valley");
+  const worldGroups = (id) => { const w = worldById(id); return w ? w.levels.filter((l) => l.letters.length).map((l) => l.letters) : []; };
+  const harakatGroups = () => worldGroups("flowers_valley");
+  // wereld 3: بَا -> ب (de lange klinker achter het teken valt weg)
+  const baseOf = (x) => String(x).replace(/([َُِ])[اوي]$/, "$1").replace(/[ً-ْ]/g, "").replace(/[أإآ]/g, "ا");
   const uniqueBases = (g) => { const out = []; g.forEach((x) => { const b2 = baseOf(x); if (!out.includes(b2)) out.push(b2); }); return out; };
   // Welke wereld speelt het kind nu? Onthouden per tabblad zodat een spel direct na de keuze dezelfde wereld houdt.
   const WORLD_KEY = "gp_mini_world";
-  const getWorldKey = () => { try { return sessionStorage.getItem(WORLD_KEY) === "harakat" ? "harakat" : "oasis"; } catch { return "oasis"; } };
-  const setWorld = (w) => { try { sessionStorage.setItem(WORLD_KEY, w === "harakat" ? "harakat" : "oasis"); } catch {} };
+  const WORLD_KEYS = ["oasis", "harakat", "long"];
+  const getWorldKey = () => { try { const k = sessionStorage.getItem(WORLD_KEY); return WORLD_KEYS.includes(k) ? k : "oasis"; } catch { return "oasis"; } };
+  const setWorld = (w) => { try { sessionStorage.setItem(WORLD_KEY, WORLD_KEYS.includes(w) ? w : "oasis"); } catch {} };
   const isHarakat = () => getWorldKey() === "harakat" && harakatGroups().length > 0;
-  const groups = () => (isHarakat() ? harakatGroups() : GROUPS_OASIS);
-  const labelOf = (g) => (isHarakat() ? uniqueBases(g) : g).join(" "); // wereld 2 toont de 4 letters, niet alle 12 klanken
-  const returnHash = () => "#/gamestage/games" + (isHarakat() ? "?w=2" : "");
+  const isLong = () => getWorldKey() === "long" && worldGroups("river_long").length > 0; // wereld 3: lange klinkers
+  const groups = () => (isLong() ? worldGroups("river_long") : isHarakat() ? harakatGroups() : GROUPS_OASIS);
+  const labelOf = (g) => (isHarakat() || isLong() ? uniqueBases(g) : g).join(" "); // wereld 2 en 3 tonen de 4 letters, niet alle klanken
+  const returnHash = () => "#/gamestage/games" + (isLong() ? "?w=3" : isHarakat() ? "?w=2" : "");
 
   // ---------- Levels: vaste route, elk niveau voegt letters toe en herhaalt de eerdere ----------
   // Niveau n = nieuwe letters groups()[n]; de oefenpool is alle letters t/m dat niveau.
@@ -54,7 +59,7 @@
   // Afleiders voor een doelletter. Wereld 1: eerst lijkende letters uit dezelfde groep, daarna de rest van de pool.
   // Wereld 2: dezelfde letter met de andere klinkertekens + een letter die erop lijkt (zie game-data.js).
   function distractors(level, target, n) {
-    if (isHarakat()) {
+    if (isHarakat() || isLong()) {
       const w = gameWorld(), p = pool(level);
       const first = w && w.distract ? w.distract(target, w.letters, new Set(p)) : [];
       const rest = shuffle(p.filter((l) => l !== target && !first.includes(l)));
@@ -71,7 +76,7 @@
   // ---------- Voortgang ----------
   // unlocked = hoogste vrijgespeelde niveau; play = niveau dat nu gespeeld wordt (standaard = unlocked,
   // of een eerder behaald niveau dat het kind opnieuw speelt). Wereld 2 heeft zijn eigen opslag.
-  const key = (pid) => (isHarakat() ? "gp_minih_" + pid : "gp_mini_" + pid);
+  const key = (pid) => (isLong() ? "gp_minil_" + pid : isHarakat() ? "gp_minih_" + pid : "gp_mini_" + pid);
   const lastLevel = () => groups().length - 1;
   function load(pid) {
     const LAST = lastLevel();
@@ -212,22 +217,23 @@
   const SHOP = {
     nl: "Nieuw in de kledingkast!", en: "New in the wardrobe!", ar: "جديد في الخزانة!", tr: "Dolapta yeni ürünler!",
   };
-  function finish(ov, { pid, level, stars, onAgain, onBack }) {
-    const first = !doneLevels(pid).includes(level);
-    completeLevel(pid, level);
+  function finish(ov, { pid, level, stars, onAgain, onBack, plain }) {
+    // plain: woordspellen van wereld 3 horen niet bij een letterniveau: geen niveau-voortgang, wel een klein aantal munten
+    const first = !plain && !doneLevels(pid).includes(level);
+    if (!plain) completeLevel(pid, level);
     // Munten: volledig bij een nieuw niveau (10 + 2 per ster), klein bedrag bij herhalen.
-    const earned = first ? 10 + 2 * Math.max(1, stars) : 3;
+    const earned = plain ? 3 + Math.max(1, stars) : first ? 10 + 2 * Math.max(1, stars) : 3;
     const Ch = window.Character;
     if (Ch) Ch.addCoins(pid, earned);
     const fresh = Ch ? Ch.checkNewUnlocks(pid) : [];
     const e = END[lang()] || END.nl;
-    const hasNext = currentLevel(pid) !== level; // het volgende niveau is nu vrijgespeeld
+    const hasNext = !plain && currentLevel(pid) !== level; // het volgende niveau is nu vrijgespeeld
     ov.hidden = false;
     ov.innerHTML = `
       <div class="chase-card">
         <h2>${e.good}</h2>
-        <p class="chase-card-level">${say("level")} ${level + 1}</p>
-        <span class="chase-card-letter" lang="ar" dir="rtl">${labelOf(groups()[level])}</span>
+        ${plain ? "" : `<p class="chase-card-level">${say("level")} ${level + 1}</p>
+        <span class="chase-card-letter" lang="ar" dir="rtl">${labelOf(groups()[level])}</span>`}
         <p class="chase-card-score" id="mgStars">${Array.from({ length: Math.max(1, stars) }, () => '<span class="mg-star">⭐</span>').join("")}</p>
         <div class="mg-count"><span class="mg-plus">+</span><b id="mgCoinNum">0</b><span class="mg-coin" aria-hidden="true"></span></div>
         <p class="chase-card-total" id="mgTotal" aria-live="polite"></p>
@@ -252,7 +258,7 @@
     });
     const go = () => { ov.hidden = true; onAgain(); };
     if (hasNext) ov.querySelector("#mgNext").onclick = go; // voortgang staat al op het volgende niveau
-    ov.querySelector("#mgAgain").onclick = () => { setPlay(pid, level); go(); };
+    ov.querySelector("#mgAgain").onclick = () => { if (!plain) setPlay(pid, level); go(); };
     ov.querySelector("#mgBack").onclick = onBack;
   }
 
@@ -267,11 +273,11 @@
   }
 
   // Spellen komen vrij naarmate Wereld 1 (Letter Oase) vordert: aantal voltooide oase-niveaus.
-  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0, bubbles: 0, harbor: 0, stones: 0 }; // alle vier de spelletjes staan open vanaf level 1
+  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0, bubbles: 0, harbor: 0, stones: 0, vloot: 0, klank: 0 }; // alle vier de spelletjes staan open vanaf level 1
   const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
   const gameOpen = (pid, key) => !!(window.Account && window.Account.isPreview && window.Account.isPreview()) || oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
-    fx, countUp, chestSvg: CHEST_SVG, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
+    fx, countUp, chestSvg: CHEST_SVG, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, isLong, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
     focusLevel, UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => groups()[n] || groups()[0],
   };

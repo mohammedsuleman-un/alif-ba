@@ -238,8 +238,10 @@ window.GAME.chapters = [
   levels.push({ n: 12, letters: [], review: wAll, types: wOnly, count: 24, title: T("كلمات المدّ", "Alle woorden", "All the words", "Tüm kelimeler") });
   levels.push({ n: 13, letters: [], review: forms, types: tyP, count: 30, title: T("المدود ٢", "Alle lange klinkers", "All long vowels", "Tüm med harfleri") });
   levels.push({ n: 14, letters: [], review: [...forms, ...wAll], types: wOnly, count: 30, challenge: true, badge: "long_vowel_master", title: T("تحدي المدود", "Lange-klinkers-uitdaging", "Long vowels challenge", "Med meydan okuması") });
+  // voor de spelletjes van wereld 3 (minigames-data.js, bridge.js, vloot.js, klank.js)
+  G.longVowels = { form, kinds: KIND_KEYS, words: WORDS.map(([n, , w]) => ({ word: w, kind: n === 14 ? "alif" : n === 16 ? "yaa" : "waw" })) };
   G.worlds.push({
-    id: "river_long", theme: "river", requires: "flowers_valley", distract, noGames: true,
+    id: "river_long", theme: "river", requires: "flowers_valley", distract,
     title: T("المدود", "Lange klinkers", "Long vowels", "Med harfleri"),
     subtitle: T("الألف والواو والياء المدية", "Alif, waw en yaa als lange klinker", "Alif, waw and yaa as long vowels", "Med olan elif, vav ve ye"),
     letters: [...forms, ...wAll], badge: "long_vowel_master", levels,

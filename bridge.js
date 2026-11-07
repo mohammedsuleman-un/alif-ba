@@ -51,7 +51,27 @@
       return { seq, gaps, tray: shuffle([...needed, extra]) };
     });
   }
+  // Wereld 3: dezelfde rij, maar met de lange klinker erbij (بَا تَا ثَا ...); de extra plank heeft een andere klinker.
+  function buildLongMissions() {
+    const L = window.GAME.longVowels, H = window.GAME.harakat, level = MG.currentLevel(profileId), group = MG.group(level);
+    const s0 = Math.max(0, H.BASES.indexOf(MG.baseOf(group[0])));
+    const kinds = shuffle(L.kinds);
+    const specs = [{ len: 5, gaps: 1, off: -1 }, { len: 5, gaps: 2, off: 0 }, { len: 6, gaps: 2, off: 1 }];
+    return specs.map((sp, k) => {
+      const kind = kinds[k % 3], start = Math.max(0, Math.min(H.BASES.length - sp.len, s0 + sp.off));
+      const idx = Array.from({ length: sp.len }, (_, i) => start + i);
+      const seq = idx.map((i) => L.form(i, kind));
+      const cand = shuffle(seq.map((_, i) => i).filter((i) => i > 0));
+      const gaps = [];
+      cand.forEach((i) => { if (gaps.length < sp.gaps && gaps.every((g) => Math.abs(g - i) > 1)) gaps.push(i); });
+      gaps.sort((a, b) => a - b);
+      const needed = gaps.map((i) => seq[i]);
+      const other = shuffle(L.kinds.filter((m) => m !== kind))[0];
+      return { seq, gaps, tray: shuffle([...needed, L.form(idx[gaps[0]], other)]) };
+    });
+  }
   function buildMissions() {
+    if (MG.isLong() && window.GAME && window.GAME.longVowels) return buildLongMissions();
     if (MG.isHarakat() && window.GAME && window.GAME.harakat) return buildHarakatMissions();
     const group = MG.group(MG.currentLevel(profileId));
     const s0 = Math.max(0, ALPHA.indexOf(group[0]));
