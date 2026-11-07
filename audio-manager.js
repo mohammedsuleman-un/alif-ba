@@ -219,8 +219,10 @@
     Wrapped.prototype = NativeAC.prototype;
     window.AudioContext = Wrapped; if (window.webkitAudioContext) window.webkitAudioContext = Wrapped;
   }
-  const silence = () => { AudioManager.stop(); ctxs.forEach((c) => { try { c.suspend(); } catch {} }); };
-  const wake = () => ctxs.forEach((c) => { try { c.resume(); } catch {} });
+  // Gesloten contexten (bv. door Phaser bij het afsluiten van een spel) worden opgeruimd; suspend/resume geeft een promise die kan falen.
+  const live = () => { for (let i = ctxs.length - 1; i >= 0; i--) if (ctxs[i].state === "closed") ctxs.splice(i, 1); return ctxs; };
+  const silence = () => { AudioManager.stop(); live().forEach((c) => { try { c.suspend().catch(() => {}); } catch {} }); };
+  const wake = () => live().forEach((c) => { try { c.resume().catch(() => {}); } catch {} });
   document.addEventListener("visibilitychange", () => { if (document.hidden) silence(); else wake(); });
   window.addEventListener("pagehide", silence);
 })();
