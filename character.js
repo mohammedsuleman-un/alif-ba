@@ -326,21 +326,21 @@
   const METAL = { gold: ["#fff0a0", "#e0a01a", "#a8730d"], silver: ["#ffffff", "#aab6c6", "#6b7686"] };
   // Ketting: een dun kettinkje om de hals, eventueel met een hartje
   function necklace(A, u, m, heart) {
-    const [x, y] = A.neck, [, cy] = A.chest, d = Math.max(60, (cy - y) * 0.55);
-    const l = x - 150, r = x + 150, by = y + d;
-    return `<defs>${grad(u + "n", m[0], m[1])}</defs><g transform="rotate(${A.tilt * 0.25} ${x} ${y})">
-      <path d="M${l} ${y - 6} Q${x} ${by + 40} ${r} ${y - 6}" fill="none" stroke="${m[2]}" stroke-width="26" stroke-linecap="round"/>
-      <path d="M${l} ${y - 6} Q${x} ${by + 40} ${r} ${y - 6}" fill="none" stroke="url(#${u}n)" stroke-width="15" stroke-linecap="round" stroke-dasharray="22 7"/>
+    const [nx, ny] = A.neck, lx = nx - 24, ly = ny - 5, rx = nx + 102, ry = ny + 47, cx = nx + 33, cyy = ny + 191; // aanhechtpunten onder de rand van de hijab
+    const px = (lx + 2 * cx + rx) / 4 - 0, py = (ly + 2 * cyy + ry) / 4, x = px, by = py - 40;
+    return `<defs>${grad(u + "n", m[0], m[1])}</defs><g>
+      <path d="M${lx} ${ly} Q${cx} ${cyy} ${rx} ${ry}" fill="none" stroke="${m[2]}" stroke-width="20" stroke-linecap="round"/>
+      <path d="M${lx} ${ly} Q${cx} ${cyy} ${rx} ${ry}" fill="none" stroke="url(#${u}n)" stroke-width="11" stroke-linecap="round" stroke-dasharray="18 6"/>
       ${heart
-        ? `<g transform="translate(${x} ${by + 40}) scale(1.6) translate(${-x} ${-(by + 40)})"><path d="M${x} ${by + 112} C${x - 72} ${by + 58} ${x - 40} ${by + 6} ${x} ${by + 40} C${x + 40} ${by + 6} ${x + 72} ${by + 58} ${x} ${by + 112}Z" fill="url(#${u}n)" stroke="${m[2]}" stroke-width="7" stroke-linejoin="round"/><path d="M${x - 30} ${by + 46} Q${x - 44} ${by + 62} ${x - 34} ${by + 74}" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".8"/></g>`
-        : `<circle cx="${x}" cy="${by + 52}" r="38" fill="url(#${u}n)" stroke="${m[2]}" stroke-width="9"/><circle cx="${x - 12}" cy="${by + 40}" r="10" fill="#fff" opacity=".8"/>`}
+        ? `<g transform="translate(${x} ${by + 40}) scale(1.15) translate(${-x} ${-(by + 40)})"><path d="M${x} ${by + 112} C${x - 72} ${by + 58} ${x - 40} ${by + 6} ${x} ${by + 40} C${x + 40} ${by + 6} ${x + 72} ${by + 58} ${x} ${by + 112}Z" fill="url(#${u}n)" stroke="${m[2]}" stroke-width="7" stroke-linejoin="round"/><path d="M${x - 30} ${by + 46} Q${x - 44} ${by + 62} ${x - 34} ${by + 74}" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round" opacity=".8"/></g>`
+        : `<circle cx="${x}" cy="${by + 52}" r="26" fill="url(#${u}n)" stroke="${m[2]}" stroke-width="8"/><circle cx="${x - 8}" cy="${by + 44}" r="7" fill="#fff" opacity=".8"/>`}
     </g>`;
   }
   // Armband: een of drie ringetjes om de pols (zelfde plek als het horloge)
   function bracelet(A, u, m, n) {
-    const [x, y] = A.handL;
-    const bands = Array.from({ length: n }, (_, i) => { const o = (i - (n - 1) / 2) * 30; return `<rect x="-44" y="${o - 12}" width="88" height="24" rx="12" fill="url(#${u}a)" stroke="${m[2]}" stroke-width="5"/><rect x="-32" y="${o - 7}" width="40" height="6" rx="3" fill="#fff" opacity=".75"/>`; }).join("");
-    return `<defs>${grad(u + "a", m[0], m[1], true)}</defs><g transform="translate(${x + 78} ${y - 38}) rotate(-28)">${bands}</g>`;
+    const [x, y] = A.handR;
+    const bands = Array.from({ length: n }, (_, i) => { const o = (i - (n - 1) / 2) * 24; return `<rect x="-32" y="${o - 9}" width="64" height="18" rx="9" fill="url(#${u}a)" stroke="${m[2]}" stroke-width="5"/><rect x="-32" y="${o - 7}" width="40" height="6" rx="3" fill="#fff" opacity=".75"/>`; }).join("");
+    return `<defs>${grad(u + "a", m[0], m[1], true)}</defs><g transform="translate(${x - 26} ${y - 6}) rotate(114)">${bands}</g>`;
   }
   const ART_FN = {
     starband(A, u) {
@@ -460,8 +460,8 @@
         <path d="M${x - 30} ${y + 215} L${x - 30} ${y + 285}" stroke="#146a58" stroke-width="9" stroke-linecap="round"/><ellipse cx="${x - 30}" cy="${y + 292}" rx="14" ry="22" fill="#1f9e80" stroke="#146a58" stroke-width="3"/>`;
     },
     quran(A, u) {
-      const [x, y] = A.handR;
-      return `<defs>${grad(u + "q", "#2fae7c", "#17795a")}</defs><g transform="translate(${x - 92} ${y - 120}) rotate(12) scale(1.3)">
+      const [x, y] = A.handL;
+      return `<defs>${grad(u + "q", "#2fae7c", "#17795a")}</defs><g transform="translate(${x + 37} ${y + 6}) rotate(-12) scale(1.3)">
         <rect x="-62" y="-80" width="124" height="164" rx="12" fill="url(#${u}q)" stroke="#0f5a40" stroke-width="7"/><rect x="-48" y="-66" width="96" height="136" rx="8" fill="none" stroke="#f2c14e" stroke-width="5"/>
         <circle cx="0" cy="-8" r="26" fill="none" stroke="#f2c14e" stroke-width="5"/>${star(0, -8, 16, "#f2c14e", "#b8861e")}<rect x="-30" y="34" width="60" height="7" rx="3" fill="#f2c14e"/></g>`;
     },
