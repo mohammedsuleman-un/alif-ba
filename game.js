@@ -488,7 +488,7 @@
     let activeCat = "outfit";
     let tryItem = null;           // item dat je past maar nog niet bezit
     let mood = "wave", moodTimer = null;
-    const REMOVABLE = ["head", "face", "neck", "hand", "back", "pet"];
+    const REMOVABLE = ["head", "face", "neck", "necklace", "bracelet", "hand", "back", "pet"];
 
     function setMood(m, ms) {
       mood = m; clearTimeout(moodTimer);

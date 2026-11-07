@@ -1,4 +1,4 @@
-﻿const VERSION = "v126";
+﻿const VERSION = "v127";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest", "assets/fonts/amiri-arabic-400.woff2", "assets/fonts/amiri-arabic-700.woff2",
