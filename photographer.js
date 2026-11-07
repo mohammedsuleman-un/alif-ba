@@ -200,7 +200,7 @@
     const el = $("phToast"); if (!el) return;
     el.textContent = msg; el.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { el.hidden = true; }, 1800);
+    toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
   }
 
   // ---------- Audio ----------
@@ -240,9 +240,12 @@
     flash();
     const tt = tx();
     const r = scene.evaluateShot(frameSize());
-    if (r.status === "empty") return toast(tt.empty);
-    if (r.status === "cut") return toast(tt.cut);
-    if (r.status === "far") return toast(tt.far);
+    if (r.status === "empty" || r.status === "cut" || r.status === "far") {
+      // Geen echt antwoord: laat het kader schudden en geef een geluidje, zodat de knop niet "dood" lijkt.
+      const fr = $("phFrame"); if (fr) { fr.classList.remove("is-shake"); void fr.offsetWidth; fr.classList.add("is-shake"); }
+      MG.sfx("no");
+      return toast(tt[r.status]);
+    }
     // Precies één hele letter, dichtbij genoeg: dit is een echt antwoord.
     const m = missions[missionIdx];
     const isTarget = r.sign.letter === m.target;

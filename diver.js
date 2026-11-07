@@ -177,7 +177,8 @@
       scene.events.on("diver-handover", onHandover);
       scene.events.on("diver-chest", onChest);
       scene.events.on("diver-need", (n) => { const el = $("dvNeed"); if (el) el.textContent = "× " + n; });
-      scene.events.on("diver-pearl", () => { if (active) window.AudioManager.playOnce("diver-hand"); });
+      // Niet midden in de uitleg of de opdracht (de letter!) ingrijpen: dat afkappen liet kinderen de letter nooit horen.
+      scene.events.on("diver-pearl", () => { if (active && !window.AudioManager.isPlaying && !window.AudioManager.loading) window.AudioManager.playOnce("diver-hand"); });
       scene.events.once("diver-ready", () => { if (myEpoch === epoch) startMission(); });
     });
     resizeObs = new ResizeObserver(() => {

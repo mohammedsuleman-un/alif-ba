@@ -80,6 +80,8 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 
 /* Letter Photographer (photographer.js) + spelletjes-keuze (minigames.js) */
 .photo-frame { position: absolute; z-index: 3; pointer-events: none; box-shadow: 0 0 0 9999px rgba(40, 25, 5, .16); border-radius: 10px; }
+.photo-frame.is-shake { animation: photoShake .4s ease-in-out; }
+@keyframes photoShake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-9px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(6px); } }
 .photo-frame i { position: absolute; width: 26px; height: 26px; border: 4px solid #fff; }
 .photo-frame i:nth-child(1) { left: -2px; top: -2px; border-right: 0; border-bottom: 0; border-top-left-radius: 10px; }
 .photo-frame i:nth-child(2) { right: -2px; top: -2px; border-left: 0; border-bottom: 0; border-top-right-radius: 10px; }
