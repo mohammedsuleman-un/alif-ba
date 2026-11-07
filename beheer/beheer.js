@@ -310,6 +310,50 @@
       <p class="muted small-t">${t("De voortgang komt binnen zodra het kind is ingelogd en speelt (een paar seconden na elke wijziging). <b>Aandacht voor</b> toont letters die het kind vaker fout dan goed heeft.")}</p></div>`;
   }
 
+  // ---------- Feedback begrijpelijk maken: waar was het kind, op wat voor toestel, en wat betekent de korte melding ----------
+  const GAME_NAME = { slingshot: "Katapult", photographer: "Fotograaf", diver: "Parelduiker", bridge: "Letterbrug", bubbles: "Feestbellen", harbor: "Havenloods", stones: "Stapstenen", games: "Spelletjes-keuze" };
+  const WORLD_NAME = { letter_oasis: "Wereld 1 · Letters", flowers_valley: "Wereld 2 · Klinkertekens" };
+  const TAB_NAME = { progress: "Voortgang", staff: "Docenten", classes: "Klassen", students: "Leerlingen", orgs: "Organisaties", feedback: "Feedback" };
+  // Het scherm waarop de melding is gedaan (de app stuurt de adresbalk mee, bijv. #/spel/level/letter_oasis/3) in gewone taal.
+  function whereOf(screen) {
+    const h = String(screen || ""); let m;
+    if (!h) return "";
+    if ((m = h.match(/^beheer\/(\w*)/))) return t("Beheer: {tab}", { tab: t(TAB_NAME[m[1]] || m[1] || "-") });
+    if ((m = h.match(/gamestage\/(\w+)/))) return t("Spel: {naam}", { naam: t(GAME_NAME[m[1]] || m[1]) }) + (/[?&]w=2/.test(h) ? " (" + t("Wereld 2 · Klinkertekens") + ")" : "");
+    if ((m = h.match(/spel\/level\/(\w+)\/(\d+)/))) return t("{wereld}, level {n}, de vragen", { wereld: t(WORLD_NAME[m[1]] || m[1]), n: m[2] });
+    if ((m = h.match(/spel\/niveau\/(\w+)\/(\d+)/))) return t("{wereld}, level {n}, keuzescherm", { wereld: t(WORLD_NAME[m[1]] || m[1]), n: m[2] });
+    if ((m = h.match(/spel\/wereld\/(\w+)/))) return t("Kaart van {wereld}", { wereld: t(WORLD_NAME[m[1]] || m[1]) });
+    if (/spel\/kaart/.test(h)) return t("Totale wereldkaart");
+    if (/spel\/personage/.test(h)) return t("Personage kiezen");
+    if (/spel\/kledingkast/.test(h)) return t("Kledingkast");
+    if (/beloningen/.test(h)) return t("Beloningen");
+    if (/profiel/.test(h)) return t("Profiel");
+    if ((m = h.match(/\/les\/(\d+)/))) return t("Boek, les {n}", { n: m[1] });
+    if (/boek/.test(h)) return t("Boek");
+    if (/^#?\/?$/.test(h)) return t("Startscherm");
+    return h;
+  }
+  // Toestel in gewone taal uit de browser-tekst
+  function deviceOf(ua) {
+    const s = String(ua || ""); if (!s) return "";
+    const os = /iPhone|iPad/.test(s) ? "iPhone/iPad" : /Android/.test(s) ? "Android" : /Windows/.test(s) ? "Windows" : /Mac OS/.test(s) ? "Mac" : /Linux/.test(s) ? "Linux" : "";
+    const br = /Edg\//.test(s) ? "Edge" : /SamsungBrowser/.test(s) ? "Samsung Internet" : /CriOS|Chrome\//.test(s) ? "Chrome" : /FxiOS|Firefox\//.test(s) ? "Firefox" : /Safari\//.test(s) ? "Safari" : "";
+    return [os, br].filter(Boolean).join(" · ") || s.slice(0, 40);
+  }
+  // De vaste meldingen van de app staan in de taal van het kind; hier de Nederlandse betekenis erbij.
+  const QUICK = [
+    ["Een knop doet niets", "A button does nothing", "زر لا يفعل شيئًا", "Bir düğme çalışmıyor"],
+    ["Geen geluid of verkeerd geluid", "No sound or wrong sound", "لا صوت أو صوت خاطئ", "Ses yok veya yanlış ses"],
+    ["Het spel loopt vast", "The game freezes", "اللعبة تتوقف", "Oyun donuyor"],
+    ["Verkeerde tekst of vertaling", "Wrong text or translation", "نص أو ترجمة خاطئة", "Yanlış metin veya çeviri"],
+    ["Ziet er raar uit", "Looks strange", "شكله غريب", "Garip görünüyor"],
+    ["Iets anders", "Something else", "شيء آخر", "Başka bir şey"],
+  ];
+  function glossOf(message) {
+    const head = String(message || "").split(": ")[0].trim();
+    const row = QUICK.find((r) => r.includes(head));
+    return row && t(row[0]) !== head ? t(row[0]) : "";
+  }
   const KIND_ICON = { defect: "🐞", idea: "💡", question: "❓" }, KIND_TXT = { defect: "Defect", idea: "Idee", question: "Vraag" };
   const ST_TXT = { new: "Nieuw", doing: "Wordt opgepakt", done: "Klaar" };
   const CTX_LABEL = { screen: "Scherm", lang: "Taal", version: "Versie", viewport: "Schermgrootte", device: "Toestel", online: "Online", mode: "Modus", user: "Gebruiker", errors: "Laatste fouten" };
@@ -321,6 +365,8 @@
       return `<div class="fb-item"><div class="fb-head"><b>${KIND_ICON[f.kind] || ""} ${te(KIND_TXT[f.kind] || f.kind)}</b> <span class="muted">${esc(f.user_name)} · ${esc(roleName(f.role))} · ${esc(dateNl(f.created_at))}</span>
           <span class="status ${f.status === "done" ? "ok" : f.status === "doing" ? "warn" : ""}">${te(ST_TXT[f.status] || f.status)}</span></div>
         <p class="fb-msg-txt">${esc(f.message)}</p>
+        ${glossOf(f.message) ? `<p class="fb-gloss muted">= ${esc(glossOf(f.message))}</p>` : ""}
+        <p class="fb-where muted small-t">📍 ${esc([whereOf((f.context || {}).screen), deviceOf((f.context || {}).device), (f.context || {}).lang ? t("Taal") + " " + String(f.context.lang).toUpperCase() : ""].filter(Boolean).join(" · ") || t("Onbekend scherm"))}</p>
         ${ctx ? `<details><summary class="muted small-t">${te("Technische gegevens")}</summary><table>${ctx}</table></details>` : ""}
         <div class="fb-btns">${["new", "doing", "done"].filter((x) => x !== f.status).map((x) => `<button class="small ghost" data-act="fbstatus" data-id="${esc(f.id)}" data-status="${x}">${x === "new" ? te("Terug naar nieuw") : x === "doing" ? te("Oppakken") : te("Klaar")}</button>`).join(" ")}</div></div>`;
     }).join("");
@@ -441,8 +487,8 @@
     fbcsv: () => guard(async () => {
       const items = await loadAllFeedback();
       const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
-      const head = ["Datum", "Soort", "Status", "Naam", "Rol", "Melding", "Scherm", "Taal", "Toestel", "Versie", "Laatste fouten"].map((h) => t(h === "Datum" ? "Datum" : h));
-      const lines = [head.map(q).join(";"), ...items.map((f) => { const c = f.context || {}; return [f.created_at, t(KIND_TXT[f.kind] || f.kind), t(ST_TXT[f.status] || f.status), f.user_name, roleName(f.role), f.message, c.screen, c.lang, c.device, c.version, Array.isArray(c.errors) ? c.errors.join(" | ") : c.errors].map(q).join(";"); })];
+      const head = ["Datum", "Soort", "Status", "Naam", "Rol", "Melding", "Betekenis", "Waar", "Scherm (technisch)", "Taal", "Toestel", "Versie", "Laatste fouten"].map((h) => t(h === "Datum" ? "Datum" : h));
+      const lines = [head.map(q).join(";"), ...items.map((f) => { const c = f.context || {}; return [f.created_at, t(KIND_TXT[f.kind] || f.kind), t(ST_TXT[f.status] || f.status), f.user_name, roleName(f.role), f.message, glossOf(f.message), whereOf(c.screen), c.screen, c.lang, deviceOf(c.device), c.version, Array.isArray(c.errors) ? c.errors.join(" | ") : c.errors].map(q).join(";"); })];
       downloadText("feedback.csv", "﻿" + lines.join("\r\n"), "text/csv;charset=utf-8");
     }),
     fbmd: () => guard(async () => {
@@ -451,11 +497,11 @@
       const fmt = (o, tr) => Object.entries(o).map(([k, n]) => `${tr ? tr(k) : k}: ${n}`).join(", ");
       const out = [`# Feedback Alif Ba (${new Date().toISOString().slice(0, 10)})`, "",
         `Totaal: ${items.length} meldingen`, `Soort: ${fmt(count("kind"), (k) => t(KIND_TXT[k] || k))}`, `Status: ${fmt(count("status"), (k) => t(ST_TXT[k] || k))}`,
-        `Wie: ${fmt(count((f) => roleName(f.role)))}`, `Schermen: ${fmt(count((f) => (f.context && f.context.screen) || "onbekend"))}`, ""];
+        `Wie: ${fmt(count((f) => roleName(f.role)))}`, `Waar: ${fmt(count((f) => whereOf(f.context && f.context.screen) || "onbekend"))}`, ""];
       for (const kind of ["defect", "idea", "question"]) {
         const list = items.filter((f) => f.kind === kind); if (!list.length) continue;
         out.push(`## ${t(KIND_TXT[kind])} (${list.length})`, "");
-        list.forEach((f) => { const c = f.context || {}; out.push(`- [${t(ST_TXT[f.status] || f.status)}] ${String(f.created_at).slice(0, 10)} · ${f.user_name} (${roleName(f.role)}) · ${c.screen || "?"}${c.lang ? " · taal " + c.lang : ""}${c.device ? " · " + String(c.device).slice(0, 60) : ""}`, `  ${String(f.message).replace(/\s+/g, " ")}`); });
+        list.forEach((f) => { const c = f.context || {}; out.push(`- [${t(ST_TXT[f.status] || f.status)}] ${String(f.created_at).slice(0, 10)} · ${f.user_name} (${roleName(f.role)}) · ${whereOf(c.screen) || "?"}${c.lang ? " · taal " + c.lang : ""}${c.device ? " · " + deviceOf(c.device) : ""}`, `  ${String(f.message).replace(/\s+/g, " ")}${glossOf(f.message) ? "  (= " + glossOf(f.message) + ")" : ""}`); });
         out.push("");
       }
       downloadText("feedback-overzicht.md", out.join("\n"), "text/markdown;charset=utf-8");
