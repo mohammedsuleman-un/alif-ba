@@ -18,7 +18,7 @@
   const SHELL_I18N = {
     ar: {
       dir: "rtl",
-      nav: { leren: "العب وتعلّم", boek: "الكتاب", beloningen: "الجوائز", profiel: "ملفي" },
+      nav: { leren: "العب وتعلّم", boek: "الكتاب", koran: "القرآن", beloningen: "الجوائز", profiel: "ملفي" },
       kicker: "قاعدة الفتح الربَّاني",
       greeting: (n) => `السَّلَامُ عَلَيْكُمْ، ${n}`,
       startAdventure: "هل أنت مستعدّ لبدء رحلتك في تعلّم العربية؟",
@@ -28,6 +28,7 @@
       level: "المستوى",
       bookCardTitle: "كتابي ألف با",
       bookCardCta: "تابع من حيث توقفت",
+      quranCardTitle: "القرآن الكريم", quranCardCta: "اقرأ واستمع إلى المصحف",
       rewardsTitle: "جوائزي",
       stars: "نجوم", coins: "قطع", badges: "الأوسمة", noBadgesYet: "لا توجد أوسمة بعد — استمر باللعب!",
       profileTitle: "ملفي", switchProfile: "تبديل الملف", noProfileYet: "لا يوجد ملف بعد",
@@ -38,7 +39,7 @@
     },
     nl: {
       dir: "ltr",
-      nav: { leren: "Speel & leer", boek: "Boek", beloningen: "Beloningen", profiel: "Profiel" },
+      nav: { leren: "Speel & leer", boek: "Boek", koran: "Koran", beloningen: "Beloningen", profiel: "Profiel" },
       kicker: "Qa'idah al-Fath ar-Rabbani",
       greeting: (n) => `Assalamu alaikum, ${n}`,
       startAdventure: "Klaar om je Arabische avontuur te beginnen?",
@@ -48,6 +49,7 @@
       level: "Level",
       bookCardTitle: "Mijn Alif Ba Boek",
       bookCardCta: "Ga verder waar je was",
+      quranCardTitle: "De Koran", quranCardCta: "Lees en luister in de Madina-Mushaf",
       rewardsTitle: "Mijn beloningen",
       stars: "sterren", coins: "munten", badges: "Badges", noBadgesYet: "Nog geen badges — blijf spelen!",
       profileTitle: "Profiel", switchProfile: "Profiel wisselen", noProfileYet: "Nog geen profiel",
@@ -58,7 +60,7 @@
     },
     en: {
       dir: "ltr",
-      nav: { leren: "Play & learn", boek: "Book", beloningen: "Rewards", profiel: "Profile" },
+      nav: { leren: "Play & learn", boek: "Book", koran: "Quran", beloningen: "Rewards", profiel: "Profile" },
       kicker: "Qa'idah al-Fath ar-Rabbani",
       greeting: (n) => `Assalamu alaikum, ${n}`,
       startAdventure: "Ready to start your Arabic adventure?",
@@ -68,6 +70,7 @@
       level: "Level",
       bookCardTitle: "My Alif Ba Book",
       bookCardCta: "Pick up where you left off",
+      quranCardTitle: "The Quran", quranCardCta: "Read and listen in the Madinah Mushaf",
       rewardsTitle: "My rewards",
       stars: "stars", coins: "coins", badges: "Badges", noBadgesYet: "No badges yet — keep playing!",
       profileTitle: "Profile", switchProfile: "Switch profile", noProfileYet: "No profile yet",
@@ -78,7 +81,7 @@
     },
     tr: {
       dir: "ltr",
-      nav: { leren: "Oyna & öğren", boek: "Kitap", beloningen: "Ödüller", profiel: "Profil" },
+      nav: { leren: "Oyna & öğren", boek: "Kitap", koran: "Kur'an", beloningen: "Ödüller", profiel: "Profil" },
       kicker: "Qa'idah al-Fath ar-Rabbani",
       greeting: (n) => `Selamün aleyküm, ${n}`,
       startAdventure: "Arapça maceranı başlatmaya hazır mısın?",
@@ -88,6 +91,7 @@
       level: "Seviye",
       bookCardTitle: "Alif Ba Kitabım",
       bookCardCta: "Kaldığın yerden devam et",
+      quranCardTitle: "Kur'an-ı Kerim", quranCardCta: "Medine Mushafı'nda oku ve dinle",
       rewardsTitle: "Ödüllerim",
       stars: "yıldız", coins: "jeton", badges: "Rozetler", noBadgesYet: "Henüz rozet yok — oynamaya devam et!",
       profileTitle: "Profil", switchProfile: "Profil değiştir", noProfileYet: "Henüz profil yok",
@@ -145,6 +149,18 @@
       </a>`;
   }
 
+  function quranCardHtml(t) {
+    return `
+      <a href="#/koran" class="book-card quran-card">
+        <span class="book-card-icon">🕌</span>
+        <span class="book-card-text">
+          <strong>${t.quranCardTitle}</strong>
+          <span>${t.quranCardCta}</span>
+        </span>
+        <span class="book-card-arrow">→</span>
+      </a>`;
+  }
+
   function renderAppHome() {
     const t = ST();
     const root = $("appHome");
@@ -163,6 +179,7 @@
             <a href="#/spel" class="app-cta">${t.chooseProfile} <span class="cta-arrow">→</span></a>
           </div>
           ${bookCardHtml(t)}
+          ${quranCardHtml(t)}
         </div>`;
       return;
     }
@@ -216,6 +233,7 @@
           ${charCfg ? `<a href="#/spel/kledingkast" class="app-home-wardrobe-link"><span style="font-size:24px;line-height:1">👕</span> ${t.wardrobe}</a>` : ""}
         </div>
         ${bookCardHtml(t)}
+        ${quranCardHtml(t)}
       </div>`;
     root.querySelectorAll(".app-home-langrow .lang-pick").forEach((b) => (b.onclick = () => { store.set("lang", b.dataset.l); location.reload(); }));
   }
@@ -303,6 +321,7 @@
   const NAV_ITEMS = [
     { key: "leren", icon: "🎮", href: "#/spel/kaart?intro" },
     { key: "boek", icon: "📖", href: "#/boek" },
+    { key: "koran", icon: "🕌", href: "#/koran" },
     { key: "beloningen", icon: "🏆", href: "#/beloningen" },
     { key: "profiel", icon: "👤", href: "#/profiel" },
   ];
@@ -311,6 +330,7 @@
     const h = location.hash;
     if (h.startsWith("#/spel")) return "leren";
     if (h.startsWith("#/les/") || h.startsWith("#/boek")) return "boek";
+    if (h.startsWith("#/koran")) return "koran";
     if (h.startsWith("#/beloningen")) return "beloningen";
     if (h.startsWith("#/profiel")) return "profiel";
     return "home";
@@ -319,7 +339,7 @@
   // zodat het kind daar het volledige scherm heeft.
   function navHidden() {
     const h = location.hash;
-    return !activeProfile() || h.startsWith("#/les/") || h.startsWith("#/spel/level/");
+    return !activeProfile() || h.startsWith("#/les/") || h.startsWith("#/spel/level/") || h.startsWith("#/koran");
   }
 
   function renderNav() {

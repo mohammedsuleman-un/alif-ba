@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="character.css">
   <link rel="stylesheet" href="worlds.css">
   <link rel="stylesheet" href="minigames.css">
+  <link rel="stylesheet" href="quran.css">
 </head>
 <body>
   <!-- App-startscherm: begroeting, voortgang, "verder leren"-CTA. Geen inhoudsopgave. -->
@@ -147,6 +148,9 @@
        Phaser wordt pas geladen (cdnjs) zodra een Phaser-spel opent. -->
   <section id="gamestage" class="screen" hidden></section>
 
+  <!-- Koran: Madina-Mushaf met luisteren (quran.js). -->
+  <section id="quran" class="screen q-screen" hidden></section>
+
   <script src="book-data.js"></script>
   <script src="voice-manifest.js"></script>
   <script src="audio-manager.js"></script>
@@ -171,5 +175,7 @@
   <script src="vloot.js"></script>
   <script src="klank.js"></script>
   <script src="minigames.js"></script>
+  <script src="quran-audio.js"></script>
+  <script src="quran.js"></script>
 </body>
 </html>
