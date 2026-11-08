@@ -162,6 +162,9 @@
       return playNow([`${base}.m4a`, `${base}.mp3`]);
     },
 
+    // Speelt één los bestand (bv. een versopname van de Koran); resolve false = onderbroken of niet gevonden.
+    playFile(src) { return src ? playNow([src]) : Promise.resolve(false); },
+
     // Willekeurige positieve feedback; vermijdt hetzelfde fragment twee keer op rij.
     playRandomCorrectFeedback() {
       if (!settings.voiceOn) return Promise.resolve(false);

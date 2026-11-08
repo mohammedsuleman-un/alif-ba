@@ -1,7 +1,7 @@
-﻿const VERSION = "v131";
+﻿const VERSION = "v132";
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
-  "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest", "assets/fonts/amiri-arabic-400.woff2", "assets/fonts/amiri-arabic-700.woff2",
+  "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest", "assets/fonts/amiri-arabic-400.woff2", "assets/fonts/amiri-arabic-700.woff2", "assets/fonts/amiri-quran-arabic.woff2", "quran.js", "quran.css", "quran-audio.js", "assets/quran/pages.json", "assets/quran/fonts/p604.woff2", "assets/quran/basmala.mp3",
   "icons/icon-192.png", "icons/icon-512.png",
   "pages/p-05.jpg",
   "pages/p-06.jpg",
@@ -79,6 +79,11 @@ function saveCopy(req, res) {
 
 self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
+  // Koran-pagina-lettertypes van quran.com: eerst de cache, zodat bezochte pagina's ook offline werken.
+  if (e.request.method === "GET" && url.hostname === "verses.quran.foundation") {
+    e.respondWith(caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => (res.ok ? saveCopy(e.request, res) : res))));
+    return;
+  }
   if (e.request.method !== "GET" || url.origin !== location.origin) return;
   if (url.pathname.indexOf("/beheer/") !== -1) return; // beheerpagina: altijd vers van het netwerk, nooit uit de app-cache
 
