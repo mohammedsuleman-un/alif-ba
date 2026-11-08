@@ -28,6 +28,7 @@
       level: "المستوى",
       bookCardTitle: "كتابي ألف با",
       bookCardCta: "تابع من حيث توقفت",
+      tiles: { lessons: "الدروس", lessonsSub: "كتاب ألف با", quran: "القرآن", quranSub: "اقرأ واستمع", game: "ألعاب", gameSub: "سجّل الدخول للّعب" },
       quranCardTitle: "القرآن الكريم", quranCardCta: "اقرأ واستمع إلى المصحف",
       rewardsTitle: "جوائزي",
       stars: "نجوم", coins: "قطع", badges: "الأوسمة", noBadgesYet: "لا توجد أوسمة بعد — استمر باللعب!",
@@ -49,6 +50,7 @@
       level: "Level",
       bookCardTitle: "Mijn Alif Ba Boek",
       bookCardCta: "Ga verder waar je was",
+      tiles: { lessons: "Lessen", lessonsSub: "Het Alif Ba boek", quran: "Koran", quranSub: "Lezen en luisteren", game: "Spelen", gameSub: "Inloggen om te spelen" },
       quranCardTitle: "De Koran", quranCardCta: "Lees en luister in de Madina-Mushaf",
       rewardsTitle: "Mijn beloningen",
       stars: "sterren", coins: "munten", badges: "Badges", noBadgesYet: "Nog geen badges — blijf spelen!",
@@ -70,6 +72,7 @@
       level: "Level",
       bookCardTitle: "My Alif Ba Book",
       bookCardCta: "Pick up where you left off",
+      tiles: { lessons: "Lessons", lessonsSub: "The Alif Ba book", quran: "Quran", quranSub: "Read and listen", game: "Play", gameSub: "Log in to play" },
       quranCardTitle: "The Quran", quranCardCta: "Read and listen in the Madinah Mushaf",
       rewardsTitle: "My rewards",
       stars: "stars", coins: "coins", badges: "Badges", noBadgesYet: "No badges yet — keep playing!",
@@ -91,6 +94,7 @@
       level: "Seviye",
       bookCardTitle: "Alif Ba Kitabım",
       bookCardCta: "Kaldığın yerden devam et",
+      tiles: { lessons: "Dersler", lessonsSub: "Alif Ba kitabı", quran: "Kur'an", quranSub: "Oku ve dinle", game: "Oyna", gameSub: "Oynamak için giriş yap" },
       quranCardTitle: "Kur'an-ı Kerim", quranCardCta: "Medine Mushafı'nda oku ve dinle",
       rewardsTitle: "Ödüllerim",
       stars: "yıldız", coins: "jeton", badges: "Rozetler", noBadgesYet: "Henüz rozet yok — oynamaya devam et!",
@@ -317,6 +321,19 @@
     if (sBtn) sBtn.onclick = () => { AudioManager.settings.sfxOn = !AudioManager.settings.sfxOn; renderProfileHub(); };
   }
 
+  // ---------- Ingangen op het boek-startscherm ----------
+  function renderHomeTiles() {
+    const el = $("homeTiles");
+    if (!el) return;
+    const t = ST().tiles, loggedIn = !!activeProfile();
+    el.innerHTML = [
+      { href: "#/boek", icon: "📖", t: t.lessons, sub: t.lessonsSub, cls: "on" },
+      { href: "#/koran", icon: "🕌", t: t.quran, sub: t.quranSub },
+      { href: loggedIn ? "#/spel/kaart?intro" : "#/spel", icon: "🎮", t: t.game, sub: loggedIn ? "" : t.gameSub },
+    ].map((x) => `<a href="${x.href}" class="ht ${x.cls || ""}"><span class="ht-ic">${x.icon}</span><strong>${x.t}</strong>${x.sub ? `<small>${x.sub}</small>` : ""}</a>`).join("");
+  }
+  document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest(".lang button")) setTimeout(renderHomeTiles, 60); });
+
   // ---------- Onderste navigatie ----------
   const NAV_ITEMS = [
     { key: "leren", icon: "🎮", href: "#/spel/kaart?intro" },
@@ -339,13 +356,15 @@
   // zodat het kind daar het volledige scherm heeft.
   function navHidden() {
     const h = location.hash;
-    return !activeProfile() || h.startsWith("#/les/") || h.startsWith("#/spel/level/") || h.startsWith("#/koran");
+    if (h.startsWith("#/les/") || h.startsWith("#/spel/level/") || h.startsWith("#/koran")) return true;
+    return !activeProfile() && h.startsWith("#/spel"); // inlogscherm heeft zijn eigen knoppen
   }
 
   function renderNav() {
     const t = ST();
     const sec = section();
-    $("bottomNav").innerHTML = NAV_ITEMS.map((item) => `
+    const items = activeProfile() ? NAV_ITEMS : NAV_ITEMS.filter((i) => ["leren", "boek", "koran"].includes(i.key)); // zonder account: geen beloningen/profiel
+    $("bottomNav").innerHTML = items.map((item) => `
       <a href="${item.href}" class="bn-item ${sec === item.key ? "active" : ""}">
         <span class="bn-icon">${item.icon}</span>
         <span class="bn-label">${t.nav[item.key]}</span>
@@ -357,7 +376,10 @@
     document.documentElement.dir = ST().dir;
     const sec = section();
     // Zonder ingelogd schoolaccount is het inlogscherm (in game.js) het enige scherm.
-    if (!activeProfile() && sec !== "leren") { location.hash = "#/spel"; return; }
+    // Bezoekers zonder account komen op het boek uit; het app-startscherm is er voor ingelogde kinderen.
+    if (!activeProfile() && sec === "home") { location.replace("#/boek"); return; }
+    // Boek en Koran zijn open voor iedereen; alleen het spel (en beloningen/profiel) vraagt om in te loggen.
+    if (!activeProfile() && !["leren", "home", "boek", "koran"].includes(sec)) { location.hash = "#/spel"; return; }
     $("appHome").hidden = sec !== "home";
     $("rewards").hidden = sec !== "beloningen";
     $("profileHub").hidden = sec !== "profiel";
@@ -365,6 +387,7 @@
     else if (sec === "beloningen") renderRewards();
     else if (sec === "profiel") renderProfileHub();
     renderNav();
+    renderHomeTiles();
   }
 
   window.addEventListener("hashchange", shellRoute);

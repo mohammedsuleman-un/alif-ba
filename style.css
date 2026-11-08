@@ -790,6 +790,23 @@ html[dir="rtl"] .splash-kicker { font-family: "Amiri", serif; font-size: 18px; l
   padding-bottom: calc(var(--nav-h) + 18px + env(safe-area-inset-bottom));
 }
 
+/* ---------- Boek-startscherm: compacte kop + ingangen ---------- */
+.home-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 14px; padding-bottom: 16px; }
+.home-title { flex: 0 0 100%; padding-top: 26px; }
+.home-title h1 .title-main { display: inline; font-size: clamp(24px, 6vw, 34px); }
+.home-title h1 .title-main + .title-main { margin: 0 .25em 0 0; }
+.home-title p { margin-top: 4px; font-size: 14px; }
+.home-progress, .continue, .home-search { margin: 0; }
+.home-search { flex: 1 1 240px; max-width: 420px; }
+.home-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 1100px; margin: 14px auto 0; padding: 0 16px; }
+.ht { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px; border-radius: 18px; text-align: center; text-decoration: none; color: var(--ink); background: linear-gradient(180deg, #fffdf6, #f7ecd0); border: 2px solid #e6c978; box-shadow: 0 4px 0 #d9b963; -webkit-tap-highlight-color: transparent; }
+.ht:active { transform: translateY(3px); box-shadow: 0 1px 0 #d9b963; }
+.ht.on { background: linear-gradient(180deg, #d9a843, #b8862b); border-color: #8a6218; box-shadow: 0 4px 0 #8a6218; color: #fff; }
+.ht-ic { font-size: 30px; line-height: 1.1; }
+.ht strong { font-size: 17px; }
+.ht small { font-size: 12px; opacity: .8; }
+.ht.on small { opacity: .9; }
+
 /* ---------- Onderste navigatie ---------- */
 .bottom-nav {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
