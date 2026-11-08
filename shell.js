@@ -359,6 +359,8 @@
     document.documentElement.dir = ST().dir;
     const sec = section();
     // Zonder ingelogd schoolaccount is het inlogscherm (in game.js) het enige scherm.
+    // Bezoekers zonder account komen op het boek uit; het app-startscherm is er voor ingelogde kinderen.
+    if (!activeProfile() && sec === "home") { location.replace("#/boek"); return; }
     // Boek en Koran zijn open voor iedereen; alleen het spel (en beloningen/profiel) vraagt om in te loggen.
     if (!activeProfile() && !["leren", "home", "boek", "koran"].includes(sec)) { location.hash = "#/spel"; return; }
     $("appHome").hidden = sec !== "home";
