@@ -62,7 +62,7 @@
   const MARKS = ["َ", "ُ", "ِ"];
   const unitsOf = (w) => { const u = []; for (const ch of w) { if (/[ً-ْ]/.test(ch) && u.length) u[u.length - 1] += ch; else u.push(ch); } return u; };
   function buildLongMissions() {
-    const G = window.GAME, words = G.longVowels.words.map((w) => w.word).map((w) => ({ word: w, units: unitsOf(w) })).filter((w) => w.units.length >= 3 && w.units.length <= 6);
+    const G = window.GAME, words = MG.wordList().map((w) => ({ word: w, units: unitsOf(w) })).filter((w) => w.units.length >= 3 && w.units.length <= 6);
     const specs = [{ min: 3, max: 4, gaps: 1 }, { min: 4, max: 5, gaps: 1 }, { min: 5, max: 6, gaps: 2 }];
     const used = new Set();
     return specs.map((sp) => {
@@ -77,14 +77,17 @@
       // extra plank: dezelfde letter met een ander teken (of een andere lange klinkerletter) / een letter die erop lijkt
       const g0 = seq[gaps[0]], base = g0[0], mark = (g0.match(/[َُِ]/) || [""])[0];
       let extra;
-      if (mark) extra = base + shuffle(MARKS.filter((m) => m !== mark))[0];
+      const tw = (g0.match(/[ًٌٍ]/) || [""])[0]; // wereld 4: shadda en tanwien
+      if (g0.includes("ّ")) extra = g0.replace("ّ", "");
+      else if (tw) extra = base + shuffle(["ً", "ٌ", "ٍ"].filter((m) => m !== tw))[0];
+      else if (mark) extra = base + shuffle(MARKS.filter((m) => m !== mark))[0];
       else { const alt = ["ا", "و", "ي"].filter((c) => c !== base); extra = shuffle(alt)[0]; }
       if (seq.includes(extra) || needed.includes(extra)) extra = shuffle(Object.keys(G.letterAudio).length ? ["ا", "و", "ي", "م", "ن", "ل"] : ["ا"]).find((c) => !seq.includes(c)) || "ن";
       return { seq, gaps, word: w.word, tray: shuffle([...needed, extra]) };
     });
   }
   function buildMissions() {
-    if (MG.isLong() && window.GAME && window.GAME.longVowels) return buildLongMissions();
+    if ((MG.isLong() || MG.isEcho()) && window.GAME && (window.GAME.longVowels || window.GAME.echoWords)) return buildLongMissions();
     if (MG.isHarakat() && window.GAME && window.GAME.harakat) return buildHarakatMissions();
     const group = MG.group(MG.currentLevel(profileId));
     const s0 = Math.max(0, ALPHA.indexOf(group[0]));
@@ -144,7 +147,7 @@
 
   // ---------- DOM ----------
   function renderChrome() {
-    const tt = Object.assign({}, tx(), MG.isLong() ? AF.deep(WORD_TXT[lang()] || WORD_TXT.nl) : {}); // wereld 3: woorden bouwen
+    const tt = Object.assign({}, tx(), MG.isLong() || MG.isEcho() ? AF.deep(WORD_TXT[lang()] || WORD_TXT.nl) : {}); // wereld 3: woorden bouwen
     $("gamestage").innerHTML = `
       <div class="chase-screen">
         <header class="chase-head">
@@ -468,7 +471,7 @@
 
   function complete() {
     MG.finish($("brOverlay"), {
-      pid: profileId, level: MG.currentLevel(profileId), stars: solved.filter((s) => !s.helped).length,
+      pid: profileId, level: MG.currentLevel(profileId), plain: MG.isEcho(), stars: solved.filter((s) => !s.helped).length,
       onAgain: () => { missions = buildMissions(); missionIdx = 0; solved = []; updateDots(); startMission(); },
       onBack: () => { location.hash = MG.returnHash(); },
     });

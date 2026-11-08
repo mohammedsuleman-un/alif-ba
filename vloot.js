@@ -22,7 +22,7 @@
 
   // ---------- Missies: 5 woorden; 3 bootjes, daarna 4 en bewegend ----------
   function buildMissions() {
-    const G = window.GAME, words = G.longVowels.words.map((w) => w.word), w3 = G.worlds.find((w) => w.id === "river_long");
+    const G = window.GAME, words = MG.wordList(), w3 = G.worlds.find((w) => w.id === (MG.isEcho() ? "echo_mountains" : "river_long"));
     const cfgs = [{ count: 3, speed: 0 }, { count: 4, speed: 0.4 }, { count: 4, speed: 0.4 }, { count: 4, speed: 0.65 }, { count: 4, speed: 0.65 }];
     return shuffle(words).slice(0, 5).map((target, i) => {
       const cfg = cfgs[i], d = w3.distract(target, words);

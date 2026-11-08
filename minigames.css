@@ -434,3 +434,4 @@ html[dir="rtl"] .chase-head .g-icon-btn svg { transform: scaleX(-1); }
 .kd-choice.is-right { background: #d6f5d0; border-color: #4caf50; box-shadow: 0 6px 0 #4caf50; }
 .kd-choice.is-wrong { animation: bbShake .45s linear 2; background: #ffd8cc; border-color: #e07a5f; box-shadow: 0 6px 0 #e07a5f; }
 .kd-choice.is-help { box-shadow: 0 0 0 6px rgba(255, 213, 74, .9), 0 0 24px rgba(255, 213, 74, .9); animation: brHelp .8s ease-in-out infinite; }
+#ecChoices .kd-choice { font-size: 72px; line-height: 1.3; }

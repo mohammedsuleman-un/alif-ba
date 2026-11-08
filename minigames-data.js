@@ -28,14 +28,16 @@
   const uniqueBases = (g) => { const out = []; g.forEach((x) => { const b2 = baseOf(x); if (!out.includes(b2)) out.push(b2); }); return out; };
   // Welke wereld speelt het kind nu? Onthouden per tabblad zodat een spel direct na de keuze dezelfde wereld houdt.
   const WORLD_KEY = "gp_mini_world";
-  const WORLD_KEYS = ["oasis", "harakat", "long"];
+  const WORLD_KEYS = ["oasis", "harakat", "long", "echo"];
   const getWorldKey = () => { try { const k = sessionStorage.getItem(WORLD_KEY); return WORLD_KEYS.includes(k) ? k : "oasis"; } catch { return "oasis"; } };
   const setWorld = (w) => { try { sessionStorage.setItem(WORLD_KEY, WORLD_KEYS.includes(w) ? w : "oasis"); } catch {} };
   const isHarakat = () => getWorldKey() === "harakat" && harakatGroups().length > 0;
+  const isEcho = () => getWorldKey() === "echo" && !!(window.GAME && window.GAME.echoWords); // wereld 4: shadda en tanwien (alleen woorden)
+  const wordList = () => { const G = window.GAME; return isEcho() ? G.echoWords : G.longVowels ? G.longVowels.words.map((w) => w.word) : []; };
   const isLong = () => getWorldKey() === "long" && worldGroups("river_long").length > 0; // wereld 3: lange klinkers
   const groups = () => (isLong() ? worldGroups("river_long") : isHarakat() ? harakatGroups() : GROUPS_OASIS);
   const labelOf = (g) => (isHarakat() || isLong() ? uniqueBases(g) : g).join(" "); // wereld 2 en 3 tonen de 4 letters, niet alle klanken
-  const returnHash = () => "#/gamestage/games" + (isLong() ? "?w=3" : isHarakat() ? "?w=2" : "");
+  const returnHash = () => "#/gamestage/games" + (isEcho() ? "?w=4" : isLong() ? "?w=3" : isHarakat() ? "?w=2" : "");
 
   // ---------- Levels: vaste route, elk niveau voegt letters toe en herhaalt de eerdere ----------
   // Niveau n = nieuwe letters groups()[n]; de oefenpool is alle letters t/m dat niveau.
@@ -76,7 +78,7 @@
   // ---------- Voortgang ----------
   // unlocked = hoogste vrijgespeelde niveau; play = niveau dat nu gespeeld wordt (standaard = unlocked,
   // of een eerder behaald niveau dat het kind opnieuw speelt). Wereld 2 heeft zijn eigen opslag.
-  const key = (pid) => (isLong() ? "gp_minil_" + pid : isHarakat() ? "gp_minih_" + pid : "gp_mini_" + pid);
+  const key = (pid) => (isEcho() ? "gp_minie_" + pid : isLong() ? "gp_minil_" + pid : isHarakat() ? "gp_minih_" + pid : "gp_mini_" + pid);
   const lastLevel = () => groups().length - 1;
   function load(pid) {
     const LAST = lastLevel();
@@ -273,11 +275,11 @@
   }
 
   // Spellen komen vrij naarmate Wereld 1 (Letter Oase) vordert: aantal voltooide oase-niveaus.
-  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0, bubbles: 0, harbor: 0, stones: 0, vloot: 0, klank: 0 }; // alle vier de spelletjes staan open vanaf level 1
+  const UNLOCKS = { slingshot: 0, photographer: 0, diver: 0, bridge: 0, bubbles: 0, harbor: 0, stones: 0, vloot: 0, klank: 0, echo: 0 }; // alle vier de spelletjes staan open vanaf level 1
   const oasisDone = (pid) => { const lv = (store.get(`gp_state_${pid}`, {}) || {}).levels || {}; return Object.keys(lv).filter((k) => k.indexOf("letter_oasis_l") === 0).length; };
   const gameOpen = (pid, key) => !!(window.Account && window.Account.isPreview && window.Account.isPreview()) || oasisDone(pid) >= (UNLOCKS[key] || 0);
   window.MiniGames = {
-    fx, countUp, chestSvg: CHEST_SVG, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, isLong, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
+    fx, countUp, chestSvg: CHEST_SVG, get GROUPS() { return groups(); }, labelOf, baseOf, setWorld, worldKey: getWorldKey, isHarakat, isLong, isEcho, wordList, returnHash, shuffle, say, banner, hideBanner, sfx, wait, finish, letterText,
     focusLevel, UNLOCKS, oasisDone, gameOpen, currentLevel, unlockedLevel, setPlay, completeLevel, doneLevels, pool, missionTargets, distractors,
     group: (n) => groups()[n] || groups()[0],
   };

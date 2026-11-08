@@ -356,6 +356,10 @@ window.GAME.chapters = [
     lv(11, ALL, 30, T("كل الكلمات", "Alle woorden", "All the words", "Tüm kelimeler")),
     lv(12, ALL, 30, T("تحدي الجبال", "Echo-bergen-uitdaging", "Echo mountains challenge", "Yankı dağları meydan okuması"), { challenge: true, badge: "echo_master" }),
   ];
+  // voor de spelletjes van wereld 4 (minigames-data.js, bridge.js, vloot.js, echo.js)
+  const tanweenKind = (w) => (/ٌ$/.test(w) ? "damma" : /ٍ$/.test(w) ? "kasra" : /ًا?$/.test(w) ? "fatha" : null);
+  G.echoWords = ALL;
+  G.echoTanween = ALL.map((w) => ({ word: w, kind: tanweenKind(w), core: w.replace(/(ٌ|ٍ|ًا|ً)$/, "") })).filter((x) => x.kind);
   G.worlds.push({
     id: "echo_mountains", theme: "mountains", requires: "river_long", distract,
     title: T("جبال الصدى", "Echo-bergen", "Echo mountains", "Yankı dağları"),

@@ -17,7 +17,7 @@
     { key: "diver", hash: "#/gamestage/diver/1", icon: "🤿",
       title: { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" },
       sub: { nl: "Verzamel de parels met de goede letter", en: "Collect the pearls with the right letter", ar: "اجمع اللآلئ التي عليها الحرف الصحيح", tr: "Doğru harfli incileri topla" } },
-    { key: "bridge", hash: "#/gamestage/bridge/1", icon: "🌉", world3: true,
+    { key: "bridge", hash: "#/gamestage/bridge/1", icon: "🌉", world3: true, world4: true,
       title: { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" },
       sub: { nl: "Maak de alfabetrij af en steek over", en: "Complete the alphabet row and cross", ar: "أكمل صف الحروف واعبر", tr: "Alfabe sırasını tamamla ve geç" } },
     { key: "bubbles", hash: "#/gamestage/bubbles/1", icon: "🫧", world2: true, world3: true,
@@ -29,12 +29,15 @@
     { key: "stones", hash: "#/gamestage/stones/1", icon: "🪷", world2: true, world3: true,
       title: { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" },
       sub: { nl: "Hoor de klank en spring op de goede steen", en: "Hear the sound and jump on the right stone", ar: "اسمع الصوت واقفز على الحجر الصحيح", tr: "Sesi duy ve doğru taşa zıpla" } },
-    { key: "vloot", hash: "#/gamestage/vloot/1", icon: "⛵", world3: true, only3: true,
+    { key: "vloot", hash: "#/gamestage/vloot/1", icon: "⛵", world3: true, world4: true, only3: true,
       title: { nl: "Woordenvloot", en: "Word Fleet", ar: "أسطول الكلمات", tr: "Kelime Filosu" },
       sub: { nl: "Hoor het woord en tik het goede bootje", en: "Hear the word and tap the right boat", ar: "اسمع الكلمة والمس القارب الصحيح", tr: "Kelimeyi duy ve doğru tekneye dokun" } },
     { key: "klank", hash: "#/gamestage/klank/1", icon: "🎵", world3: true, only3: true,
       title: { nl: "Klankdrie", en: "Sound Three", ar: "ثلاثية الصوت", tr: "Üçlü Ses" },
       sub: { nl: "Welke lange klinker hoor je in het woord?", en: "Which long vowel do you hear in the word?", ar: "أيّ مدٍّ تسمع في الكلمة؟", tr: "Kelimede hangi med harfini duyuyorsun?" } },
+    { key: "echo", hash: "#/gamestage/echo/1", icon: "⛰️", world4: true, only3: true,
+      title: { nl: "Tanwientrio", en: "Tanween Trio", ar: "ثلاثية التنوين", tr: "Üçlü Tenvin" },
+      sub: { nl: "Welk tanwien hoor je aan het eind van het woord?", en: "Which tanween do you hear at the end of the word?", ar: "أيّ تنوين تسمع في آخر الكلمة؟", tr: "Kelimenin sonunda hangi tenvini duyuyorsun?" } },
   ];
   const HEAD = { nl: "Kies een spelletje", en: "Pick a game", ar: "اختر لعبة", tr: "Bir oyun seç" };
   const GROUP_LABEL = { nl: "Jouw route", en: "Your path", ar: "مسارك", tr: "Yolun" };
@@ -56,10 +59,10 @@
   function setup() {
     const section = $("gamestage"); if (!section) return;
     const MG0 = window.MiniGames, wn = worldNr();
-    if (MG0) MG0.setWorld(wn === 3 ? "long" : wn === 2 ? "harakat" : "oasis"); // wereld 2/3 komen met ?w=2 / ?w=3, anders wereld 1
+    if (MG0) MG0.setWorld(wn === 4 ? "echo" : wn === 3 ? "long" : wn === 2 ? "harakat" : "oasis"); // wereld 2/3 komen met ?w=2 / ?w=3, anders wereld 1
     activeWorld = wn;
-    const list = GAMES.filter((g) => wn === 3 ? g.world3 : !g.only3 && (!g.world2 || (MG0 && MG0.isHarakat())));
-    const back = wn === 3 ? "#/spel/wereld/river_long" : MG0 && MG0.isHarakat() ? "#/spel/wereld/flowers_valley" : D.RETURN_HASH;
+    const list = GAMES.filter((g) => wn === 4 ? g.world4 : wn === 3 ? g.world3 : !g.only3 && (!g.world2 || (MG0 && MG0.isHarakat())));
+    const back = wn === 4 ? "#/spel/wereld/echo_mountains" : wn === 3 ? "#/spel/wereld/river_long" : MG0 && MG0.isHarakat() ? "#/spel/wereld/flowers_valley" : D.RETURN_HASH;
     const l = GAMES[0].title[lang()] ? lang() : "nl";
     section.hidden = false; section.dataset.owner = "games";
     active = true;
@@ -73,7 +76,7 @@
           <div class="games-top"><span class="games-coins" id="gamesCoins">🪙 0</span><a href="#/spel/kledingkast" class="g-icon-btn" aria-label="Kledingkast">👕</a></div>
         </header>
         <div class="games-hub">
-          <div class="games-levels-wrap">
+          <div class="games-levels-wrap"${wn === 4 ? ' style="display:none"' : ""}>
             <p class="games-levels-title">${AF.fem(GROUP_LABEL[l])}</p>
             <div class="games-levels" id="gamesLevels"></div>
           </div>

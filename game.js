@@ -899,7 +899,7 @@
           <span>${t.levelsProgress(doneCount, levels.length)}</span>
           <span>⭐ ${totalStars} · 🪙 ${state.coins}</span>
         </div>
-        ${world.id === "flowers_valley" ? `<a href="#/gamestage/games?w=2" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : world.id === "river_long" ? `<a href="#/gamestage/games?w=3" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : ""}
+        ${world.id === "flowers_valley" ? `<a href="#/gamestage/games?w=2" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : world.id === "river_long" ? `<a href="#/gamestage/games?w=3" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : world.id === "echo_mountains" ? `<a href="#/gamestage/games?w=4" class="g-icon-btn" aria-label="Spelletjes">🎮</a>` : ""}
         <a href="#/spel/kaart" class="g-icon-btn" aria-label="Kaart">🗺️</a>
         <a href="#/spel/kledingkast" class="g-icon-btn" aria-label="${t.openWardrobe}">👕</a>
       </div>
@@ -1504,23 +1504,24 @@
     ["slingshot", "🎯", { nl: "Katapult", en: "Slingshot", ar: "المقلاع", tr: "Sapan" }],
     ["photographer", "📷", { nl: "Fotograaf", en: "Photographer", ar: "المصوّر", tr: "Fotoğrafçı" }],
     ["diver", "🤿", { nl: "Parelduiker", en: "Pearl Diver", ar: "غوّاص اللؤلؤ", tr: "İnci Dalgıcı" }],
-    ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }, false, true],
+    ["bridge", "🌉", { nl: "Letterbrug", en: "Letter Bridge", ar: "جسر الحروف", tr: "Harf Köprüsü" }, false, true, false, true],
     ["bubbles", "🫧", { nl: "Feestbellen", en: "Festival Bubbles", ar: "فقاعات الاحتفال", tr: "Festival Balonları" }, true, true],
     ["harbor", "⛵", { nl: "Havenloods", en: "Harbour Pilot", ar: "ربّان الميناء", tr: "Liman Kaptanı" }, true],
     ["stones", "🪷", { nl: "Stapstenen", en: "Stepping Stones", ar: "حجارة العبور", tr: "Basamak Taşları" }, true, true],
-    ["vloot", "⛵", { nl: "Woordenvloot", en: "Word Fleet", ar: "أسطول الكلمات", tr: "Kelime Filosu" }, true, true, true],
+    ["vloot", "⛵", { nl: "Woordenvloot", en: "Word Fleet", ar: "أسطول الكلمات", tr: "Kelime Filosu" }, true, true, true, true],
     ["klank", "🎵", { nl: "Klankdrie", en: "Sound Three", ar: "ثلاثية الصوت", tr: "Üçlü Ses" }, true, true, true],
+    ["echo", "⛰️", { nl: "Tanwientrio", en: "Tanween Trio", ar: "ثلاثية التنوين", tr: "Üçlü Tenvin" }, true, true, true, true],
   ];
   function renderLevelHub(worldId, n) {
     const t = GT(), L = AF.deep(LHT[glang()] || LHT.nl), l = LHT[glang()] ? glang() : "nl";
     document.documentElement.dir = t.dir;
     const world = G.worlds.find((w) => w.id === worldId), level = world && world.levels.find((lv) => lv.n === +n);
     if (!level) return gohash(`#/spel/wereld/${worldId}`);
-    const MG = window.MiniGames, pid = activeProfile.id, w2 = world.id === "flowers_valley", w3 = world.id === "river_long";
-    const mgWorld = w3 ? "long" : w2 ? "harakat" : "oasis";
+    const MG = window.MiniGames, pid = activeProfile.id, w2 = world.id === "flowers_valley", w3 = world.id === "river_long", w4 = world.id === "echo_mountains";
+    const mgWorld = w4 ? "echo" : w3 ? "long" : w2 ? "harakat" : "oasis";
     if (MG) MG.setWorld(mgWorld); // de spelletjes volgen de wereld van dit level
     const stars = levelStars(world, level), letters = level.letters.length ? level.letters : world.letters;
-    const games = LH_GAMES.filter((g) => (w3 ? g[4] : !g[5] && (!g[3] || w2))).map(([key, icon, name]) => {
+    const games = LH_GAMES.filter((g) => (w4 ? g[6] : w3 ? g[4] : !g[5] && (!g[3] || w2))).map(([key, icon, name]) => {
       const open = !MG || MG.gameOpen(pid, key);
       return open ? `<button type="button" class="lh-card" data-game="${key}"><span class="lh-icon">${icon}</span><b>${name[l]}</b></button>`
         : `<div class="lh-card is-locked"><span class="lh-icon">🔒</span><b>${name[l]}</b><small>${L.lock(MG.UNLOCKS[key])}</small></div>`;
@@ -1535,7 +1536,7 @@
         <button type="button" class="lh-quiz" id="lhQuiz"><span class="lh-icon">🌟</span><span><b>${L.quiz}</b><small>${L.quizSub}</small></span><span class="lh-stars">${stars ? "★".repeat(stars) + "☆".repeat(3 - stars) : ""}</span></button>
         <p class="lh-title">${L.games}</p>
         <div class="lh-grid">${games}</div>
-        <p class="lh-content">${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${(w2 || w3) && MG && level.letters.length ? MG.labelOf(letters) : letters.join(" ")}</span></p>
+        <p class="lh-content"${!level.letters.length && (w3 || w4) ? ' hidden' : ""}>${L.inLevel} <span class="lh-ar" lang="ar" dir="rtl">${!level.letters.length && (w3 || w4) ? "" : (w2 || w3) && MG && level.letters.length ? MG.labelOf(letters) : letters.join(" ")}</span></p>
       </div>`;
     sayOnceWhenFree("level-choose");
     $("lhQuiz").onclick = () => gohash(`#/spel/level/${worldId}/${level.n}`);
@@ -1579,8 +1580,6 @@
     if (activeProfile && Character.isConfigured(activeProfile.id)) Character.setStage(activeProfile.id, currentStage()); // het personage groeit mee
     if (mWardrobe) { showScreen("wardrobe"); renderWardrobe(); return; }
     if (mOverview) { showScreen("overview"); renderOverview(); return; }
-    // wereld 4 heeft nog geen spelletjes: het level opent meteen (replace, zodat "terug" niet in een lus komt)
-    if (mHub && mHub[1] === "echo_mountains") { location.replace(`#/spel/level/${mHub[1]}/${mHub[2]}`); return; }
     if (mHub) { showScreen("overview"); renderLevelHub(mHub[1], mHub[2]); return; }
     if (mLevel) {
       const w = G.worlds.find((x) => x.id === mLevel[1]);
