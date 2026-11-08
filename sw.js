@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿const VERSION = "v138";
+=======
+﻿const VERSION = "v140";
+>>>>>>> 196791a (Koran: alle 38 soera's met opname van docent en leerling (571 verzen))
 const CORE = [
   "./", "index.html", "style.css", "app.js", "book-data.js", "game.js", "game-data.js",
   "voice-manifest.js", "audio-manager.js", "ar-gender.js", "account.js", "feedback.js", "shell.js", "character-data.js", "character.js", "manifest.webmanifest", "assets/fonts/amiri-arabic-400.woff2", "assets/fonts/amiri-arabic-700.woff2", "assets/fonts/amiri-quran-arabic.woff2", "quran.js", "quran.css", "quran-audio.js", "assets/quran/pages.json", "assets/quran/fonts/p604.woff2", "assets/quran/basmala.mp3",
