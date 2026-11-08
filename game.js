@@ -638,6 +638,17 @@
         { x: 0.7832, y: 0.3613 },
       ],
     },
+    // Wereld 4 (Echo-bergen): de twaalf gouden sokkels, van de poort linksboven naar beneden, over de brug en omhoog naar het kasteel rechts.
+    echo_mountains: {
+      bg: "assets/worlds/mountains/map-wide.jpg",
+      w: 1536, h: 1024,
+      path: [
+        { x: 0.4089, y: 0.3389 }, { x: 0.3802, y: 0.3662 }, { x: 0.3880, y: 0.4053 },
+        { x: 0.3978, y: 0.4473 }, { x: 0.2376, y: 0.5146 }, { x: 0.2324, y: 0.5713 },
+        { x: 0.6185, y: 0.6885 }, { x: 0.7174, y: 0.6152 }, { x: 0.7513, y: 0.5518 },
+        { x: 0.7891, y: 0.5127 }, { x: 0.8242, y: 0.4736 }, { x: 0.7826, y: 0.3984 },
+      ],
+    },
   };
 
   const oasisScale = (sceneWpx) => sceneWpx / OASIS_IMG_W;
@@ -1103,7 +1114,7 @@
   function renderChoiceQuestion(q) {
     const t = GT();
     const isAudio = q.type === "AUDIO_TO_LETTER";
-    const isWord = q.letter.replace(/[ً-ْ]/g, "").length > 2; // wereld 3: een heel woord i.p.v. een letter
+    const isWord = q.letter.replace(/[ً-ْ]/g, "").length > 2 || /^audio\/Page\d/.test((G.letterAudio || {})[q.letter] || ""); // wereld 3 en 4: een heel woord i.p.v. een letter
     scr.level.innerHTML = `
       ${levelHeader()}
       <div class="g-timer" id="gTimer"><i id="gTimerBar"></i></div>
@@ -1568,6 +1579,8 @@
     if (activeProfile && Character.isConfigured(activeProfile.id)) Character.setStage(activeProfile.id, currentStage()); // het personage groeit mee
     if (mWardrobe) { showScreen("wardrobe"); renderWardrobe(); return; }
     if (mOverview) { showScreen("overview"); renderOverview(); return; }
+    // wereld 4 heeft nog geen spelletjes: het level opent meteen (replace, zodat "terug" niet in een lus komt)
+    if (mHub && mHub[1] === "echo_mountains") { location.replace(`#/spel/level/${mHub[1]}/${mHub[2]}`); return; }
     if (mHub) { showScreen("overview"); renderLevelHub(mHub[1], mHub[2]); return; }
     if (mLevel) {
       const w = G.worlds.find((x) => x.id === mLevel[1]);

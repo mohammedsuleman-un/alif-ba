@@ -265,3 +265,104 @@ window.GAME.chapters = [
   });
   G.badges.long_vowel_master = { icon: "🌊", ar: "بطل المدود", nl: "Meester van de lange klinkers", en: "Long vowels master", tr: "Med ustası" };
 })();
+
+// ---------- Wereld 4: shadda en tanwien (hoofdstuk 4 van het boek, pagina 19 t/m 24) ----------
+// Alleen woorden: het kind hoort een woord (de bestaande boekopname Page<volgnr>-<tegel>) en kiest het juiste woord uit vier.
+// Afleiders zijn waar mogelijk hetzelfde woord met een ander einde (ـٌ ـً ـٍ) of zonder shadda, zodat het verschil hoorbaar wordt.
+// Woorden staan per pagina in tegelvolgorde (tegel 1 = rechtsboven, dan naar links, rij voor rij); null = overgeslagen.
+(() => {
+  const G = window.GAME;
+  const T = (ar, nl, en, tr) => ({ ar, nl, en, tr });
+  const rnd = (arr) => arr.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+  const PAGES = {
+    19: { book: 15, words: [
+      "إِنَّ", "أَنَّ", "ضَلَّ", "قَلَّ", "مَسَّ", "رَبَّ", "مِنَّ", "عَمَّ", "ثُمَّ", "تَبَّ",
+      "عَلَّمَ", "إِلَّا", "تَبَّتْ", "بِرَبِّ", "تُؤَخِّرُ", "دُكَّتَا", "يُعَمَّرُ", "سَبَّحَ", "يُسَبِّحُ", "يَدُعُّ",
+      "مِمَّا", "إِنَّا", "تَنَزَّلُ", "عُطِّلَتْ", "فَذَكِّرْ", "وَأَمَّا", "رَبُّكَ", "فَصَبَّ", "كَذَّبَ", "إِيَّاكَ"] },
+    20: { book: 16, words: [
+      "عَزِيزٌ", "غَفُورٌ", "سَمِيعٌ", "قَرِيبٌ", "أَجْرٌ", "عَظِيمٌ", "خَبِيرٌ", "بَصِيرٌ", "قَوْلٌ", "مَعْرُوفٌ",
+      "مَغْفِرَةٌ", "خَيْرٌ", "لَقَوْلٌ", "فَصْلٌ", "رَسُولٌ", "أَمِينٌ", "كُلٌّ", "غَنِيٌّ", "حَلِيمٌ", "تُرَابٌ",
+      "صَفْوَانٌ", "طَعَامٌ", "رَجُلٌ", "رِجَالٌ", "قَلِيلٌ", "شَدِيدٌ", "رَحْمَةٌ", "عَذَابٌ", "وَاصِبٌ", "شِهَابٌ"] },
+    21: { book: 17, words: [
+      "حَكِيمًا", "عَلِيمًا", "سَمِيعًا", "بَصِيرًا", "وَاسِعًا", "يَتِيمًا", "طَيْرًا", "مَاءً", "حَفَظَةً", "صَفًّا",
+      "حِسَابًا", "يَسِيرًا", "غَرْقًا", "سَبْقًا", "أَمْرًا", "أَوْتَادًا", "أَزْوَاجًا", "سُبَاتًا", "سِرَاجًا", "وَهَّاجًا",
+      "أَفْوَاجًا", "كِذَّابًا", "عَمَلًا", "مُكِبًّا", "حَقًّا", "خَيْرًا", "حَاصِبًا", "غَوْرًا", "شَطَطًا", "وَلَدًا"] },
+    22: { book: 18, words: [
+      "حَكِيمٍ", "عَلِيمٍ", "حَمِيدٍ", "خَبِيرٍ", "مَلِيكٍ", "مُقْتَدِرٍ", "قُرَيْشٍ", "حَاسِدٍ", "فِي عَمَدٍ", "مِنْ جُوعٍ",
+      "مِنْ خَوْفٍ", "فِي عَيْنٍ", "بَشَرٍ", "وَنَفْسٍ", "فِي يَوْمٍ", "كَبَدٍ", "كِرَامٍ", "فِي كِتَابٍ", "ظُلُمَاتٍ", "دَافِقٍ",
+      "بِثَمَنٍ", "بَخْسٍ", "مِنْ وَلِيٍّ", "عَسَلٍ", "ضَرِيعٍ", "لَهَبٍ", "لَفِي خُسْرٍ", "لَفِي نَعِيمٍ", "لَفِي سِجِّينٍ", "مِنْ مَسَدٍ"] },
+    23: { book: 19, words: [
+      "عِيشَةٍ", "مَوْضُوعَةٍ", "نُطْفَةٍ", "زَجْرَةٌ", "عِبْرَةٌ", "مُسْفِرَةٌ", "مَسْغَبَةٍ", "تَذْكِرَةٌ", "مُؤْصَدَةٌ", "مَقْرَبَةٍ",
+      "مَتْرَبَةٍ", "لَيْلَةُ", "مَرْفُوعَةٍ", "مُطَهَّرَةٍ", "مُمَدَّدَةٍ", "حَامِيَةً", "نَاصِيَةٍ", "كَاذِبَةٍ", "خَاطِئَةٍ", "رِحْلَةَ",
+      "هُمَزَةٍ", "لُمَزَةٍ", "نَاقَةَ", "عَامِلَةٌ", "نَاصِبَةٌ", "جَنَّةٍ", "عَالِيَةٍ", "مَصْفُوفَةٌ", "مَبْثُوثَةٌ", "غَبَرَةٌ"] },
+    24: { book: 20, words: [
+      "سَجَى", "قَلَى", "فَتَرْضَى", "فَأَغْنَى", "يَرْضَى", "أَبْقَى", "وَتَوَلَّى", "تَنْسَى", "يَخْفَى", "يَحْيَى",
+      "لِلْهُدَى", "أَحْوَى", "تُسْقَى", "تُتْلَى", "مُوسَى", "تَرَدَّى", "تَلَظَّى", "يَتَزَكَّى", "تَصَدَّى", "فَهَدَى",
+      "تَجَلَّى", "يَرَى", "يَنْهَى", "سَعَى", "طَغَى", "ذِكْرَى", "فَعَصَى", "مَرْضَى", "أَدْنَى", "تَرَى"] },
+  };
+  // Tegels waarvan de opname niet bij het woord op het plaatje past (of die de spraakherkenning niet kon bevestigen): niet gebruiken.
+  [[19, 30], [21, 8], [21, 9], [24, 2], [24, 10], [24, 21]].forEach(([n, tile]) => { PAGES[n].words[tile - 1] = null; });
+  const pageOf = new Map(); // woord -> pagina (n)
+  Object.entries(PAGES).forEach(([n, { book, words }]) => words.forEach((w, k) => {
+    if (!w) return;
+    pageOf.set(w, +n);
+    G.letterAudio[w] = `audio/Page${book}-${String(k + 1).padStart(2, "0")}`;
+  }));
+  const wordsOf = (n, from = 1, to = 30) => PAGES[n].words.slice(from - 1, to).filter(Boolean);
+  const pagesOf = (...ns) => ns.flatMap((n) => wordsOf(n));
+  const ALL = [...pageOf.keys()];
+  const bare = (w) => w.replace(/[ً-ْٰ]/g, "").replace(/\s+/g, "");
+  const root = (w) => bare(w).replace(/ا$/, "");
+
+  // Hetzelfde woord met een ander einde (ـٌ ـً ـٍ), of zonder shadda: zo klinkt/ziet het verschil.
+  function variants(w) {
+    const out = [];
+    const m = w.match(/^(.*?)(ٌ|ٍ|ًا|ً)$/);
+    if (m) {
+      const core = m[1], noAlif = /[ةء]$/.test(core);
+      [core + "ٌ", core + "ٍ", core + (noAlif ? "ً" : "ًا")].forEach((v) => { if (v !== w) out.push(v); });
+    }
+    if ((w.match(/ّ/g) || []).length === 1) out.push(w.replace("ّ", ""));
+    return rnd(out);
+  }
+
+  const distract = (item, pool) => {
+    const out = [];
+    const add = (arr, n) => { for (const x of arr) { if (out.length >= 3 || n <= 0) break; if (x && x !== item && !out.includes(x)) { out.push(x); n--; } } };
+    const len = bare(item).length, first = bare(item)[0], page = pageOf.get(item), r = root(item);
+    const score = (x) => (root(x) === r ? 6 : 0) + (bare(x)[0] === first ? 2 : 0) + (Math.abs(bare(x).length - len) <= 1 ? 2 : 0) + (pageOf.get(x) === page ? 1 : 0);
+    const byScore = (arr) => rnd(arr.filter((x) => pageOf.has(x) && x !== item)).sort((a, b) => score(b) - score(a));
+    add(variants(item), 2);
+    add(byScore(pool), 3);
+    add(byScore(ALL), 3);
+    return out.slice(0, 3);
+  };
+
+  const wOnly = ["AUDIO_TO_LETTER"];
+  const mix = (...sets) => sets.flat();
+  const tw = pagesOf(20, 21, 22), sh = wordsOf(19);
+  const lv = (n, review, count, title, extra) => ({ n, letters: [], review, types: wOnly, count, title, ...extra });
+  const levels = [
+    lv(1, wordsOf(19, 1, 15), 14, T("الشدة ١", "Shadda 1", "Shadda 1", "Şedde 1")),
+    lv(2, mix(wordsOf(19, 16, 30), wordsOf(19, 1, 15)), 16, T("الشدة ٢", "Shadda 2", "Shadda 2", "Şedde 2")),
+    lv(3, wordsOf(20), 16, T("تنوين الضم", "Tanwien damma", "Tanween damma", "Damme tenvin")),
+    lv(4, wordsOf(21), 16, T("تنوين الفتح", "Tanwien fatha", "Tanween fatha", "Fetha tenvin")),
+    lv(5, wordsOf(22), 16, T("تنوين الكسر", "Tanwien kasra", "Tanween kasra", "Kesre tenvin")),
+    lv(6, tw, 24, T("التنوين الثلاثة", "Alle drie de tanwiens", "All three tanweens", "Üç tenvin birlikte")),
+    lv(7, wordsOf(23), 16, T("التاء المربوطة", "Taa marboeta", "Taa marbuta", "Tâ-i merbuta")),
+    lv(8, wordsOf(24, 1, 15), 14, T("الألف المقصورة ١", "Alif maqsoera 1", "Alif maqsura 1", "Elif-i maksure 1")),
+    lv(9, mix(wordsOf(24), wordsOf(23)), 24, T("التاء المربوطة والألف المقصورة", "Taa marboeta en alif maqsoera", "Taa marbuta and alif maqsura", "Tâ-i merbuta ve elif-i maksure")),
+    lv(10, mix(sh, tw), 24, T("الشدة والتنوين", "Shadda en tanwien", "Shadda and tanween", "Şedde ve tenvin")),
+    lv(11, ALL, 30, T("كل الكلمات", "Alle woorden", "All the words", "Tüm kelimeler")),
+    lv(12, ALL, 30, T("تحدي الجبال", "Echo-bergen-uitdaging", "Echo mountains challenge", "Yankı dağları meydan okuması"), { challenge: true, badge: "echo_master" }),
+  ];
+  G.worlds.push({
+    id: "echo_mountains", theme: "mountains", requires: "river_long", distract,
+    title: T("جبال الصدى", "Echo-bergen", "Echo mountains", "Yankı dağları"),
+    subtitle: T("الشدة والتنوين", "Shadda en tanwien", "Shadda and tanween", "Şedde ve tenvin"),
+    letters: ALL, badge: "echo_master", levels,
+  });
+  G.badges.echo_master = { icon: "⛰️", ar: "بطل الصدى", nl: "Meester van de echo-bergen", en: "Echo mountains master", tr: "Yankı dağları ustası" };
+  const ch4 = G.chapters.find((c) => c.id === "ch4");
+  if (ch4) ch4.areas = ["echo_mountains"];
+})();
