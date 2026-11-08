@@ -12,10 +12,10 @@
   const LANGS = ["nl", "en", "ar", "tr"];
   const lang = () => (LANGS.includes(store.get("lang", "nl")) ? store.get("lang", "nl") : "nl");
   const I18N = {
-    ar: { sub: "استمع واقرأ", play: "استماع", pause: "إيقاف", again: "من البداية", loop: "تكرار", back: "رجوع", index: "الفهرس", page: "صفحة", next: "الصفحة التالية", prev: "الصفحة السابقة", noAudio: "لا يوجد تسجيل لهذه الآية بعد", loading: "جارٍ التحميل…", offline: "تعذّر تحميل الصفحة. تحقق من الاتصال.", retry: "حاول مرة أخرى", listen: "تسجيلات المعلّم" },
-    nl: { sub: "Luister en lees mee", play: "Luisteren", pause: "Pauze", again: "Opnieuw", loop: "Herhalen", back: "Terug", index: "Inhoud", page: "Pagina", next: "Volgende pagina", prev: "Vorige pagina", noAudio: "Van dit vers is nog geen opname", loading: "Laden…", offline: "De pagina kon niet laden. Kijk of je internet hebt.", retry: "Opnieuw proberen", listen: "Met opname van de docent" },
-    en: { sub: "Listen and read along", play: "Listen", pause: "Pause", again: "Again", loop: "Repeat", back: "Back", index: "Contents", page: "Page", next: "Next page", prev: "Previous page", noAudio: "No recording for this verse yet", loading: "Loading…", offline: "The page could not load. Check your internet.", retry: "Try again", listen: "With teacher recording" },
-    tr: { sub: "Dinle ve oku", play: "Dinle", pause: "Duraklat", again: "Baştan", loop: "Tekrar", back: "Geri", index: "İçindekiler", page: "Sayfa", next: "Sonraki sayfa", prev: "Önceki sayfa", noAudio: "Bu ayetin henüz kaydı yok", loading: "Yükleniyor…", offline: "Sayfa yüklenemedi. İnternetini kontrol et.", retry: "Tekrar dene", listen: "Öğretmen kaydıyla" },
+    ar: { sub: "استمع واقرأ", play: "استماع", pause: "إيقاف", again: "من البداية", loop: "تكرار", back: "رجوع", index: "الفهرس", page: "صفحة", next: "الصفحة التالية", prev: "الصفحة السابقة", noAudio: "لا يوجد تسجيل لهذه الآية بعد", modeT: "المعلّم", modeK: "المعلّم والطالب", loading: "جارٍ التحميل…", offline: "تعذّر تحميل الصفحة. تحقق من الاتصال.", retry: "حاول مرة أخرى", listen: "تسجيلات المعلّم" },
+    nl: { sub: "Luister en lees mee", play: "Luisteren", pause: "Pauze", again: "Opnieuw", loop: "Herhalen", back: "Terug", index: "Inhoud", page: "Pagina", next: "Volgende pagina", prev: "Vorige pagina", noAudio: "Van dit vers is nog geen opname", modeT: "Docent", modeK: "Docent + leerling", loading: "Laden…", offline: "De pagina kon niet laden. Kijk of je internet hebt.", retry: "Opnieuw proberen", listen: "Met opname van de docent" },
+    en: { sub: "Listen and read along", play: "Listen", pause: "Pause", again: "Again", loop: "Repeat", back: "Back", index: "Contents", page: "Page", next: "Next page", prev: "Previous page", noAudio: "No recording for this verse yet", modeT: "Teacher", modeK: "Teacher + student", loading: "Loading…", offline: "The page could not load. Check your internet.", retry: "Try again", listen: "With teacher recording" },
+    tr: { sub: "Dinle ve oku", play: "Dinle", pause: "Duraklat", again: "Baştan", loop: "Tekrar", back: "Geri", index: "İçindekiler", page: "Sayfa", next: "Sonraki sayfa", prev: "Önceki sayfa", noAudio: "Bu ayetin henüz kaydı yok", modeT: "Öğretmen", modeK: "Öğretmen + öğrenci", loading: "Yükleniyor…", offline: "Sayfa yüklenemedi. İnternetini kontrol et.", retry: "Tekrar dene", listen: "Öğretmen kaydıyla" },
   };
   const T = () => I18N[lang()];
   const digits = (n) => String(n).replace(/\d/g, (d) => "٠١٢٣٤٥٦٧٨٩"[d]);
@@ -31,6 +31,7 @@
   let page = 0;
   let run = 0; // verhoogt bij elke start/stop; een oude afspeelketen stopt zodra het nummer niet meer klopt
   let play = { on: false, loop: false };
+  let mode = store.get("gp_quran_mode", "teacher") === "both" ? "both" : "teacher"; // "teacher": alleen de docent; "both": docent, daarna de leerling
   const fontP = {};
 
   function loadData() {
@@ -70,9 +71,15 @@
           <button class="q-flip q-flip-r" id="qPrev" type="button" aria-label="${t.prev}">›</button>
         </div>
         <div class="q-ctrl">
+          <div class="q-mode" role="group" aria-label="${t.listen}">
+            <button type="button" data-m="teacher">👨‍🏫 ${t.modeT}</button>
+            <button type="button" data-m="both">👨‍🏫🧒 ${t.modeK}</button>
+          </div>
+          <div class="q-row">
           <button class="q-btn" id="qAgain" type="button" aria-label="${t.again}">⏮</button>
           <button class="q-btn q-btn-main" id="qPlay" type="button"></button>
           <button class="q-btn" id="qLoop" type="button" aria-label="${t.loop}" aria-pressed="false">🔁</button>
+          </div>
         </div>
         <div class="q-toast" id="qToast" role="status" aria-live="polite" hidden></div>
         <div class="q-index" id="qIdx" hidden></div>`;
@@ -82,6 +89,9 @@
       $("qPlay").onclick = () => (play.on ? stopPlay() : startPlay());
       $("qAgain").onclick = () => startPlay();
       $("qLoop").onclick = (e) => { play.loop = !play.loop; e.currentTarget.setAttribute("aria-pressed", play.loop); e.currentTarget.classList.toggle("on", play.loop); };
+      const setMode = () => root.querySelectorAll(".q-mode button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.m === mode));
+      root.querySelectorAll(".q-mode button").forEach((b) => (b.onclick = () => { mode = b.dataset.m; store.set("gp_quran_mode", mode); setMode(); }));
+      setMode();
       swipe($("qStage"));
       window.addEventListener("resize", fit);
     }
@@ -210,8 +220,8 @@
     const startOn = {}; pg.s.forEach(([s]) => { startOn[`${s}:1`] = s; });
     Object.keys(pg.l).sort((a, b) => a - b).forEach((L) => pg.l[L].forEach(([k]) => {
       if (seen.has(k)) return; seen.add(k);
-      if (startOn[k] && startOn[k] !== 1 && startOn[k] !== 9 && AUDIO.basmala && hasAudio(k)) out.push({ s: startOn[k], src: AUDIO.basmala });
-      if (hasAudio(k)) out.push({ k, src: AUDIO.verses[k] });
+      if (startOn[k] && startOn[k] !== 1 && startOn[k] !== 9 && AUDIO.basmala && hasAudio(k)) out.push({ s: startOn[k], src: AUDIO.basmala, kid: AUDIO.basmalaKid });
+      if (hasAudio(k)) out.push({ k, src: AUDIO.verses[k], kid: (AUDIO.kids || {})[k] });
     }));
     return out;
   }
@@ -220,8 +230,9 @@
       if (my !== run) return false;
       if (it.k) mark(it.k, "now"); else markBasmala(it.s, "now");
       const first = it.k ? versEls(it.k)[0] : root.querySelector(`.q-basmala[data-s="${it.s}"]`);
-      const ok = await window.AudioManager.playFile(it.src);
+      let ok = await window.AudioManager.playFile(it.src);
       if (my !== run) return false; // onderbroken door een nieuwe tik of pauze
+      if (ok && mode === "both" && it.kid) { await new Promise((r) => setTimeout(r, 250)); if (my !== run) return false; ok = await window.AudioManager.playFile(it.kid); if (my !== run) return false; }
       if (it.k) mark(it.k, "read"); else markBasmala(it.s, "read");
       if (!ok) return false; // bestand ontbreekt of geblokkeerd
       if (pause) await new Promise((r) => setTimeout(r, 350));
@@ -246,7 +257,7 @@
     window.AudioManager.stop();
     clearMarks();
     play.on = true; setPlayIcon(true);
-    await playItems([{ k, src: AUDIO.verses[k] }], my, false);
+    await playItems([{ k, src: AUDIO.verses[k], kid: (AUDIO.kids || {})[k] }], my, false);
     if (my !== run) return;
     play.on = false; setPlayIcon(false);
   }
