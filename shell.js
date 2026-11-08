@@ -339,13 +339,15 @@
   // zodat het kind daar het volledige scherm heeft.
   function navHidden() {
     const h = location.hash;
-    return !activeProfile() || h.startsWith("#/les/") || h.startsWith("#/spel/level/") || h.startsWith("#/koran");
+    if (h.startsWith("#/les/") || h.startsWith("#/spel/level/") || h.startsWith("#/koran")) return true;
+    return !activeProfile() && h.startsWith("#/spel"); // inlogscherm heeft zijn eigen knoppen
   }
 
   function renderNav() {
     const t = ST();
     const sec = section();
-    $("bottomNav").innerHTML = NAV_ITEMS.map((item) => `
+    const items = activeProfile() ? NAV_ITEMS : NAV_ITEMS.filter((i) => ["leren", "boek", "koran"].includes(i.key)); // zonder account: geen beloningen/profiel
+    $("bottomNav").innerHTML = items.map((item) => `
       <a href="${item.href}" class="bn-item ${sec === item.key ? "active" : ""}">
         <span class="bn-icon">${item.icon}</span>
         <span class="bn-label">${t.nav[item.key]}</span>
@@ -357,7 +359,8 @@
     document.documentElement.dir = ST().dir;
     const sec = section();
     // Zonder ingelogd schoolaccount is het inlogscherm (in game.js) het enige scherm.
-    if (!activeProfile() && sec !== "leren") { location.hash = "#/spel"; return; }
+    // Boek en Koran zijn open voor iedereen; alleen het spel (en beloningen/profiel) vraagt om in te loggen.
+    if (!activeProfile() && !["leren", "home", "boek", "koran"].includes(sec)) { location.hash = "#/spel"; return; }
     $("appHome").hidden = sec !== "home";
     $("rewards").hidden = sec !== "beloningen";
     $("profileHub").hidden = sec !== "profiel";
