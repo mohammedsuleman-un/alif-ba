@@ -343,6 +343,17 @@
         <div id="gLoginMsg" class="g-login-msg" role="alert"></div>
         <button type="submit" class="g-cta">${window.Account.t().go}</button>
       </form>
+      ${window.Account.isLoggedIn() ? "" : `<button type="button" id="gRegOpen" class="g-add g-reg-open">✨ ${window.Account.t().regOpen}</button>
+      <form id="gRegForm" class="g-new-form g-login-form g-reg-form" autocomplete="off" hidden>
+        <div class="g-login-head"><span class="g-login-ico" aria-hidden="true">🌟</span><div><b>${window.Account.t().regTitle}</b><small>${window.Account.t().regSub}</small></div></div>
+        <input id="gRegName" maxlength="30" autocomplete="off" placeholder="${window.Account.t().regName}">
+        <input id="gRegPass" type="password" autocomplete="new-password" placeholder="${window.Account.t().regPass}">
+        <input id="gRegWebsite" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+        <label class="g-consent"><input id="gRegConsent" type="checkbox"> <span>${window.Account.t().regConsent}</span></label>
+        <div id="gRegMsg" class="g-login-msg" role="alert"></div>
+        <button type="submit" class="g-cta">${window.Account.t().regGo}</button>
+        <button type="button" id="gRegCancel" class="g-add">${window.Account.t().regBack}</button>
+      </form>`}
       ${window.Account.isLoggedIn() ? `<button id="gLogout" class="g-add">⎋ ${window.Account.t().logout} (${String(window.Account.current().name).replace(/[<>&"]/g, "")})</button>${window.Account.current().expired ? `<p class="g-login-msg">${window.Account.t().expired}</p>` : ""}` : ""}` : ""}
       <p class="g-admin-link"><a href="/beheer/">${window.Account.t().admin}</a></p>`;
     const listEl = $("gProfileList");
@@ -370,6 +381,27 @@
           gohash("#/"); // na het inloggen eerst het welkomstscherm
         } catch (err) { msg.textContent = err.message; btn.disabled = false; }
       };
+      // Zelf een account maken
+      const ro = $("gRegOpen"), rf = $("gRegForm");
+      if (ro && rf) {
+        ro.onclick = () => { rf.hidden = false; ro.hidden = true; lf.hidden = true; $("gRegName").focus(); };
+        $("gRegCancel").onclick = () => { rf.hidden = true; ro.hidden = false; lf.hidden = false; };
+        rf.onsubmit = async (e) => {
+          e.preventDefault();
+          const A = window.Account, msg = $("gRegMsg"), btn = rf.querySelector("button[type=submit]");
+          if ($("gRegName").value.trim().length < 2) { msg.textContent = A.t().regShort; return; }
+          if (!$("gRegConsent").checked) { msg.textContent = A.t().regNeed; return; }
+          msg.textContent = A.t().wait; btn.disabled = true;
+          try {
+            const r = await A.register($("gRegName").value, $("gRegPass").value, true, $("gRegWebsite").value);
+            const esc = (x) => String(x).replace(/[<>&"]/g, "");
+            rf.innerHTML = `<div class="g-login-head"><span class="g-login-ico" aria-hidden="true">🎉</span><div><b>${A.t().regDoneTitle}</b><small>${A.t().regDoneSub}</small></div></div>
+              <div class="g-reg-card"><span>${A.t().regUser}</span><strong dir="ltr">${esc(r.username)}</strong><span>${A.t().regPassword}</span><strong dir="ltr">${r.password ? esc(r.password) : A.t().regOwn}</strong></div>
+              <button type="button" id="gRegPlay" class="g-cta">${A.t().regPlay}</button>`;
+            $("gRegPlay").onclick = () => { loadActive(); gohash("#/"); };
+          } catch (err) { msg.textContent = err.message; btn.disabled = false; }
+        };
+      }
       const lo = $("gLogout");
       if (lo) lo.onclick = async () => {
         if (!confirm(window.Account.t().confirm)) return;

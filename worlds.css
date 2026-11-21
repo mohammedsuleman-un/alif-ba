@@ -114,3 +114,14 @@ body.has-preview #gamestage.screen { top: 32px; }
 .fb-done + p + .fb-send { display: block; margin: 8px auto 0; }
 
 .cc-lang { position: absolute; top: 10px; left: 0; right: 0; margin: 0 auto; padding: 0 14px; z-index: 5; }
+
+/* Zelf een account maken */
+.g-reg-open { display: block; margin: 8px auto; }
+.g-reg-form[hidden] { display: none; }
+.g-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.35; color: #4a2f08; text-align: start; cursor: pointer; }
+.g-consent input { width: 22px; height: 22px; margin-top: 2px; flex: none; padding: 0; }
+.g-reg-card { display: grid; gap: 2px; padding: 14px; border-radius: 16px; background: #fffbea; border: 2px dashed #d9b963; text-align: center; }
+.g-reg-card span { font-size: 12px; color: #7a5a14; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
+.g-reg-card strong { font-size: 22px; color: #3a2a00; margin-bottom: 8px; word-break: break-all; }
+.g-reg-form .g-add { color: #7a5a14; border-color: #b8862b; background: transparent; box-shadow: none; }
+.g-reg-form .g-add:active { background: rgba(184, 134, 43, .12); }
